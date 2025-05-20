@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Search, Bell, MessageSquare, User, LogOut } from "lucide-react";
+import { Menu, X, Bell, MessageSquare, User, LogOut } from "lucide-react";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -48,31 +48,7 @@ export default function Navbar() {
     color: 'transparent'
   };
 
-  const searchContainerStyles = {
-    display: 'none',
-    position: 'relative',
-    maxWidth: '28rem',
-    width: '100%',
-    margin: '0 1rem'
-  };
 
-  const searchIconStyles = {
-    position: 'absolute',
-    top: '50%',
-    left: '0.75rem',
-    transform: 'translateY(-50%)',
-    pointerEvents: 'none',
-    color: '#B8C1CF'
-  };
-
-  const searchInputStyles = {
-    width: '100%',
-    backgroundColor: '#1A2333',
-    color: '#FFFFFF',
-    borderRadius: '9999px',
-    padding: '0.5rem 1rem 0.5rem 2.5rem',
-    outline: 'none'
-  };
 
   const desktopNavStyles = {
     display: 'none',
@@ -113,7 +89,6 @@ export default function Navbar() {
 
   // Media query styles
   if (typeof window !== 'undefined' && window.innerWidth >= 768) {
-    searchContainerStyles.display = 'flex';
     desktopNavStyles.display = 'flex';
     mobileMenuButtonStyles.display = 'none';
   }
@@ -122,21 +97,9 @@ export default function Navbar() {
     <nav style={navbarStyles}>
       <div style={containerStyles}>
         {/* Logo */}
-        <Link href="/" style={logoStyles}>
+        <Link href="/feed" style={logoStyles}>
           <span style={logoTextStyles}>Soshi</span>
         </Link>
-
-        {/* Search Bar - Desktop */}
-        <div style={searchContainerStyles}>
-          <div style={searchIconStyles}>
-            <Search style={{ height: '1.25rem', width: '1.25rem' }} />
-          </div>
-          <input
-            type="text"
-            placeholder="Search..."
-            style={searchInputStyles}
-          />
-        </div>
 
         {/* Desktop Navigation */}
         <div style={desktopNavStyles}>
@@ -232,35 +195,10 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div style={mobileMenuStyles}>
-          <div style={{ padding: '0.75rem 1rem' }}>
-            <div style={{ position: 'relative' }}>
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '0.75rem',
-                transform: 'translateY(-50%)',
-                pointerEvents: 'none'
-              }}>
-                <Search style={{ height: '1.25rem', width: '1.25rem', color: '#B8C1CF' }} />
-              </div>
-              <input
-                type="text"
-                placeholder="Search..."
-                style={{
-                  width: '100%',
-                  backgroundColor: '#1A2333',
-                  color: '#FFFFFF',
-                  borderRadius: '9999px',
-                  padding: '0.5rem 1rem 0.5rem 2.5rem',
-                  outline: 'none'
-                }}
-              />
-            </div>
-          </div>
 
           <div style={{ padding: '0.5rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            <Link href="/" style={mobileMenuItemStyles}>
-              Home
+            <Link href="/feed" style={mobileMenuItemStyles}>
+              Feed
             </Link>
             <Link href="/posts" style={mobileMenuItemStyles}>
               Posts

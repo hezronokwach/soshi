@@ -1,153 +1,181 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { 
-  Home, 
-  User, 
-  Users, 
-  Calendar, 
-  MessageSquare, 
-  Heart, 
-  MessageCircle, 
-  Bookmark, 
-  Settings,
-  ChevronRight,
-  ChevronDown
+import {
+  User,
+  Users,
+  Calendar,
+  MessageSquare,
+  Heart,
+  MessageCircle,
+  Bookmark,
+  Settings
 } from "lucide-react";
 
 export default function LeftSidebar() {
-  const [expandedSections, setExpandedSections] = useState({
-    posts: false,
-  });
-  
-  const toggleSection = (section) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
+  const sidebarStyles = {
+    display: 'none',
+    position: 'fixed',
+    left: 0,
+    top: '64px',
+    bottom: 0,
+    width: '300px',
+    backgroundColor: '#1A2333',
+    borderRight: '1px solid #2A3343',
+    overflowY: 'auto',
+    zIndex: 20
   };
-  
+
+  const containerStyles = {
+    padding: '1.5rem 1rem'
+  };
+
+  const navStyles = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5rem'
+  };
+
+  const linkStyles = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    padding: '0.75rem 1rem',
+    color: '#FFFFFF',
+    borderRadius: '0.5rem',
+    textDecoration: 'none',
+    transition: 'background-color 0.2s'
+  };
+
+  const activeLinkStyles = {
+    ...linkStyles,
+    backgroundColor: 'rgba(58, 134, 255, 0.1)',
+    color: '#3A86FF'
+  };
+
+  const iconStyles = {
+    width: '1.25rem',
+    height: '1.25rem'
+  };
+
+  const dividerStyles = {
+    margin: '1.5rem 0',
+    border: 'none',
+    borderTop: '1px solid #2A3343'
+  };
+
+  const sectionTitleStyles = {
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    color: '#B8C1CF',
+    marginBottom: '0.75rem',
+    paddingLeft: '1rem'
+  };
+
+
+
+  // Media query styles
+  if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+    sidebarStyles.display = 'block';
+  }
+
   return (
-    <aside className="hidden lg:block fixed left-0 top-navbar bottom-0 w-sidebar bg-background-lighter border-r border-background-light overflow-y-auto">
-      <div className="p-4">
-        <nav className="space-y-1">
+    <aside style={sidebarStyles}>
+      <div style={containerStyles}>
+        <nav style={navStyles}>
           {/* Main Navigation */}
-          <Link 
-            href="/" 
-            className="flex items-center gap-3 px-3 py-2 text-text-primary hover:bg-background-light rounded-md"
+          <Link
+            href="/feed"
+            style={activeLinkStyles}
           >
-            <Home className="h-5 w-5 text-primary" />
-            <span>Home</span>
+            <MessageCircle style={{...iconStyles, color: '#3A86FF'}} />
+            <span>Posts</span>
           </Link>
-          
-          <Link 
-            href="/profile" 
-            className="flex items-center gap-3 px-3 py-2 text-text-primary hover:bg-background-light rounded-md"
+
+          <Link
+            href="/posts/liked"
+            style={linkStyles}
           >
-            <User className="h-5 w-5 text-secondary" />
-            <span>Profile</span>
+            <Heart style={{...iconStyles, color: '#EF476F'}} />
+            <span>Liked Posts</span>
           </Link>
-          
-          {/* Posts Section with Dropdown */}
-          <div>
-            <button 
-              onClick={() => toggleSection('posts')}
-              className="w-full flex items-center justify-between gap-3 px-3 py-2 text-text-primary hover:bg-background-light rounded-md"
-            >
-              <div className="flex items-center gap-3">
-                <MessageCircle className="h-5 w-5 text-tertiary" />
-                <span>Posts</span>
-              </div>
-              {expandedSections.posts ? 
-                <ChevronDown className="h-4 w-4" /> : 
-                <ChevronRight className="h-4 w-4" />
-              }
-            </button>
-            
-            {expandedSections.posts && (
-              <div className="ml-8 mt-1 space-y-1">
-                <Link 
-                  href="/posts/liked" 
-                  className="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-background-light rounded-md"
-                >
-                  <Heart className="h-4 w-4 text-error" />
-                  <span>Liked Posts</span>
-                </Link>
-                <Link 
-                  href="/posts/commented" 
-                  className="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-background-light rounded-md"
-                >
-                  <MessageSquare className="h-4 w-4 text-info" />
-                  <span>Commented Posts</span>
-                </Link>
-                <Link 
-                  href="/posts/saved" 
-                  className="flex items-center gap-3 px-3 py-2 text-text-secondary hover:text-text-primary hover:bg-background-light rounded-md"
-                >
-                  <Bookmark className="h-4 w-4 text-warning" />
-                  <span>Saved Posts</span>
-                </Link>
-              </div>
-            )}
-          </div>
-          
-          <Link 
-            href="/groups" 
-            className="flex items-center gap-3 px-3 py-2 text-text-primary hover:bg-background-light rounded-md"
+
+          <Link
+            href="/posts/commented"
+            style={linkStyles}
           >
-            <Users className="h-5 w-5 text-success" />
+            <MessageSquare style={{...iconStyles, color: '#118AB2'}} />
+            <span>Commented Posts</span>
+          </Link>
+
+          <Link
+            href="/posts/saved"
+            style={linkStyles}
+          >
+            <Bookmark style={{...iconStyles, color: '#FFD166'}} />
+            <span>Saved Posts</span>
+          </Link>
+
+          <hr style={dividerStyles} />
+
+          <h3 style={sectionTitleStyles}>PROFILE</h3>
+
+          <Link
+            href="/profile"
+            style={linkStyles}
+          >
+            <User style={{...iconStyles, color: '#8338EC'}} />
+            <span>My Profile</span>
+          </Link>
+
+          <Link
+            href="/profile/followers"
+            style={linkStyles}
+          >
+            <Users style={{...iconStyles, color: '#06D6A0'}} />
+            <span>Followers</span>
+          </Link>
+
+          <hr style={dividerStyles} />
+
+          <h3 style={sectionTitleStyles}>DISCOVER</h3>
+
+          <Link
+            href="/groups"
+            style={linkStyles}
+          >
+            <Users style={{...iconStyles, color: '#06D6A0'}} />
             <span>Groups</span>
           </Link>
-          
-          <Link 
-            href="/events" 
-            className="flex items-center gap-3 px-3 py-2 text-text-primary hover:bg-background-light rounded-md"
+
+          <Link
+            href="/events"
+            style={linkStyles}
           >
-            <Calendar className="h-5 w-5 text-warning" />
+            <Calendar style={{...iconStyles, color: '#FFD166'}} />
             <span>Events</span>
           </Link>
-          
-          <Link 
-            href="/chat" 
-            className="flex items-center gap-3 px-3 py-2 text-text-primary hover:bg-background-light rounded-md"
+
+          <Link
+            href="/chat"
+            style={linkStyles}
           >
-            <MessageSquare className="h-5 w-5 text-info" />
+            <MessageSquare style={{...iconStyles, color: '#118AB2'}} />
             <span>Messages</span>
           </Link>
-        </nav>
-        
-        <hr className="my-4 border-background-light" />
-        
-        {/* Secondary Navigation */}
-        <nav className="space-y-1">
-          <Link 
-            href="/settings" 
-            className="flex items-center gap-3 px-3 py-2 text-text-primary hover:bg-background-light rounded-md"
+
+          <hr style={dividerStyles} />
+
+          <Link
+            href="/settings"
+            style={linkStyles}
           >
-            <Settings className="h-5 w-5 text-text-secondary" />
+            <Settings style={{...iconStyles, color: '#B8C1CF'}} />
             <span>Settings</span>
           </Link>
         </nav>
-        
-        {/* User Stats */}
-        <div className="mt-8 p-4 bg-background rounded-lg border border-background-light">
-          <h3 className="text-sm font-medium text-text-primary mb-2">Your Stats</h3>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-text-secondary text-sm">Posts</span>
-              <span className="text-text-primary text-sm font-medium">24</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-text-secondary text-sm">Followers</span>
-              <span className="text-text-primary text-sm font-medium">142</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-text-secondary text-sm">Following</span>
-              <span className="text-text-primary text-sm font-medium">98</span>
-            </div>
-          </div>
-        </div>
+
+
       </div>
     </aside>
   );

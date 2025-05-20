@@ -61,7 +61,7 @@ const MOCK_POSTS = [
 export default function FeedPage() {
   const [posts, setPosts] = useState(MOCK_POSTS);
   const [newPostContent, setNewPostContent] = useState('');
-  
+
   const handleLike = (postId) => {
     setPosts(posts.map(post => {
       if (post.id === postId) {
@@ -74,7 +74,7 @@ export default function FeedPage() {
       return post;
     }));
   };
-  
+
   const handleBookmark = (postId) => {
     setPosts(posts.map(post => {
       if (post.id === postId) {
@@ -86,11 +86,11 @@ export default function FeedPage() {
       return post;
     }));
   };
-  
+
   const handlePostSubmit = (e) => {
     e.preventDefault();
     if (!newPostContent.trim()) return;
-    
+
     const newPost = {
       id: Date.now(),
       user: {
@@ -108,17 +108,17 @@ export default function FeedPage() {
       liked: false,
       bookmarked: false
     };
-    
+
     setPosts([newPost, ...posts]);
     setNewPostContent('');
   };
-  
+
   // Format timestamp to relative time (e.g., "2 hours ago")
   const formatRelativeTime = (timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
-    
+
     if (diffInSeconds < 60) {
       return 'just now';
     } else if (diffInSeconds < 3600) {
@@ -132,7 +132,7 @@ export default function FeedPage() {
       return `${days} ${days === 1 ? 'day' : 'days'} ago`;
     }
   };
-  
+
   return (
     <div>
       {/* Create Post Section */}
@@ -142,7 +142,9 @@ export default function FeedPage() {
         borderRadius: '1rem',
         border: '1px solid rgba(255, 255, 255, 0.1)',
         padding: '1.5rem',
-        marginBottom: '1.5rem'
+        marginBottom: '1.5rem',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        transition: 'all 0.3s ease'
       }}>
         <form onSubmit={handlePostSubmit}>
           <textarea
@@ -162,7 +164,7 @@ export default function FeedPage() {
               outline: 'none'
             }}
           />
-          
+
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -197,7 +199,7 @@ export default function FeedPage() {
                 <span>Feeling</span>
               </button>
             </div>
-            
+
             <button type="submit" style={{
               backgroundColor: '#3A86FF',
               color: 'white',
@@ -216,7 +218,7 @@ export default function FeedPage() {
           </div>
         </form>
       </div>
-      
+
       {/* Posts Feed */}
       <div style={{
         display: 'flex',
@@ -224,14 +226,30 @@ export default function FeedPage() {
         gap: '1.5rem'
       }}>
         {posts.map(post => (
-          <div key={post.id} style={{
-            backgroundColor: 'rgba(26, 35, 51, 0.7)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: '1rem',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            padding: '1.5rem',
-            transition: 'transform 0.2s',
-          }}>
+          <div
+            key={post.id}
+            style={{
+              backgroundColor: 'rgba(26, 35, 51, 0.7)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '1rem',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              padding: '1.5rem',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-5px)';
+              e.currentTarget.style.boxShadow = '0 10px 25px rgba(58, 134, 255, 0.15)';
+              e.currentTarget.style.borderColor = 'rgba(58, 134, 255, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.1)';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            }}
+          >
             {/* Post Header */}
             <div style={{
               display: 'flex',
@@ -273,7 +291,7 @@ export default function FeedPage() {
                   </div>
                 </div>
               </div>
-              
+
               <button style={{
                 backgroundColor: 'transparent',
                 border: 'none',
@@ -283,7 +301,7 @@ export default function FeedPage() {
                 <MoreHorizontal size={20} />
               </button>
             </div>
-            
+
             {/* Post Content */}
             <div style={{
               marginBottom: '1rem',
@@ -292,7 +310,7 @@ export default function FeedPage() {
             }}>
               {post.content}
             </div>
-            
+
             {/* Post Images */}
             {post.images.length > 0 && (
               <div style={{
@@ -300,9 +318,9 @@ export default function FeedPage() {
                 borderRadius: '0.5rem',
                 overflow: 'hidden'
               }}>
-                <img 
-                  src={post.images[0]} 
-                  alt="Post attachment" 
+                <img
+                  src={post.images[0]}
+                  alt="Post attachment"
                   style={{
                     width: '100%',
                     maxHeight: '400px',
@@ -311,7 +329,7 @@ export default function FeedPage() {
                 />
               </div>
             )}
-            
+
             {/* Post Stats */}
             <div style={{
               display: 'flex',
@@ -327,13 +345,13 @@ export default function FeedPage() {
               <span>{post.comments} comments</span>
               <span>{post.shares} shares</span>
             </div>
-            
+
             {/* Post Actions */}
             <div style={{
               display: 'flex',
               justifyContent: 'space-between'
             }}>
-              <button 
+              <button
                 onClick={() => handleLike(post.id)}
                 style={{
                   backgroundColor: 'transparent',
@@ -345,46 +363,78 @@ export default function FeedPage() {
                   cursor: 'pointer',
                   padding: '0.5rem',
                   borderRadius: '0.25rem',
-                  transition: 'background-color 0.2s'
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(239, 71, 111, 0.1)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
                 <Heart size={20} fill={post.liked ? '#EF476F' : 'none'} />
                 <span>Like</span>
               </button>
-              
-              <button style={{
-                backgroundColor: 'transparent',
-                border: 'none',
-                color: '#B8C1CF',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                cursor: 'pointer',
-                padding: '0.5rem',
-                borderRadius: '0.25rem',
-                transition: 'background-color 0.2s'
-              }}>
+
+              <button
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: '#B8C1CF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  cursor: 'pointer',
+                  padding: '0.5rem',
+                  borderRadius: '0.25rem',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(17, 138, 178, 0.1)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.color = '#118AB2';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.color = '#B8C1CF';
+                }}
+              >
                 <MessageCircle size={20} />
                 <span>Comment</span>
               </button>
-              
-              <button style={{
-                backgroundColor: 'transparent',
-                border: 'none',
-                color: '#B8C1CF',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                cursor: 'pointer',
-                padding: '0.5rem',
-                borderRadius: '0.25rem',
-                transition: 'background-color 0.2s'
-              }}>
+
+              <button
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: '#B8C1CF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  cursor: 'pointer',
+                  padding: '0.5rem',
+                  borderRadius: '0.25rem',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(6, 214, 160, 0.1)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.color = '#06D6A0';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.color = '#B8C1CF';
+                }}
+              >
                 <Share size={20} />
                 <span>Share</span>
               </button>
-              
-              <button 
+
+              <button
                 onClick={() => handleBookmark(post.id)}
                 style={{
                   backgroundColor: 'transparent',
@@ -396,7 +446,15 @@ export default function FeedPage() {
                   cursor: 'pointer',
                   padding: '0.5rem',
                   borderRadius: '0.25rem',
-                  transition: 'background-color 0.2s'
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 209, 102, 0.1)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
                 <Bookmark size={20} fill={post.bookmarked ? '#FFD166' : 'none'} />

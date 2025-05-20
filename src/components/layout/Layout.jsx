@@ -18,13 +18,40 @@ export default function Layout({ children }) {
     return null;
   }
 
+  const backgroundStyles = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'linear-gradient(135deg, #0F1624 0%, #1A2333 25%, #1E2A3D 50%, #1A2333 75%, #0F1624 100%)',
+    backgroundSize: '400% 400%',
+    animation: 'gradientAnimation 15s ease infinite',
+    zIndex: -1
+  };
+
+  const subtleOverlayStyles = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundImage: 'radial-gradient(rgba(58, 134, 255, 0.03) 1px, transparent 1px)',
+    backgroundSize: '30px 30px',
+    zIndex: -1
+  };
+
   return (
     <div style={{
       display: 'flex',
       flexDirection: 'column',
       minHeight: '100vh',
-      backgroundColor: '#0F1624'
+      position: 'relative'
     }}>
+      {/* Animated Background */}
+      <div style={backgroundStyles}></div>
+      <div style={subtleOverlayStyles}></div>
+
       <Navbar />
 
       <div style={{ display: 'flex', flex: 1, paddingTop: '64px' }}>
@@ -35,12 +62,17 @@ export default function Layout({ children }) {
         <main style={{
           flex: 1,
           marginLeft: 0,
-          marginRight: 0
+          marginRight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 'calc(100vh - 64px)'
         }}>
           <div style={{
-            maxWidth: '1200px',
+            maxWidth: '800px',
+            width: '100%',
             margin: '0 auto',
-            padding: '1.5rem 1rem'
+            padding: '2rem 1.5rem',
+            flex: 1
           }}>
             {children}
           </div>

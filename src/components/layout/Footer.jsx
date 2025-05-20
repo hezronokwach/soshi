@@ -1,133 +1,52 @@
-import Link from "next/link";
-import { 
-  Github, 
-  Twitter, 
-  Instagram, 
-  Linkedin, 
-  Heart 
-} from "lucide-react";
+import { Heart } from "lucide-react";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  
+
+  const footerStyles = {
+    backgroundColor: '#1A2333',
+    borderTop: '1px solid #2A3343',
+    padding: '1rem 0',
+    width: '100%',
+    marginTop: 'auto'
+  };
+
+  const containerStyles = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '0 1.5rem'
+  };
+
+  const copyrightTextStyles = {
+    color: '#B8C1CF',
+    fontSize: '0.875rem'
+  };
+
+  const madeWithStyles = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.25rem',
+    color: '#B8C1CF',
+    fontSize: '0.875rem'
+  };
+
+  // Responsive styles for mobile
+  if (typeof window !== 'undefined' && window.innerWidth < 640) {
+    containerStyles.flexDirection = 'column';
+    containerStyles.gap = '0.5rem';
+  }
+
   return (
-    <footer className="bg-background-lighter border-t border-background-light mt-auto">
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Logo and Description */}
-          <div className="md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <span className="text-2xl font-display font-bold text-gradient">Soshi</span>
-            </Link>
-            <p className="text-text-secondary text-sm mb-4">
-              A modern social network platform connecting people around the world through shared interests and experiences.
-            </p>
-            <div className="flex items-center gap-4">
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-primary">
-                <Github className="h-5 w-5" />
-              </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-primary">
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-primary">
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-primary">
-                <Linkedin className="h-5 w-5" />
-              </a>
-            </div>
-          </div>
-          
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-text-primary font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/" className="text-text-secondary hover:text-primary text-sm">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link href="/posts" className="text-text-secondary hover:text-primary text-sm">
-                  Posts
-                </Link>
-              </li>
-              <li>
-                <Link href="/groups" className="text-text-secondary hover:text-primary text-sm">
-                  Groups
-                </Link>
-              </li>
-              <li>
-                <Link href="/events" className="text-text-secondary hover:text-primary text-sm">
-                  Events
-                </Link>
-              </li>
-            </ul>
-          </div>
-          
-          {/* Legal */}
-          <div>
-            <h3 className="text-text-primary font-semibold mb-4">Legal</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/terms" className="text-text-secondary hover:text-primary text-sm">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="text-text-secondary hover:text-primary text-sm">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/cookies" className="text-text-secondary hover:text-primary text-sm">
-                  Cookie Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/community-guidelines" className="text-text-secondary hover:text-primary text-sm">
-                  Community Guidelines
-                </Link>
-              </li>
-            </ul>
-          </div>
-          
-          {/* Contact */}
-          <div>
-            <h3 className="text-text-primary font-semibold mb-4">Contact</h3>
-            <ul className="space-y-2">
-              <li className="text-text-secondary text-sm">
-                Email: support@soshi.com
-              </li>
-              <li>
-                <Link href="/help" className="text-text-secondary hover:text-primary text-sm">
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link href="/feedback" className="text-text-secondary hover:text-primary text-sm">
-                  Feedback
-                </Link>
-              </li>
-              <li>
-                <Link href="/report" className="text-text-secondary hover:text-primary text-sm">
-                  Report an Issue
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-        
-        <hr className="my-6 border-background-light" />
-        
-        {/* Copyright */}
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <p className="text-text-secondary text-sm">
-            &copy; {currentYear} Soshi. All rights reserved.
-          </p>
-          <p className="text-text-secondary text-sm mt-2 md:mt-0">
-            Made with <Heart className="inline h-4 w-4 text-error" /> by Soshi Team
-          </p>
+    <footer style={footerStyles}>
+      <div style={containerStyles}>
+        <p style={copyrightTextStyles}>
+          &copy; {currentYear} Soshi. All rights reserved.
+        </p>
+        <div style={madeWithStyles}>
+          Made with <Heart style={{ height: '1rem', width: '1rem', color: '#EF476F' }} /> by Soshi Team
         </div>
       </div>
     </footer>
