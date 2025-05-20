@@ -5,25 +5,23 @@ import crypto from 'crypto';
 /**
  * Create a new session
  * @param {number} userId - The user ID
+ * @param {string} token - The session token
  * @param {number} expiresIn - Session duration in seconds
  * @returns {Promise<Object>} - The created session
  */
-export async function createSession(userId, expiresIn = 7 * 24 * 60 * 60) {
+export async function createSession(userId, token, expiresIn = 7 * 24 * 60 * 60) {
   const db = await getDb();
-  
+
   try {
-    // Generate a random token
-    const token = crypto.randomBytes(64).toString('hex');
-    
     // Calculate expiration date
     const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
-    
+
     // Insert session into database
     const result = await db.run(
       `INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)`,
       [userId, token, expiresAt]
     );
-    
+
     return {
       id: result.lastID,
       userId,
@@ -43,21 +41,21 @@ export async function createSession(userId, expiresIn = 7 * 24 * 60 * 60) {
  */
 export async function getSessionByToken(token) {
   const db = await getDb();
-  
+
   try {
     const session = await db.get('SELECT * FROM sessions WHERE token = ?', [token]);
-    
+
     if (!session) {
       return null;
     }
-    
+
     // Check if session is expired
     if (new Date(session.expires_at) < new Date()) {
       // Delete expired session
       await deleteSession(session.id);
       return null;
     }
-    
+
     return {
       id: session.id,
       userId: session.user_id,
@@ -77,7 +75,7 @@ export async function getSessionByToken(token) {
  */
 export async function deleteSession(id) {
   const db = await getDb();
-  
+
   try {
     await db.run('DELETE FROM sessions WHERE id = ?', [id]);
     return true;
@@ -94,7 +92,7 @@ export async function deleteSession(id) {
  */
 export async function deleteUserSessions(userId) {
   const db = await getDb();
-  
+
   try {
     await db.run('DELETE FROM sessions WHERE user_id = ?', [userId]);
     return true;
@@ -110,7 +108,7 @@ export async function deleteUserSessions(userId) {
  */
 export async function deleteExpiredSessions() {
   const db = await getDb();
-  
+
   try {
     const result = await db.run('DELETE FROM sessions WHERE expires_at < ?', [new Date().toISOString()]);
     return result.changes;

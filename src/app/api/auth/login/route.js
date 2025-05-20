@@ -1,7 +1,9 @@
 // Login API route
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { authenticateUser, createSession } from '@/lib/auth';
+import { authenticateUser } from '@/lib/auth';
+import { createSession } from '@/lib/db/models/session';
+import crypto from 'crypto';
 
 // Validation schema for login
 const loginSchema = z.object({
@@ -38,10 +40,14 @@ export async function POST(request) {
       );
     }
 
-    // Create session
-    await createSession(user);
+    // Generate a random token
+    const token = `${user.id}_${Date.now()}_${crypto.randomBytes(32).toString('hex')}`;
 
-    return NextResponse.json({
+    // Create session in database
+    await createSession(user.id, token);
+
+    // Create response with session cookie
+    const response = NextResponse.json({
       message: 'Login successful',
       success: true,
       user: {
@@ -51,6 +57,18 @@ export async function POST(request) {
         last_name: user.last_name
       }
     });
+
+    // Set cookie in the response
+    response.cookies.set({
+      name: 'session_token',
+      value: token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: '/'
+    });
+
+    return response;
   } catch (error) {
     console.error('Login error:', error);
 

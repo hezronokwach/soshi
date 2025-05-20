@@ -2,7 +2,7 @@
  * Migration: Create Posts Table
  */
 
-export async function up(db) {
+async function up(db) {
   return db.exec(`
     CREATE TABLE IF NOT EXISTS posts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,6 +19,9 @@ export async function up(db) {
   `);
 }
 
-export async function down(db) {
+async function down(db) {
   return db.exec(`DROP TABLE IF EXISTS posts;`);
 }
+
+// Use CommonJS exports for compatibility with require()
+module.exports = { up, down };

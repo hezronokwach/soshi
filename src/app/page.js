@@ -4,17 +4,19 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Home() {
   const router = useRouter();
-  const isAuthenticated = false; // This would be replaced with actual auth check
+  const { user, loading } = useAuth();
+  const isAuthenticated = !!user;
 
   useEffect(() => {
     // If user is authenticated, redirect to feed
-    if (isAuthenticated) {
+    if (!loading && isAuthenticated) {
       router.push('/feed');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, loading]);
 
   return (
     <div style={{
@@ -74,7 +76,7 @@ export default function Home() {
             gap: '1rem',
             width: '100%'
           }}>
-            <Link href="/(auth)/login" style={{
+            <Link href="/login" style={{
               flex: 1,
               backgroundColor: 'transparent',
               border: '1px solid #3A86FF',
@@ -87,7 +89,7 @@ export default function Home() {
             }}>
               Login
             </Link>
-            <Link href="/(auth)/register" style={{
+            <Link href="/register" style={{
               flex: 1,
               backgroundColor: 'rgba(26, 35, 51, 0.7)',
               color: '#FFFFFF',

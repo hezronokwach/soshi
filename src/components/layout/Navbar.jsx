@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Menu, X, Bell, MessageSquare, User, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,11 +14,34 @@ export default function Navbar() {
   // Check if user is authenticated
   const isAuthenticated = !!user;
 
+  // State for user dropdown
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  // Ref for user dropdown
+  const userMenuRef = useRef(null);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    }
+
+    // Add event listener
+    document.addEventListener('mousedown', handleClickOutside);
+
+    // Clean up
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [userMenuRef]);
+
   // Handle logout
   const handleLogout = async () => {
     try {
       await logout();
-      router.push('/');
+      // Redirect is handled in the logout function
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -162,8 +185,11 @@ export default function Navbar() {
               </button>
 
               {/* User Profile */}
-              <div style={{ position: 'relative' }}>
-                <button style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ position: 'relative' }} ref={userMenuRef}>
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                >
                   <div style={{
                     height: '2rem',
                     width: '2rem',
@@ -177,15 +203,65 @@ export default function Navbar() {
                     <User style={{ height: '1.25rem', width: '1.25rem' }} />
                   </div>
                 </button>
+
+                {/* User Dropdown Menu */}
+                {isUserMenuOpen && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    marginTop: '0.5rem',
+                    width: '12rem',
+                    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: '0.5rem',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    padding: '0.5rem',
+                    zIndex: 50
+                  }}>
+                    <div style={{ padding: '0.25rem' }}>
+                      <Link href="/profile" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.5rem 0.75rem',
+                        borderRadius: '0.375rem',
+                        color: 'white',
+                        transition: 'background-color 0.2s'
+                      }}>
+                        <User style={{ height: '1rem', width: '1rem' }} />
+                        Profile
+                      </Link>
+
+                      <button
+                        onClick={handleLogout}
+                        style={{
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: '0.5rem 0.75rem',
+                          borderRadius: '0.375rem',
+                          color: '#EF476F',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          transition: 'background-color 0.2s'
+                        }}
+                      >
+                        <LogOut style={{ height: '1rem', width: '1rem' }} />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </>
           ) : (
             <>
-              <Link href="/(auth)/login" style={loginLinkStyles}>
+              <Link href="/login" style={loginLinkStyles}>
                 Login
               </Link>
               <Link
-                href="/(auth)/register"
+                href="/register"
                 style={registerLinkStyles}
               >
                 Register
@@ -249,7 +325,7 @@ export default function Navbar() {
               </button>
             ) : (
               <div style={{ paddingTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <Link href="/(auth)/login" style={{
+                <Link href="/login" style={{
                   width: '100%',
                   textAlign: 'center',
                   padding: '0.5rem 0.75rem',
@@ -259,7 +335,7 @@ export default function Navbar() {
                 }}>
                   Login
                 </Link>
-                <Link href="/(auth)/register" style={{
+                <Link href="/register" style={{
                   width: '100%',
                   textAlign: 'center',
                   padding: '0.5rem 0.75rem',

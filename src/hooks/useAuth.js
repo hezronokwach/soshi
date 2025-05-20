@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, createContext, useContext } from 'react';
+import { useRouter } from 'next/navigation';
 
 // Create auth context
 const AuthContext = createContext(null);
@@ -9,6 +10,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   // Fetch current user on mount
   useEffect(() => {
@@ -53,6 +55,14 @@ export function AuthProvider({ children }) {
 
       if (userData.user) {
         setUser(userData.user);
+
+        // Get redirect URL from query params or default to feed
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectUrl = urlParams.get('redirect') || '/feed';
+
+        // Redirect to the appropriate page
+        router.push(redirectUrl);
+
         return true;
       }
 
@@ -88,6 +98,9 @@ export function AuthProvider({ children }) {
       // Set user data from response
       if (data.user) {
         setUser(data.user);
+
+        // Redirect to feed page after successful registration
+        router.push('/feed');
       }
 
       return true;
@@ -105,6 +118,10 @@ export function AuthProvider({ children }) {
       });
 
       setUser(null);
+
+      // Redirect to home page after logout
+      router.push('/');
+
       return true;
     } catch (error) {
       console.error('Logout error:', error);
