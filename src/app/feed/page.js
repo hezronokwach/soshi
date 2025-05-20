@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { MessageCircle, Heart, Share, Bookmark, MoreHorizontal, Image as ImageIcon, Smile, Send } from 'lucide-react';
+import { MessageCircle, Heart, Share, Bookmark, MoreHorizontal, Image as ImageIcon, Smile, Send, PenSquare } from 'lucide-react';
 
 // Mock data for posts
 const MOCK_POSTS = [
@@ -135,6 +135,41 @@ export default function FeedPage() {
 
   return (
     <div>
+      {/* Create Post Button */}
+      <button
+        onClick={() => document.getElementById('post-textarea').focus()}
+        style={{
+          backgroundColor: '#3A86FF',
+          backgroundImage: 'linear-gradient(135deg, #3A86FF 0%, #8338EC 100%)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '0.5rem',
+          padding: '0.75rem 1.5rem',
+          marginBottom: '1.5rem',
+          width: '100%',
+          fontWeight: '600',
+          fontSize: '1rem',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.5rem',
+          boxShadow: '0 4px 15px rgba(58, 134, 255, 0.3)',
+          transition: 'all 0.3s ease'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = '0 6px 20px rgba(58, 134, 255, 0.4)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 4px 15px rgba(58, 134, 255, 0.3)';
+        }}
+      >
+        <PenSquare size={20} />
+        Create New Post
+      </button>
+
       {/* Create Post Section */}
       <div style={{
         backgroundColor: 'rgba(26, 35, 51, 0.7)',
@@ -148,6 +183,7 @@ export default function FeedPage() {
       }}>
         <form onSubmit={handlePostSubmit}>
           <textarea
+            id="post-textarea"
             placeholder="What's on your mind?"
             value={newPostContent}
             onChange={(e) => setNewPostContent(e.target.value)}
