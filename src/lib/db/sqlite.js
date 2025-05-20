@@ -1,82 +1,71 @@
 // SQLite database configuration
 import Database from 'better-sqlite3';
+import path from 'path';
+import fs from 'fs';
 
 let db;
 
+/**
+ * Get the database connection
+ * @returns {Database} The database connection
+ */
 export function getDb() {
   if (!db) {
-    db = new Database('soshi.db', { verbose: console.log });
-    initDb();
+    db = new Database('soshi.db', { verbose: process.env.NODE_ENV === 'development' ? console.log : null });
+    runMigrations();
   }
   return db;
 }
 
-function initDb() {
-  // Create tables if they don't exist
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      firstName TEXT NOT NULL,
-      lastName TEXT NOT NULL,
-      dateOfBirth TEXT NOT NULL,
-      avatar TEXT,
-      nickname TEXT,
-      aboutMe TEXT,
-      isPublic INTEGER DEFAULT 1,
-      createdAt TEXT DEFAULT CURRENT_TIMESTAMP
-    );
+/**
+ * Run database migrations
+ */
+async function runMigrations() {
+  try {
+    console.log('Running database migrations...');
 
-    CREATE TABLE IF NOT EXISTS posts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      userId INTEGER NOT NULL,
-      content TEXT NOT NULL,
-      image TEXT,
-      privacy TEXT NOT NULL,
-      createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (userId) REFERENCES users(id)
-    );
+    // Create migrations table if it doesn't exist
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS migrations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
 
-    CREATE TABLE IF NOT EXISTS followers (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      followerId INTEGER NOT NULL,
-      followingId INTEGER NOT NULL,
-      status TEXT NOT NULL,
-      createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (followerId) REFERENCES users(id),
-      FOREIGN KEY (followingId) REFERENCES users(id)
-    );
+    // Get applied migrations
+    const appliedMigrations = db.prepare('SELECT name FROM migrations').all();
+    const appliedMigrationNames = appliedMigrations.map(m => m.name);
 
-    CREATE TABLE IF NOT EXISTS groups (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      description TEXT,
-      creatorId INTEGER NOT NULL,
-      createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (creatorId) REFERENCES users(id)
-    );
+    // Get migration files
+    const migrationsDir = path.join(process.cwd(), 'src', 'lib', 'db', 'migrations');
+    const migrationFiles = fs.readdirSync(migrationsDir)
+      .filter(file => file.endsWith('.js'))
+      .sort(); // Sort to ensure migrations run in order
 
-    CREATE TABLE IF NOT EXISTS group_members (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      groupId INTEGER NOT NULL,
-      userId INTEGER NOT NULL,
-      status TEXT NOT NULL,
-      createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (groupId) REFERENCES groups(id),
-      FOREIGN KEY (userId) REFERENCES users(id)
-    );
+    // Run migrations that haven't been applied yet
+    for (const file of migrationFiles) {
+      if (!appliedMigrationNames.includes(file)) {
+        console.log(`Applying migration: ${file}`);
 
-    CREATE TABLE IF NOT EXISTS notifications (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      userId INTEGER NOT NULL,
-      type TEXT NOT NULL,
-      content TEXT NOT NULL,
-      isRead INTEGER DEFAULT 0,
-      createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (userId) REFERENCES users(id)
-    );
-  `);
+        // Import migration file
+        const migration = require(path.join(migrationsDir, file));
+
+        // Run migration
+        await migration.up(db);
+
+        // Record migration
+        db.prepare('INSERT INTO migrations (name) VALUES (?)').run(file);
+
+        console.log(`Migration applied: ${file}`);
+      }
+    }
+
+    console.log('Migrations completed successfully');
+  } catch (error) {
+    console.error('Migration error:', error);
+    throw error;
+  }
 }
 
 export default getDb;
