@@ -57,7 +57,7 @@ export function AuthProvider({ children }) {
         setUser(userData.user);
 
         // Always redirect to feed page after login
-        router.push('/(main)/feed');
+        router.push('/feed');
 
         return true;
       }
@@ -96,7 +96,7 @@ export function AuthProvider({ children }) {
         setUser(data.user);
 
         // Redirect to feed page after successful registration
-        router.push('/(main)/feed');
+        router.push('/feed');
       }
 
       return true;

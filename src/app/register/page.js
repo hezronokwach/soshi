@@ -1,10 +1,7 @@
+"use client";
+
 import RegisterForm from '@/components/auth/RegisterForm';
 import Link from 'next/link';
-
-export const metadata = {
-  title: 'Register - Soshi',
-  description: 'Create a new Soshi account',
-};
 
 export default function RegisterPage() {
   return (

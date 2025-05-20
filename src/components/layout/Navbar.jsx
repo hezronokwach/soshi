@@ -134,7 +134,7 @@ export default function Navbar() {
     <nav style={navbarStyles}>
       <div style={containerStyles}>
         {/* Logo */}
-        <Link href="/(main)/feed" style={logoStyles}>
+        <Link href="/feed" style={logoStyles}>
           <span style={logoTextStyles}>Soshi</span>
         </Link>
 
@@ -287,7 +287,7 @@ export default function Navbar() {
         <div style={mobileMenuStyles}>
 
           <div style={{ padding: '0.5rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            <Link href="/(main)/feed" style={mobileMenuItemStyles}>
+            <Link href="/feed" style={mobileMenuItemStyles}>
               Feed
             </Link>
             <Link href="/posts" style={mobileMenuItemStyles}>

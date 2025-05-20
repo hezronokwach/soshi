@@ -1,9 +1,6 @@
-import LoginForm from '@/components/auth/LoginForm';
+"use client";
 
-export const metadata = {
-  title: 'Login - Soshi',
-  description: 'Log in to your Soshi account',
-};
+import LoginForm from '@/components/auth/LoginForm';
 
 export default function LoginPage() {
   return (

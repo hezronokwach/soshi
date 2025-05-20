@@ -25,9 +25,9 @@ const publicPrefixes = [
 export function middleware(request) {
   const { pathname } = request.nextUrl;
 
-  // Redirect root path to feed
-  if (pathname === '/' || pathname === '/feed') {
-    return NextResponse.redirect(new URL('/(main)/feed', request.url));
+  // Root path redirects to feed
+  if (pathname === '/') {
+    return NextResponse.redirect(new URL('/feed', request.url));
   }
 
   // Check if the route is public
