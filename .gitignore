@@ -47,3 +47,4 @@ next-env.d.ts
 # SQLite database
 *.db
 *.db-journal
+package-lock.json
