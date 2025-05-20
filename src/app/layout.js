@@ -1,49 +1,31 @@
-import { Inter } from "next/font/google";
-import Link from "next/link";
+import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
+import Layout from "@/components/layout/Layout";
 
-const inter = Inter({ subsets: ["latin"] });
+// Font configuration
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+  display: "swap",
+});
 
 export const metadata = {
   title: "Soshi - Social Network",
-  description: "A Facebook-like social network",
+  description: "A modern, futuristic social network connecting people around the world",
+  keywords: "social network, social media, connect, friends, posts, groups, chat",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <header className="bg-white shadow-sm">
-          <nav className="container mx-auto p-4 flex justify-between items-center">
-            <Link href="/" className="text-xl font-bold">
-              Soshi
-            </Link>
-            <div className="flex gap-4">
-              <Link href="/posts" className="hover:text-blue-600">
-                Posts
-              </Link>
-              <Link href="/profile" className="hover:text-blue-600">
-                Profile
-              </Link>
-              <Link href="/groups" className="hover:text-blue-600">
-                Groups
-              </Link>
-              <Link href="/chat" className="hover:text-blue-600">
-                Chat
-              </Link>
-              <Link href="/notifications" className="hover:text-blue-600">
-                Notifications
-              </Link>
-              <Link href="/(auth)/login" className="hover:text-blue-600">
-                Login
-              </Link>
-              <Link href="/(auth)/register" className="hover:text-blue-600">
-                Register
-              </Link>
-            </div>
-          </nav>
-        </header>
-        <main>{children}</main>
+    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+      <body className="antialiased">
+        <Layout>{children}</Layout>
       </body>
     </html>
   );
