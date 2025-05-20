@@ -3,12 +3,26 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X, Bell, MessageSquare, User, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const router = useRouter();
 
-  // Placeholder for authentication state
-  const isAuthenticated = false;
+  // Check if user is authenticated
+  const isAuthenticated = !!user;
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   const navbarStyles = {
     position: 'fixed',
@@ -217,16 +231,19 @@ export default function Navbar() {
             </Link>
 
             {isAuthenticated ? (
-              <button style={{
-                width: '100%',
-                textAlign: 'left',
-                padding: '0.5rem 0.75rem',
-                borderRadius: '0.375rem',
-                color: '#EF476F',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
+              <button
+                onClick={handleLogout}
+                style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '0.375rem',
+                  color: '#EF476F',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+              >
                 <LogOut style={{ height: '1rem', width: '1rem' }} />
                 Logout
               </button>

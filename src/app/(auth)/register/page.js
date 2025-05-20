@@ -1,8 +1,26 @@
+import RegisterForm from '@/components/auth/RegisterForm';
+import Link from 'next/link';
+
+export const metadata = {
+  title: 'Register - Soshi',
+  description: 'Create a new Soshi account',
+};
+
 export default function RegisterPage() {
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Register Page</h1>
-      <p>This is a placeholder for the register page where users will be able to create a new account.</p>
+    <div className="container mx-auto p-4 flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
+      <div className="w-full max-w-md">
+        <RegisterForm />
+
+        <div className="mt-6 text-center">
+          <p className="text-sm text-text-secondary">
+            Already have an account?{' '}
+            <Link href="/login" className="text-primary hover:underline">
+              Log In
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
