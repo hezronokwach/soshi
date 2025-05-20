@@ -56,12 +56,8 @@ export function AuthProvider({ children }) {
       if (userData.user) {
         setUser(userData.user);
 
-        // Get redirect URL from query params or default to feed
-        const urlParams = new URLSearchParams(window.location.search);
-        const redirectUrl = urlParams.get('redirect') || '/feed';
-
-        // Redirect to the appropriate page
-        router.push(redirectUrl);
+        // Always redirect to feed page after login
+        router.push('/feed');
 
         return true;
       }
@@ -119,8 +115,8 @@ export function AuthProvider({ children }) {
 
       setUser(null);
 
-      // Redirect to home page after logout
-      router.push('/');
+      // Redirect to login page after logout
+      router.push('/login');
 
       return true;
     } catch (error) {

@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 
 // Routes that don't require authentication
 const publicRoutes = [
-  '/',
   '/login',
   '/register',
   '/api/auth/login',
@@ -26,6 +25,11 @@ const publicPrefixes = [
 export function middleware(request) {
   const { pathname } = request.nextUrl;
 
+  // Redirect root path to feed
+  if (pathname === '/') {
+    return NextResponse.redirect(new URL('/feed', request.url));
+  }
+
   // Check if the route is public
   if (isPublicRoute(pathname)) {
     return NextResponse.next();
@@ -36,9 +40,7 @@ export function middleware(request) {
 
   // If no session token, redirect to login
   if (!sessionToken) {
-    const url = new URL('/login', request.url);
-    url.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   // Continue to the protected route
