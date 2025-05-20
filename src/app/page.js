@@ -11,7 +11,7 @@ export default function Home() {
   useEffect(() => {
     // Always redirect to feed page
     if (!loading) {
-      router.push('/feed');
+      router.push('/(main)/feed');
     }
   }, [router, loading]);
 

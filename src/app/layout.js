@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
     <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
       <body className="antialiased">
         <AuthProvider>
-          <Layout>{children}</Layout>
+          {children}
         </AuthProvider>
       </body>
     </html>
