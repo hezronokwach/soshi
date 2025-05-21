@@ -2,7 +2,7 @@
  * Migration: Create Users Table
  */
 
-export async function up(db) {
+async function up(db) {
   return db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,6 +21,9 @@ export async function up(db) {
   `);
 }
 
-export async function down(db) {
+async function down(db) {
   return db.exec(`DROP TABLE IF EXISTS users;`);
 }
+
+// Use CommonJS exports for compatibility with require()
+module.exports = { up, down };
