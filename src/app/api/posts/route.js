@@ -64,6 +64,7 @@ export async function POST(request) {
     const postId = await createPost({
       user_id: parseInt(userId),
       content,
+      image_url: body.image_url || null,
       privacy: privacy || 'public',
       selected_users: selectedUsers?.map(id => parseInt(id)) || []
     });
