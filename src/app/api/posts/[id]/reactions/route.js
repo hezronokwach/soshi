@@ -4,7 +4,7 @@ import { getDb } from '@/lib/db';
  * Handle POST request to add/update/remove reaction
  */
 export async function POST(req, context) {
-  const id = await context.params.id;
+  const { id } = await context.params;
   const db = await getDb();
   const postId = parseInt(id);
   
@@ -108,7 +108,7 @@ export async function POST(req, context) {
  * Handle GET request to get reaction status
  */
 export async function GET(req, context) {
-  const id = await context.params.id;
+  const { id } = await context.params;
   const db = await getDb();
   const postId = parseInt(id);
   

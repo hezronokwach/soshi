@@ -366,8 +366,8 @@ export default function PostCard({ post, onDelete, onUpdate }) {
           onClick={() => handleReaction('dislike')}
           className={`flex items-center gap-1.5 p-1.5 rounded-full transition-colors ${
             reactions.userReaction === 'dislike'
-              ? 'text-gray-700' 
-              : 'hover:text-gray-700 hover:bg-accent/50'
+             ? 'text-primary' 
+             : 'hover:text-primary hover:bg-accent/50'
           }`}
           title="Dislike"
         >
