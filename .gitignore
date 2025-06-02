@@ -48,3 +48,6 @@ next-env.d.ts
 *.db
 *.db-journal
 package-lock.json
+
+docs
+public/uploads
