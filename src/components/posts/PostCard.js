@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { Edit, Trash2, Heart, MessageSquare, Share2 } from "lucide-react";
 
 export default function PostCard({ post, onDelete, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -150,16 +151,20 @@ export default function PostCard({ post, onDelete, onUpdate }) {
           <div className="flex gap-2">
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="text-text-secondary hover:text-primary"
+              className="flex items-center gap-1 text-text-secondary hover:text-primary p-1 rounded-full hover:bg-accent/50"
+              title="Edit post"
             >
-              Edit
+              <Edit size={18} />
+              <span className="sr-only">Edit</span>
             </button>
             <button
               onClick={handleDelete}
               disabled={isDeleting}
-              className="text-text-secondary hover:text-red-500 disabled:opacity-50"
+              className="flex items-center gap-1 text-text-secondary hover:text-red-500 disabled:opacity-50 p-1 rounded-full hover:bg-accent/50"
+              title="Delete post"
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              <Trash2 size={18} />
+              <span className="sr-only">{isDeleting ? "Deleting..." : "Delete"}</span>
             </button>
           </div>
         )}
@@ -220,11 +225,11 @@ export default function PostCard({ post, onDelete, onUpdate }) {
             <select
               value={editedPrivacy}
               onChange={(e) => setEditedPrivacy(e.target.value)}
-              className="w-full p-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full p-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text-primary appearance-none"
             >
-              <option value="public">Public</option>
-              <option value="private">Private</option>
-              <option value="followers">Followers Only</option>
+              <option value="public" className="bg-background text-text-primary">Public</option>
+              <option value="private" className="bg-background text-text-primary">Private</option>
+              <option value="followers" className="bg-background text-text-primary">Followers Only</option>
             </select>
           </div>
 
@@ -270,15 +275,27 @@ export default function PostCard({ post, onDelete, onUpdate }) {
       )}
 
       {/* Post Actions */}
-      <div className="flex gap-4 text-text-secondary">
-        <button className="flex items-center gap-1 hover:text-primary">
-          <span>Like</span>
+      <div className="flex gap-6 text-text-secondary px-1">
+        <button 
+          className="flex items-center gap-1.5 hover:text-red-500 p-1.5 rounded-full hover:bg-accent/50 transition-colors"
+          title="Like"
+        >
+          <Heart size={20} strokeWidth={2} />
+          <span className="text-sm">Like</span>
         </button>
-        <button className="flex items-center gap-1 hover:text-primary">
-          <span>Comment</span>
+        <button 
+          className="flex items-center gap-1.5 hover:text-primary p-1.5 rounded-full hover:bg-accent/50 transition-colors"
+          title="Comment"
+        >
+          <MessageSquare size={20} strokeWidth={2} />
+          <span className="text-sm">Comment</span>
         </button>
-        <button className="flex items-center gap-1 hover:text-primary">
-          <span>Share</span>
+        <button 
+          className="flex items-center gap-1.5 hover:text-primary p-1.5 rounded-full hover:bg-accent/50 transition-colors"
+          title="Share"
+        >
+          <Share2 size={20} strokeWidth={2} />
+          <span className="text-sm">Share</span>
         </button>
       </div>
     </div>
