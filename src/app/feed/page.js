@@ -62,8 +62,12 @@ export default function FeedPage() {
               onDelete={(postId) => {
                 setPosts(posts.filter(p => p.id !== postId));
               }}
-              onUpdate={() => {
-                fetchPosts();
+              onUpdate={(updatedPost) => {
+                setPosts(prevPosts => 
+                  prevPosts.map(p => 
+                    p.id === updatedPost.id ? { ...p, ...updatedPost } : p
+                  )
+                );
               }}
             />
           ))
