@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Edit, Trash2, Heart, MessageSquare, Share2 } from "lucide-react";
+import { Edit, Trash2, ThumbsUp, ThumbsDown, MessageSquare, Share2 } from "lucide-react";
 
 export default function PostCard({ post, onDelete, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -11,7 +11,23 @@ export default function PostCard({ post, onDelete, onUpdate }) {
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(post.image_url || null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [reactions, setReactions] = useState({
+    likeCount: post.like_count || 0,
+    dislikeCount: post.dislike_count || 0,
+    userReaction: null
+  });
+  const [isReacting, setIsReacting] = useState(false);
   const { user } = useAuth();
+
+  // Fetch initial reaction status
+  useEffect(() => {
+    if (user?.id) {
+      fetch(`/api/posts/${post.id}/reactions?userId=${user.id}`)
+        .then(res => res.json())
+        .then(data => setReactions(data))
+        .catch(console.error);
+    }
+  }, [post.id, user?.id]);
 
   // Update the image preview when the post prop changes
   useEffect(() => {
@@ -121,6 +137,55 @@ export default function PostCard({ post, onDelete, onUpdate }) {
       alert("Error deleting post. Please try again.");
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleReaction = async (type) => {
+    if (!user) return;
+    
+    setIsReacting(true);
+    
+    // Optimistic update
+    const prevReactions = { ...reactions };
+    const isRemoving = reactions.userReaction === type;
+    
+    setReactions(curr => {
+      const update = { ...curr };
+      
+      if (isRemoving) {
+        update[`${type}Count`]--;
+        update.userReaction = null;
+      } else {
+        if (curr.userReaction) {
+          update[`${curr.userReaction}Count`]--;
+        }
+        update[`${type}Count`]++;
+        update.userReaction = type;
+      }
+      
+      return update;
+    });
+    
+    try {
+      const res = await fetch(`/api/posts/${post.id}/reactions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          reactionType: type
+        })
+      });
+      
+      if (!res.ok) throw new Error('Failed to update reaction');
+      
+      const data = await res.json();
+      setReactions(data);
+    } catch (error) {
+      console.error('Error updating reaction:', error);
+      // Rollback on error
+      setReactions(prevReactions);
+    } finally {
+      setIsReacting(false);
     }
   };
 
@@ -277,12 +342,45 @@ export default function PostCard({ post, onDelete, onUpdate }) {
       {/* Post Actions */}
       <div className="flex gap-6 text-text-secondary px-1">
         <button 
-          className="flex items-center gap-1.5 hover:text-red-500 p-1.5 rounded-full hover:bg-accent/50 transition-colors"
+          disabled={isReacting}
+          onClick={() => handleReaction('like')}
+          className={`flex items-center gap-1.5 p-1.5 rounded-full transition-colors ${
+            reactions.userReaction === 'like' 
+              ? 'text-primary' 
+              : 'hover:text-primary hover:bg-accent/50'
+          }`}
           title="Like"
         >
-          <Heart size={20} strokeWidth={2} />
-          <span className="text-sm">Like</span>
+          <ThumbsUp
+            size={20} 
+            strokeWidth={2}
+            fill={reactions.userReaction === 'like' ? 'currentColor' : 'none'}
+          />
+          <span className="text-sm">
+            {reactions.likeCount > 0 ? reactions.likeCount : ''} Like
+          </span>
         </button>
+        
+        <button 
+          disabled={isReacting}
+          onClick={() => handleReaction('dislike')}
+          className={`flex items-center gap-1.5 p-1.5 rounded-full transition-colors ${
+            reactions.userReaction === 'dislike'
+              ? 'text-gray-700' 
+              : 'hover:text-gray-700 hover:bg-accent/50'
+          }`}
+          title="Dislike"
+        >
+          <ThumbsDown
+            size={20}
+            strokeWidth={2}  
+            fill={reactions.userReaction === 'dislike' ? 'currentColor' : 'none'}
+          />
+          <span className="text-sm">
+            {reactions.dislikeCount > 0 ? reactions.dislikeCount : ''} Dislike
+          </span>
+        </button>
+
         <button 
           className="flex items-center gap-1.5 hover:text-primary p-1.5 rounded-full hover:bg-accent/50 transition-colors"
           title="Comment"
