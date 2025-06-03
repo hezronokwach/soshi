@@ -260,8 +260,20 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
                   if (!res.ok) throw new Error('Failed to create reply');
                   
                   const newReply = await res.json();
-                  // Call onUpdate to update the parent component's state
-                  onUpdate(newReply);
+                  
+                  // Update the local replies state
+                  setReplies(prev => [newReply, ...(prev || [])]);
+                  
+                  // Ensure replies are shown
+                  setShowReplies(true);
+                  
+                  // Update the parent component's state
+                  onUpdate({
+                    ...comment,
+                    reply_count: (comment.reply_count || 0) + 1
+                  });
+                  
+                  // Close the reply form
                   setIsReplying(false);
                 } catch (error) {
                   console.error('Error creating reply:', error);
