@@ -2,7 +2,6 @@
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import path from 'path';
-import fs from 'fs';
 
 // Database singleton to prevent multiple connections
 let db = null;
@@ -62,7 +61,8 @@ async function runMigrations() {
       require('./migrations/003_create_sessions'),
       require('./migrations/004_add_post_history'),
       require('./migrations/005_add_post_privacy_users'),
-      require('./migrations/006_add_post_reactions')
+      require('./migrations/006_add_post_reactions'),
+      require('./migrations/007_create_comments')
     ];
 
     // Migration file names (must match the order above)
@@ -72,7 +72,8 @@ async function runMigrations() {
       '003_create_sessions.js',
       '004_add_post_history.js',
       '005_add_post_privacy_users.js',
-      '006_add_post_reactions.js'
+      '006_add_post_reactions.js',
+      '007_create_comments.js'
     ];
 
     // Run migrations that haven't been applied yet
