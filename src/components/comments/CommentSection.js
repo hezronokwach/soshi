@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import CommentForm from './CommentForm';
 import CommentList from './CommentList';
 
-export default function CommentSection({ postId, postOwnerId }) {
+export default function CommentSection({ postId, postOwnerId, onCommentAdded }) {
   const [comments, setComments] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -65,6 +65,11 @@ export default function CommentSection({ postId, postOwnerId }) {
       
       const newComment = await res.json();
       setComments(prev => [newComment, ...prev]);
+      
+      // Notify parent component that a new comment was added
+      if (onCommentAdded) {
+        onCommentAdded();
+      }
     } catch (error) {
       console.error('Error creating comment:', error);
       throw error;

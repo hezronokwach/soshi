@@ -19,6 +19,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
   });
   const [isReacting, setIsReacting] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [commentCount, setCommentCount] = useState(post.comment_count || 0);
   const { user } = useAuth();
 
   // Fetch initial reaction status
@@ -388,7 +389,9 @@ export default function PostCard({ post, onDelete, onUpdate }) {
           title="Comment"
         >
           <MessageSquare size={20} strokeWidth={2} />
-          <span className="text-sm">Comment</span>
+          <span className="text-sm">
+            {commentCount > 0 ? `${commentCount} Comment${commentCount !== 1 ? 's' : ''}` : 'Comment'}
+          </span>
         </button>
         <button 
           className="flex items-center gap-1.5 hover:text-primary p-1.5 rounded-full hover:bg-accent/50 transition-colors"
@@ -404,6 +407,10 @@ export default function PostCard({ post, onDelete, onUpdate }) {
         <CommentSection
           postId={post.id}
           postOwnerId={post.user_id}
+          onCommentAdded={() => {
+            // Increment comment count when a new comment is added
+            setCommentCount(prev => prev + 1);
+          }}
         />
       )}
     </div>
