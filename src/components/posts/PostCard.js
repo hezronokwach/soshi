@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Edit, Trash2, ThumbsUp, ThumbsDown, MessageSquare, Share2 } from "lucide-react";
+import CommentSection from "@/components/comments/CommentSection";
 
 export default function PostCard({ post, onDelete, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -17,6 +18,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
     userReaction: null
   });
   const [isReacting, setIsReacting] = useState(false);
+  const [showComments, setShowComments] = useState(false);
   const { user } = useAuth();
 
   // Fetch initial reaction status
@@ -79,13 +81,12 @@ export default function PostCard({ post, onDelete, onUpdate }) {
       }
 
       // Update post
-      const res = await fetch(`/api/posts`, {
+      const res = await fetch(`/api/posts/${post.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          postId: post.id,
           userId: user.id,
           content: editedContent,
           privacy: editedPrivacy,
@@ -125,7 +126,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
     try {
       setIsDeleting(true);
       const res = await fetch(
-        `/api/posts?postId=${post.id}&userId=${user.id}`,
+        `/api/posts/${post.id}?userId=${user.id}`,
         { method: "DELETE" }
       );
 
@@ -382,6 +383,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
         </button>
 
         <button 
+          onClick={() => setShowComments(!showComments)}
           className="flex items-center gap-1.5 hover:text-primary p-1.5 rounded-full hover:bg-accent/50 transition-colors"
           title="Comment"
         >
@@ -396,6 +398,14 @@ export default function PostCard({ post, onDelete, onUpdate }) {
           <span className="text-sm">Share</span>
         </button>
       </div>
+
+      {/* Comments Section */}
+      {showComments && (
+        <CommentSection
+          postId={post.id}
+          postOwnerId={post.user_id}
+        />
+      )}
     </div>
   );
 }
