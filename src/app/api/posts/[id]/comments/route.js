@@ -6,14 +6,15 @@ import { createComment, getPostComments, getCommentById } from '@/lib/db/models/
 import { getPostById } from '@/lib/db/models/post';
 
 // Get comments for a post
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   try {
+    const { id } = await context.params;
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page')) || 1;
     const limit = parseInt(searchParams.get('limit')) || 20;
     const parentId = searchParams.get('parentId') || null;
     
-    const comments = await getPostComments(params.id, {
+    const comments = await getPostComments(id, {
       page,
       limit,
       parentId
@@ -30,12 +31,13 @@ export async function GET(req, { params }) {
 }
 
 // Create a new comment
-export async function POST(req, { params }) {
+export async function POST(req, context) {
   try {
+    const { id } = await context.params;
     const { userId, content, parentId = null, imageUrl = null } = await req.json();
 
     // Verify post exists
-    const post = await getPostById(params.id, userId);
+    const post = await getPostById(id, userId);
     if (!post) {
       return NextResponse.json(
         { error: 'Post not found' },
@@ -45,7 +47,7 @@ export async function POST(req, { params }) {
 
     // Create comment
     const commentId = await createComment({
-      post_id: params.id,
+      post_id: id,
       user_id: userId,
       parent_id: parentId,
       content,

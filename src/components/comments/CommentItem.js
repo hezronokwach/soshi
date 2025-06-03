@@ -192,34 +192,49 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
         <div className="flex gap-4 mt-1 px-2">
           <button
             onClick={() => handleReaction('like')}
-            className={`flex items-center gap-1 text-sm ${
+            className={`flex items-center gap-1.5 p-1 rounded-full transition-colors ${
               reactions.userReaction === 'like'
                 ? 'text-primary'
-                : 'text-text-secondary hover:text-primary'
+                : 'text-text-secondary hover:text-primary hover:bg-accent/50'
             }`}
+            title="Like"
           >
-            <ThumbsUp size={14} />
-            {reactions.likeCount > 0 && reactions.likeCount}
+            <ThumbsUp 
+              size={16} 
+              strokeWidth={2}
+              fill={reactions.userReaction === 'like' ? 'currentColor' : 'none'}
+            />
+            <span className="text-sm">
+              {reactions.likeCount > 0 ? reactions.likeCount : ''} Like
+            </span>
           </button>
           
           <button
             onClick={() => handleReaction('dislike')}
-            className={`flex items-center gap-1 text-sm ${
+            className={`flex items-center gap-1.5 p-1 rounded-full transition-colors ${
               reactions.userReaction === 'dislike'
                 ? 'text-primary'
-                : 'text-text-secondary hover:text-primary'
+                : 'text-text-secondary hover:text-primary hover:bg-accent/50'
             }`}
+            title="Dislike"
           >
-            <ThumbsDown size={14} />
-            {reactions.dislikeCount > 0 && reactions.dislikeCount}
+            <ThumbsDown
+              size={16}
+              strokeWidth={2}  
+              fill={reactions.userReaction === 'dislike' ? 'currentColor' : 'none'}
+            />
+            <span className="text-sm">
+              {reactions.dislikeCount > 0 ? reactions.dislikeCount : ''} Dislike
+            </span>
           </button>
 
           <button
             onClick={() => setIsReplying(!isReplying)}
-            className="flex items-center gap-1 text-sm text-text-secondary hover:text-primary"
+            className="flex items-center gap-1.5 p-1 rounded-full text-text-secondary hover:text-primary hover:bg-accent/50 transition-colors"
+            title="Reply"
           >
-            <MessageSquare size={14} />
-            Reply
+            <MessageSquare size={16} strokeWidth={2} />
+            <span className="text-sm">Reply</span>
           </button>
         </div>
 

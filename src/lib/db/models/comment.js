@@ -183,45 +183,54 @@ export async function deleteComment(id, userId, postOwnerId) {
 }
 
 /**
- * Add or update a reaction to a comment
+ * Add, update or remove a reaction to a comment
  * @param {Object} reactionData - Reaction data
- * @returns {Promise<Object>} - Updated reaction counts
+ * @returns {Promise<Object>} - Updated reaction status
  */
 export async function updateCommentReaction(reactionData) {
   const db = await getDb();
+  const { comment_id, user_id, type, emoji = null } = reactionData;
+  let changes = {};
+
+  await db.run('BEGIN TRANSACTION');
 
   try {
-    const { comment_id, user_id, type, emoji = null } = reactionData;
-
-    await db.run('BEGIN TRANSACTION');
-
-    // Remove any existing reactions of the same type
-    await db.run(
-      'DELETE FROM comment_reactions WHERE comment_id = ? AND user_id = ? AND type = ?',
-      [comment_id, user_id, type]
+    // Check existing reaction
+    const existing = await db.get(
+      'SELECT type FROM comment_reactions WHERE comment_id = ? AND user_id = ?',
+      [comment_id, user_id]
     );
 
-    // Add new reaction if emoji is provided or type is like/dislike
-    if (emoji || ['like', 'dislike'].includes(type)) {
+    if (existing) {
+      if (existing.type === type) {
+        // Remove the reaction if clicking same type
+        await db.run(
+          'DELETE FROM comment_reactions WHERE comment_id = ? AND user_id = ? AND type = ?',
+          [comment_id, user_id, type]
+        );
+        changes[`${type}Count`] = -1;
+      } else {
+        // Switch reaction type
+        await db.run(
+          'UPDATE comment_reactions SET type = ? WHERE comment_id = ? AND user_id = ?',
+          [type, comment_id, user_id]
+        );
+        changes[`${existing.type}Count`] = -1;
+        changes[`${type}Count`] = 1;
+      }
+    } else {
+      // Add new reaction
       await db.run(
-        `INSERT INTO comment_reactions (comment_id, user_id, type, emoji)
-         VALUES (?, ?, ?, ?)`,
+        'INSERT INTO comment_reactions (comment_id, user_id, type, emoji) VALUES (?, ?, ?, ?)',
         [comment_id, user_id, type, emoji]
       );
+      changes[`${type}Count`] = 1;
     }
 
     await db.run('COMMIT');
 
-    // Get updated reaction counts
-    const [likes, dislikes] = await Promise.all([
-      db.get('SELECT COUNT(*) as count FROM comment_reactions WHERE comment_id = ? AND type = ?', [comment_id, 'like']),
-      db.get('SELECT COUNT(*) as count FROM comment_reactions WHERE comment_id = ? AND type = ?', [comment_id, 'dislike'])
-    ]);
-
-    return {
-      likeCount: likes.count,
-      dislikeCount: dislikes.count
-    };
+    // Get updated reaction status
+    return await getCommentReactions(comment_id, user_id);
   } catch (error) {
     await db.run('ROLLBACK');
     console.error('Error updating comment reaction:', error);

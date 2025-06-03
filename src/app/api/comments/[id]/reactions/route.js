@@ -4,35 +4,33 @@ export const runtime = 'nodejs';
 import { NextResponse } from 'next/server';
 import { updateCommentReaction, getCommentReactions } from '@/lib/db/models/comment';
 
-// Add or update a reaction to a comment
+// Add, update or remove a reaction to a comment
 export async function POST(req, { params }) {
   try {
+    const { id } = await params;
     const { userId, type, emoji } = await req.json();
 
-    // Validate reaction type
-    if (!['like', 'dislike', 'emoji'].includes(type)) {
+    // Only allow like/dislike for now (emoji support can be added later)
+    if (!['like', 'dislike'].includes(type)) {
       return NextResponse.json(
-        { error: 'Invalid reaction type' },
+        { error: 'Only like and dislike reactions are currently supported' },
         { status: 400 }
       );
     }
 
-    // If type is emoji, ensure emoji is provided
-    if (type === 'emoji' && !emoji) {
-      return NextResponse.json(
-        { error: 'Emoji is required for emoji reactions' },
-        { status: 400 }
-      );
-    }
-
-    const reactionCounts = await updateCommentReaction({
-      comment_id: params.id,
+    // Update the reaction and get the updated status
+    const reactionStatus = await updateCommentReaction({
+      comment_id: id,
       user_id: userId,
       type,
-      emoji
+      emoji: null // Not using emoji for now
     });
 
-    return NextResponse.json(reactionCounts);
+    return NextResponse.json({
+      likeCount: reactionStatus.likeCount,
+      dislikeCount: reactionStatus.dislikeCount,
+      userReaction: reactionStatus.userReaction
+    });
   } catch (error) {
     console.error('Error updating comment reaction:', error);
     return NextResponse.json(
