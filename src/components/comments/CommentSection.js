@@ -71,13 +71,34 @@ export default function CommentSection({ postId, postOwnerId }) {
     }
   };
 
-  // Handle comment update
+  // Handle comment update and replies
   const handleCommentUpdate = (updatedComment) => {
-    setComments(prev => 
-      prev.map(comment => 
-        comment.id === updatedComment.id ? updatedComment : comment
-      )
-    );
+    // If the comment has a parent_id, it's a reply
+    if (updatedComment.parent_id) {
+      setComments(prev => 
+        prev.map(comment => {
+          // If this is the parent comment, update its replies
+          if (comment.id === updatedComment.parent_id) {
+            const existingReply = comment.replies?.some(r => r.id === updatedComment.id);
+            return {
+              ...comment,
+              reply_count: (comment.reply_count || 0) + (existingReply ? 0 : 1),
+              replies: existingReply 
+                ? comment.replies.map(r => r.id === updatedComment.id ? updatedComment : r)
+                : [...(comment.replies || []), updatedComment]
+            };
+          }
+          return comment;
+        })
+      );
+    } else {
+      // Regular comment update
+      setComments(prev => 
+        prev.map(comment => 
+          comment.id === updatedComment.id ? updatedComment : comment
+        )
+      );
+    }
   };
 
   // Handle comment deletion

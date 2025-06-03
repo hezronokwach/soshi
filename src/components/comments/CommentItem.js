@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { MessageSquare, ThumbsUp, ThumbsDown, Edit, Trash2 } from 'lucide-react';
 import CommentForm from './CommentForm';
+import CommentList from './CommentList';
 
 export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -14,6 +15,8 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
     userReaction: null
   });
   const [showReplies, setShowReplies] = useState(false);
+  const [replies, setReplies] = useState([]);
+  const [isLoadingReplies, setIsLoadingReplies] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const { user } = useAuth();
 
@@ -243,7 +246,28 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
           <div className="mt-2">
             <CommentForm
               parentId={comment.id}
-              onSubmit={onUpdate}
+              onSubmit={async (data) => {
+                try {
+                  const res = await fetch(`/api/posts/${comment.post_id}/comments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      userId: user.id,
+                      ...data
+                    })
+                  });
+
+                  if (!res.ok) throw new Error('Failed to create reply');
+                  
+                  const newReply = await res.json();
+                  // Call onUpdate to update the parent component's state
+                  onUpdate(newReply);
+                  setIsReplying(false);
+                } catch (error) {
+                  console.error('Error creating reply:', error);
+                  alert('Failed to post reply. Please try again.');
+                }
+              }}
               onCancel={() => setIsReplying(false)}
             />
           </div>
@@ -252,11 +276,38 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
         {/* Show Replies */}
         {comment.reply_count > 0 && !showReplies && (
           <button
-            onClick={() => setShowReplies(true)}
-            className="mt-2 text-sm text-text-secondary hover:text-primary"
+            onClick={async () => {
+              try {
+                setIsLoadingReplies(true);
+                const res = await fetch(`/api/posts/${comment.post_id}/comments?parentId=${comment.id}`);
+                if (!res.ok) throw new Error('Failed to fetch replies');
+                const repliesData = await res.json();
+                setReplies(repliesData);
+                setShowReplies(true);
+              } catch (error) {
+                console.error('Error fetching replies:', error);
+                alert('Failed to load replies. Please try again.');
+              } finally {
+                setIsLoadingReplies(false);
+              }
+            }}
+            disabled={isLoadingReplies}
+            className="mt-2 text-sm text-text-secondary hover:text-primary disabled:opacity-50"
           >
-            Show {comment.reply_count} replies
+            {isLoadingReplies ? 'Loading...' : `Show ${comment.reply_count} replies`}
           </button>
+        )}
+
+        {/* Replies List */}
+        {showReplies && (
+          <div className="mt-3 ml-6 pl-4 border-l-2 border-border">
+            <CommentList 
+              comments={replies}
+              postOwnerId={postOwnerId}
+              onUpdate={onUpdate}
+              onDelete={onDelete}
+            />
+          </div>
         )}
       </div>
     </div>
