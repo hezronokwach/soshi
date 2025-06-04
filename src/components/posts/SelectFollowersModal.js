@@ -1,7 +1,40 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, Search, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const backdropVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1,
+    backdropFilter: 'blur(4px)',
+    transition: { duration: 0.2 }
+  },
+  exit: { 
+    opacity: 0,
+    backdropFilter: 'blur(0px)',
+    transition: { duration: 0.2 }
+  }
+};
+
+const modalVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { 
+    y: 0, 
+    opacity: 1,
+    transition: { 
+      type: 'spring',
+      damping: 25,
+      stiffness: 500
+    }
+  },
+  exit: { 
+    y: 20, 
+    opacity: 0,
+    transition: { duration: 0.2 }
+  }
+};
 
 export default function SelectFollowersModal({ 
   isOpen, 
@@ -47,76 +80,147 @@ export default function SelectFollowersModal({
     onClose();
   };
 
-  if (!isOpen) return null;
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  const filteredFollowers = followers.filter(follower => 
+    `${follower.first_name} ${follower.last_name}`.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-background rounded-lg w-full max-w-md max-h-[80vh] flex flex-col">
-        <div className="p-4 border-b border-border flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Select Followers</h3>
-          <button 
-            onClick={onClose}
-            className="text-text-secondary hover:text-text"
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          variants={backdropVariants}
+          onClick={(e) => e.target === e.currentTarget && onClose()}
+        >
+          <motion.div 
+            className="bg-background rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden border border-border/50"
+            variants={modalVariants}
+            onClick={(e) => e.stopPropagation()}
           >
-            <X size={20} />
-          </button>
-        </div>
-        
-        <div className="p-4 overflow-y-auto flex-1">
-          {isLoading ? (
-            <div className="text-center py-4">Loading followers...</div>
-          ) : followers.length === 0 ? (
-            <div className="text-center py-4 text-text-secondary">No followers found</div>
-          ) : (
-            <div className="space-y-2">
-              {followers.map(follower => (
-                <div 
-                  key={follower.id}
-                  onClick={() => toggleFollower(follower.id)}
-                  className={`flex items-center p-3 rounded-lg cursor-pointer ${selectedFollowers.includes(follower.id) ? 'bg-primary/10' : 'hover:bg-background-darker'}`}
+            {/* Header */}
+            <div className="p-6 pb-0">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-text">Select Followers</h3>
+                <button 
+                  onClick={onClose}
+                  className="p-1.5 rounded-full hover:bg-background-darker text-text-secondary hover:text-text transition-colors"
+                  aria-label="Close"
                 >
-                  <div className="flex items-center flex-1">
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-background-darker">
-                      {follower.avatar && (
-                        <img 
-                          src={follower.avatar} 
-                          alt={follower.first_name}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                    </div>
-                    <span className="font-medium">
-                      {follower.first_name} {follower.last_name}
-                    </span>
-                  </div>
-                  <input 
-                    type="checkbox" 
-                    checked={selectedFollowers.includes(follower.id)}
-                    onChange={() => {}}
-                    className="h-4 w-4 text-primary rounded border-border focus:ring-primary"
-                  />
-                </div>
-              ))}
+                  <X size={20} />
+                </button>
+              </div>
+              
+              {/* Search */}
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-secondary" />
+                <input
+                  type="text"
+                  placeholder="Search followers..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-background-darker/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent text-sm placeholder:text-text-secondary"
+                />
+              </div>
             </div>
-          )}
-        </div>
-        
-        <div className="p-4 border-t border-border flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-text hover:bg-background-darker rounded-md"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={isLoading}
-            className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 disabled:opacity-50"
-          >
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
+            
+            {/* Content */}
+            <div className="p-2 overflow-y-auto flex-1">
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-12 text-text-secondary">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mb-3"></div>
+                  <p>Loading followers...</p>
+                </div>
+              ) : filteredFollowers.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-text-secondary">
+                  <p className="mb-2">No followers found</p>
+                  {searchQuery && (
+                    <button 
+                      onClick={() => setSearchQuery('')}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Clear search
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-1 px-2">
+                  {filteredFollowers.map(follower => {
+                    const isSelected = selectedFollowers.includes(follower.id);
+                    return (
+                      <div 
+                        key={follower.id}
+                        onClick={() => toggleFollower(follower.id)}
+                        className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors ${
+                          isSelected 
+                            ? 'bg-primary/10 border border-primary/20' 
+                            : 'hover:bg-background-darker border border-transparent hover:border-border/30'
+                        }`}
+                      >
+                        <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-background-darker flex-shrink-0">
+                          {follower.avatar ? (
+                            <img 
+                              src={follower.avatar} 
+                              alt={`${follower.first_name} ${follower.last_name}`}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary font-medium">
+                              {follower.first_name[0]}{follower.last_name?.[0] || ''}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">
+                            {follower.first_name} {follower.last_name}
+                          </p>
+                          <p className="text-xs text-text-secondary truncate">
+                            @{follower.username || `${follower.first_name.toLowerCase()}${follower.last_name ? follower.last_name.toLowerCase() : ''}`}
+                          </p>
+                        </div>
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
+                          isSelected 
+                            ? 'bg-primary text-white' 
+                            : 'border-2 border-border bg-white'
+                        }`}>
+                          {isSelected && <Check size={12} />}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            
+            {/* Footer */}
+            <div className="p-4 border-t border-border/50 flex items-center justify-between bg-background/80 backdrop-blur-sm">
+              <div className="text-sm text-text-secondary">
+                {selectedFollowers.length} {selectedFollowers.length === 1 ? 'follower' : 'followers'} selected
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 text-sm font-medium text-text hover:bg-background-darker rounded-lg transition-colors"
+                  disabled={isLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={isLoading || selectedFollowers.length === 0}
+                  className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isLoading ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
