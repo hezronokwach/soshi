@@ -100,24 +100,18 @@ export default function PostCard({ post, onDelete, onUpdate }) {
       }
 
       // Update post
-      const formData = new FormData();
-      formData.append('content', editedContent);
-      formData.append('privacy', editedPrivacy);
-      
-      // Add selected users if privacy is private
-      if (editedPrivacy === 'private') {
-        selectedUsers.forEach(userId => {
-          formData.append('selectedUsers[]', userId);
-        });
-      }
-      
-      if (image) {
-        formData.append('image', image);
-      }
-
-      const res = await fetch(`/api/posts/${post.id}`, {
-        method: 'PUT',
-        body: formData,
+      const res = await fetch(`/api/posts`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          postId: post.id,
+          userId: user.id,
+          content: editedContent,
+          privacy: editedPrivacy,
+          image_url: imageUrl,
+        }),
       });
 
       if (!res.ok) throw new Error("Failed to update post");
@@ -152,7 +146,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
     try {
       setIsDeleting(true);
       const res = await fetch(
-        `/api/posts/${post.id}?userId=${user.id}`,
+        `/api/posts?postId=${post.id}&userId=${user.id}`,
         { method: "DELETE" }
       );
 
@@ -166,6 +160,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
       setIsDeleting(false);
     }
   };
+
 
   const handleReaction = async (type) => {
     if (!user) return;
