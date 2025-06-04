@@ -161,7 +161,7 @@ export default function CreatePostComponent({ onPostCreated }) {
               className="bg-background border border-border rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="public">Public</option>
-              <option value="followers">Followers</option>
+              <option value="followers">Almost Private</option>
               <option value="private">Private</option>
             </select>
             {privacy === 'private' && selectedUsers.length > 0 && (

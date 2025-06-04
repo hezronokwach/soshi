@@ -4,11 +4,14 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Edit, Trash2, ThumbsUp, ThumbsDown, MessageSquare, Share2 } from "lucide-react";
 import CommentSection from "@/components/comments/CommentSection";
+import SelectFollowersModal from "./SelectFollowersModal";
 
 export default function PostCard({ post, onDelete, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(post.content);
   const [editedPrivacy, setEditedPrivacy] = useState(post.privacy || 'public');
+  const [selectedUsers, setSelectedUsers] = useState(post.selected_users || []);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(post.image_url || null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -61,6 +64,21 @@ export default function PostCard({ post, onDelete, onUpdate }) {
 
   const isOwner = user?.id === post.user_id;
 
+  const handlePrivacyChange = (e) => {
+    const newPrivacy = e.target.value;
+    setEditedPrivacy(newPrivacy);
+    
+    if (newPrivacy === 'private') {
+      setShowFollowersModal(true);
+    } else {
+      setSelectedUsers([]);
+    }
+  };
+
+  const handleFollowersSelect = (selected) => {
+    setSelectedUsers(selected);
+  };
+
   const handleUpdate = async () => {
     try {
       let imageUrl = post.image_url || null;
@@ -82,17 +100,24 @@ export default function PostCard({ post, onDelete, onUpdate }) {
       }
 
       // Update post
+      const formData = new FormData();
+      formData.append('content', editedContent);
+      formData.append('privacy', editedPrivacy);
+      
+      // Add selected users if privacy is private
+      if (editedPrivacy === 'private') {
+        selectedUsers.forEach(userId => {
+          formData.append('selectedUsers[]', userId);
+        });
+      }
+      
+      if (image) {
+        formData.append('image', image);
+      }
+
       const res = await fetch(`/api/posts/${post.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          content: editedContent,
-          privacy: editedPrivacy,
-          image_url: imageUrl,
-        }),
+        method: 'PUT',
+        body: formData,
       });
 
       if (!res.ok) throw new Error("Failed to update post");
@@ -289,16 +314,30 @@ export default function PostCard({ post, onDelete, onUpdate }) {
             <label className="block text-sm font-medium text-text-secondary">
               Privacy
             </label>
-            <select
-              value={editedPrivacy}
-              onChange={(e) => setEditedPrivacy(e.target.value)}
-              className="w-full p-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text-primary appearance-none"
-            >
-              <option value="public" className="bg-background text-text-primary">Public</option>
-              <option value="private" className="bg-background text-text-primary">Private</option>
-              <option value="followers" className="bg-background text-text-primary">Followers Only</option>
-            </select>
+            <div className="relative">
+              <select
+                value={editedPrivacy}
+                onChange={handlePrivacyChange}
+                className="w-full p-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text-primary appearance-none"
+              >
+                <option value="public" className="bg-background text-text-primary">Public</option>
+                <option value="followers" className="bg-background text-text-primary">Almost Private</option>
+                <option value="private" className="bg-background text-text-primary">Private</option>
+              </select>
+              {editedPrivacy === 'private' && selectedUsers.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {selectedUsers.length}
+                </span>
+              )}
+            </div>
           </div>
+
+          <SelectFollowersModal
+            isOpen={showFollowersModal}
+            onClose={() => setShowFollowersModal(false)}
+            onSave={handleFollowersSelect}
+            initialSelected={selectedUsers}
+          />
 
           <div className="flex justify-end gap-2 pt-2">
             <button
