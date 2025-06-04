@@ -34,9 +34,11 @@ export async function GET(req, { params }) {
 export async function PUT(req, { params }) {
   try {
     const { userId, content, imageUrl } = await req.json();
+    // Ensure params is resolved
+    const { id } = await Promise.resolve(params);
 
     // Verify comment exists
-    const comment = await getCommentById(params.id);
+    const comment = await getCommentById(id);
     if (!comment) {
       return NextResponse.json(
         { error: 'Comment not found' },
@@ -45,13 +47,13 @@ export async function PUT(req, { params }) {
     }
 
     // Update comment
-    await updateComment(params.id, {
+    await updateComment(id, {
       content,
       image_url: imageUrl
     }, userId);
 
     // Get updated comment
-    const updatedComment = await getCommentById(params.id);
+    const updatedComment = await getCommentById(id);
     return NextResponse.json(updatedComment);
   } catch (error) {
     console.error('Error updating comment:', error);
@@ -71,11 +73,22 @@ export async function PUT(req, { params }) {
 // Delete a comment
 export async function DELETE(req, { params }) {
   try {
+    // Ensure params is resolved
+    const { id } = await Promise.resolve(params);
     const { searchParams } = new URL(req.url);
+    
+    // Get and validate user IDs
     const userId = searchParams.get('userId');
     const postOwnerId = searchParams.get('postOwnerId');
 
-    await deleteComment(params.id, userId, postOwnerId);
+    if (!userId || !postOwnerId) {
+      return NextResponse.json(
+        { error: 'Missing required parameters' },
+        { status: 400 }
+      );
+    }
+
+    await deleteComment(parseInt(id), parseInt(userId), parseInt(postOwnerId));
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting comment:', error);
@@ -86,7 +99,7 @@ export async function DELETE(req, { params }) {
       );
     }
     return NextResponse.json(
-      { error: 'Failed to delete comment' },
+      { error: error.message || 'Failed to delete comment' },
       { status: 500 }
     );
   }

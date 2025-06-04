@@ -112,14 +112,24 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
       setIsDeleting(true);
       const res = await fetch(
         `/api/comments/${comment.id}?userId=${user.id}&postOwnerId=${postOwnerId}`,
-        { method: 'DELETE' }
+        { 
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       );
 
-      if (!res.ok) throw new Error('Failed to delete comment');
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to delete comment');
+      }
+      
       onDelete(comment.id);
     } catch (error) {
       console.error('Error deleting comment:', error);
-      alert('Failed to delete comment. Please try again.');
+      alert(error.message || 'Failed to delete comment. Please try again.');
     } finally {
       setIsDeleting(false);
     }
