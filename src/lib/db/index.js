@@ -62,7 +62,8 @@ async function runMigrations() {
       require('./migrations/004_add_post_history'),
       require('./migrations/005_add_post_privacy_users'),
       require('./migrations/006_add_post_reactions'),
-      require('./migrations/007_create_comments')
+      require('./migrations/007_create_comments'),
+      require('./migrations/008_create_follows_table')
     ];
 
     // Migration file names (must match the order above)
@@ -73,7 +74,8 @@ async function runMigrations() {
       '004_add_post_history.js',
       '005_add_post_privacy_users.js',
       '006_add_post_reactions.js',
-      '007_create_comments.js'
+      '007_create_comments.js',
+      '008_create_follows_table.js'
     ];
 
     // Run migrations that haven't been applied yet
