@@ -23,8 +23,10 @@ const nextConfig = {
   
   // Configure experimental features
   experimental: {
-    // Enable server actions
-    serverActions: true,
+    // Enable server actions with the new format
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
   },
 };
 

@@ -3,11 +3,15 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Edit, Trash2, ThumbsUp, ThumbsDown, MessageSquare, Share2 } from "lucide-react";
+import CommentSection from "@/components/comments/CommentSection";
+import SelectFollowersModal from "./SelectFollowersModal";
 
 export default function PostCard({ post, onDelete, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(post.content);
   const [editedPrivacy, setEditedPrivacy] = useState(post.privacy || 'public');
+  const [selectedUsers, setSelectedUsers] = useState(post.selected_users || []);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(post.image_url || null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -17,6 +21,8 @@ export default function PostCard({ post, onDelete, onUpdate }) {
     userReaction: null
   });
   const [isReacting, setIsReacting] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [commentCount, setCommentCount] = useState(post.comment_count || 0);
   const { user } = useAuth();
 
   // Fetch initial reaction status
@@ -57,6 +63,21 @@ export default function PostCard({ post, onDelete, onUpdate }) {
   };
 
   const isOwner = user?.id === post.user_id;
+
+  const handlePrivacyChange = (e) => {
+    const newPrivacy = e.target.value;
+    setEditedPrivacy(newPrivacy);
+    
+    if (newPrivacy === 'private') {
+      setShowFollowersModal(true);
+    } else {
+      setSelectedUsers([]);
+    }
+  };
+
+  const handleFollowersSelect = (selected) => {
+    setSelectedUsers(selected);
+  };
 
   const handleUpdate = async () => {
     try {
@@ -139,6 +160,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
       setIsDeleting(false);
     }
   };
+
 
   const handleReaction = async (type) => {
     if (!user) return;
@@ -287,16 +309,30 @@ export default function PostCard({ post, onDelete, onUpdate }) {
             <label className="block text-sm font-medium text-text-secondary">
               Privacy
             </label>
-            <select
-              value={editedPrivacy}
-              onChange={(e) => setEditedPrivacy(e.target.value)}
-              className="w-full p-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text-primary appearance-none"
-            >
-              <option value="public" className="bg-background text-text-primary">Public</option>
-              <option value="private" className="bg-background text-text-primary">Private</option>
-              <option value="followers" className="bg-background text-text-primary">Followers Only</option>
-            </select>
+            <div className="relative">
+              <select
+                value={editedPrivacy}
+                onChange={handlePrivacyChange}
+                className="w-full p-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text-primary appearance-none"
+              >
+                <option value="public" className="bg-background text-text-primary">Public</option>
+                <option value="followers" className="bg-background text-text-primary">Almost Private</option>
+                <option value="private" className="bg-background text-text-primary">Private</option>
+              </select>
+              {editedPrivacy === 'private' && selectedUsers.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {selectedUsers.length}
+                </span>
+              )}
+            </div>
           </div>
+
+          <SelectFollowersModal
+            isOpen={showFollowersModal}
+            onClose={() => setShowFollowersModal(false)}
+            onSave={handleFollowersSelect}
+            initialSelected={selectedUsers}
+          />
 
           <div className="flex justify-end gap-2 pt-2">
             <button
@@ -382,11 +418,14 @@ export default function PostCard({ post, onDelete, onUpdate }) {
         </button>
 
         <button 
+          onClick={() => setShowComments(!showComments)}
           className="flex items-center gap-1.5 hover:text-primary p-1.5 rounded-full hover:bg-accent/50 transition-colors"
           title="Comment"
         >
           <MessageSquare size={20} strokeWidth={2} />
-          <span className="text-sm">Comment</span>
+          <span className="text-sm">
+            {commentCount > 0 ? `${commentCount} Comment${commentCount !== 1 ? 's' : ''}` : 'Comment'}
+          </span>
         </button>
         <button 
           className="flex items-center gap-1.5 hover:text-primary p-1.5 rounded-full hover:bg-accent/50 transition-colors"
@@ -396,6 +435,18 @@ export default function PostCard({ post, onDelete, onUpdate }) {
           <span className="text-sm">Share</span>
         </button>
       </div>
+
+      {/* Comments Section */}
+      {showComments && (
+        <CommentSection
+          postId={post.id}
+          postOwnerId={post.user_id}
+          onCommentAdded={() => {
+            // Increment comment count when a new comment is added
+            setCommentCount(prev => prev + 1);
+          }}
+        />
+      )}
     </div>
   );
 }

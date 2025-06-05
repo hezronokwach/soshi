@@ -1,15 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import SelectFollowersModal from "./SelectFollowersModal";
 
 export default function CreatePostComponent({ onPostCreated }) {
   const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [privacy, setPrivacy] = useState("public");
+  const [selectedUsers, setSelectedUsers] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
   const { user } = useAuth();
+
+  const handlePrivacyChange = useCallback((e) => {
+    const newPrivacy = e.target.value;
+    setPrivacy(newPrivacy);
+    
+    if (newPrivacy === 'private') {
+      setShowFollowersModal(true);
+    } else {
+      setSelectedUsers([]);
+    }
+  }, []);
+
+  const handleFollowersSelect = useCallback((selected) => {
+    setSelectedUsers(selected);
+  }, []);
 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
@@ -64,6 +82,7 @@ export default function CreatePostComponent({ onPostCreated }) {
           content,
           privacy,
           image_url: imageUrl,
+          selected_users: privacy === 'private' ? selectedUsers : []
         }),
       });
 
@@ -74,6 +93,7 @@ export default function CreatePostComponent({ onPostCreated }) {
       setImage(null);
       setImagePreview(null);
       setPrivacy("public");
+      setSelectedUsers([]);
 
       // Notify parent
       if (onPostCreated) onPostCreated();
@@ -134,15 +154,22 @@ export default function CreatePostComponent({ onPostCreated }) {
           </label>
 
           {/* Privacy selector */}
-          <select
-            value={privacy}
-            onChange={(e) => setPrivacy(e.target.value)}
-            className="bg-background border border-border rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            <option value="public">Public</option>
-            <option value="followers">Followers</option>
-            <option value="private">Private</option>
-          </select>
+          <div className="relative">
+            <select
+              value={privacy}
+              onChange={handlePrivacyChange}
+              className="bg-background border border-border rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="public">Public</option>
+              <option value="followers">Almost Private</option>
+              <option value="private">Private</option>
+            </select>
+            {privacy === 'private' && selectedUsers.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {selectedUsers.length}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Submit button */}
@@ -154,6 +181,13 @@ export default function CreatePostComponent({ onPostCreated }) {
           {isSubmitting ? "Posting..." : "Post"}
         </button>
       </div>
+      
+      <SelectFollowersModal
+        isOpen={showFollowersModal}
+        onClose={() => setShowFollowersModal(false)}
+        onSave={handleFollowersSelect}
+        initialSelected={selectedUsers}
+      />
     </form>
   );
 }

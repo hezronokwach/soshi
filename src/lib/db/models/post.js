@@ -64,7 +64,12 @@ export async function getPostById(id, requestingUserId) {
 
   try {
     const post = await db.get(`
-      SELECT p.*, u.first_name, u.last_name, u.avatar
+      SELECT 
+        p.*, 
+        u.first_name, 
+        u.last_name, 
+        u.avatar,
+        (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id AND c.deleted_at IS NULL AND c.parent_id IS NULL) as comment_count
       FROM posts p
       JOIN users u ON p.user_id = u.id
       WHERE p.id = ? AND p.deleted_at IS NULL
@@ -222,7 +227,9 @@ export async function getFeedPosts(options) {
         p.*,
         u.first_name,
         u.last_name,
-        u.avatar
+        u.avatar,
+        (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id AND c.deleted_at IS NULL AND c.parent_id IS NULL) as comment_count
+
       FROM posts p
       JOIN users u ON p.user_id = u.id
       WHERE p.deleted_at IS NULL
