@@ -63,7 +63,8 @@ async function runMigrations() {
       require('./migrations/005_add_post_privacy_users'),
       require('./migrations/006_add_post_reactions'),
       require('./migrations/007_create_comments'),
-      require('./migrations/008_create_follows_table')
+      require('./migrations/008_create_follows_table'),
+      require('./migrations/009_create_groups_tables')
     ];
 
     // Migration file names (must match the order above)
@@ -75,7 +76,8 @@ async function runMigrations() {
       '005_add_post_privacy_users.js',
       '006_add_post_reactions.js',
       '007_create_comments.js',
-      '008_create_follows_table.js'
+      '008_create_follows_table.js',
+      '009_create_groups_tables.js'
     ];
 
     // Run migrations that haven't been applied yet
