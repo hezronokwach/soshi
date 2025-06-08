@@ -13,7 +13,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const groups = Group.getAll();
+    const groups = await Group.getAll();
     return NextResponse.json(groups);
   } catch (error) {
     console.error('Error fetching groups:', error);
@@ -44,7 +44,7 @@ export async function POST(request) {
     }
 
     // Create the group
-    const groupId = Group.create(
+    const groupId = await Group.create(
       title.trim(),
       description?.trim() || '',
       user.id
