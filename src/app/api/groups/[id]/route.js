@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { Group } from '@/lib/db/models/group';
 import { getCurrentUser } from '@/lib/auth';
-import { getDb } from '../sqlite.js';
+import { getDb } from '@/lib/db';
 
 /**
  * GET /api/groups/[id] - Get group details
@@ -22,25 +22,25 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Invalid group ID' }, { status: 400 });
     }
 
-    const group = Group.getById(groupId);
+    const group = await Group.getById(groupId);
 
     if (!group) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 });
     }
 
     // Check if user is a member
-    const memberStatus = Group.isMember(groupId, user.id);
+    const memberStatus = await Group.isMember(groupId, user.id);
 
     if (!memberStatus || memberStatus.status !== 'accepted') {
       return NextResponse.json({ error: 'Access denied. You must be a member to view this group.' }, { status: 403 });
     }
 
     // Get group data - members, posts, and events
-    const [members, posts, events] = [
+    const [members, posts, events] = await Promise.all([
       Group.getMembers(groupId),
       Group.getPosts(groupId),
       Group.getEvents(groupId)
-    ];
+    ]);
 
     return NextResponse.json({
       ...group,
@@ -72,7 +72,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Invalid group ID' }, { status: 400 });
     }
 
-    const group = Group.getById(groupId);
+    const group = await Group.getById(groupId);
     if (!group) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 });
     }
@@ -93,14 +93,13 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Title is too long (max 255 characters)' }, { status: 400 });
     }
 
-    // Update group (we need to add this method to the Group model)
-    const db = getDb();
-    const stmt = db.prepare(`
+    // Update group using async/await pattern
+    const db = await getDb();
+    await db.run(`
       UPDATE groups 
       SET title = ?, description = ?
       WHERE id = ?
-    `);
-    stmt.run(title.trim(), description?.trim() || '', groupId);
+    `, [title.trim(), description?.trim() || '', groupId]);
 
     return NextResponse.json({ message: 'Group updated successfully' });
 
@@ -126,7 +125,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Invalid group ID' }, { status: 400 });
     }
 
-    const group = Group.getById(groupId);
+    const group = await Group.getById(groupId);
     if (!group) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 });
     }
@@ -137,9 +136,8 @@ export async function DELETE(request, { params }) {
     }
 
     // Delete group (cascade will handle related records)
-    const db = getDb();
-    const stmt = db.prepare('DELETE FROM groups WHERE id = ?');
-    stmt.run(groupId);
+    const db = await getDb();
+    await db.run('DELETE FROM groups WHERE id = ?', [groupId]);
 
     return NextResponse.json({ message: 'Group deleted successfully' });
 
