@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { Group } from '@/lib/db/models/group';
 import { getCurrentUser } from '@/lib/auth';
-import { getDb } from '@/lib/db/sqlite';
+import { getDb } from '@/lib/db/index';
 
 /**
  * POST /api/groups/[id]/join - Send a join request to a group
@@ -20,14 +20,13 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Invalid group ID' }, { status: 400 });
     }
 
-    const group = Group.getById(groupId);
-
+    const group = await Group.getById(groupId);
     if (!group) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 });
     }
 
     // Check if user is already a member or has pending request
-    const existingMembership = Group.isMember(groupId, user.id);
+    const existingMembership = await Group.isMember(groupId, user.id);
     if (existingMembership) {
       if (existingMembership.status === 'accepted') {
         return NextResponse.json({
@@ -41,27 +40,25 @@ export async function POST(request, { params }) {
     }
 
     // Send join request
-    Group.inviteUser(groupId, user.id, null); // null for self-request
+    await Group.inviteUser(groupId, user.id, null);
 
     // Create notification for group creator
     try {
-      const db = getDb();
-      const notificationStmt = db.prepare(`
+      const db = await getDb();
+      await db.run(`
         INSERT INTO notifications (user_id, type, message, related_id)
         VALUES (?, 'group_join_request', ?, ?)
-      `);
-      notificationStmt.run(
+      `, [
         group.creator_id,
         `${user.first_name} ${user.last_name} wants to join "${group.title}"`,
         groupId
-      );
+      ]);
     } catch (notificationError) {
       console.error('Error creating notification:', notificationError);
       // Don't fail the request if notification fails
     }
 
     return NextResponse.json({ message: 'Join request sent successfully' });
-
   } catch (error) {
     console.error('Error sending join request:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -84,14 +81,13 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Invalid group ID' }, { status: 400 });
     }
 
-    const group = Group.getById(groupId);
-
+    const group = await Group.getById(groupId);
     if (!group) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 });
     }
 
     // Check if user is a member
-    const memberStatus = Group.isMember(groupId, user.id);
+    const memberStatus = await Group.isMember(groupId, user.id);
     if (!memberStatus) {
       return NextResponse.json({ error: 'You are not a member of this group' }, { status: 400 });
     }
@@ -104,10 +100,9 @@ export async function DELETE(request, { params }) {
     }
 
     // Remove user from group
-    Group.declineInvitation(groupId, user.id);
+    await Group.declineInvitation(groupId, user.id);
 
     return NextResponse.json({ message: 'Successfully left the group' });
-
   } catch (error) {
     console.error('Error leaving group:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
