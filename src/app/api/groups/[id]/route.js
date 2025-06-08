@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { Group } from '@/lib/db/models/group';
 import { getCurrentUser } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { getDb } from '@/lib/db/index';
 
 /**
  * GET /api/groups/[id] - Get group details
@@ -14,7 +14,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Validate ID
     const groupId = parseInt(id);
@@ -66,7 +66,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const groupId = parseInt(id);
     if (isNaN(groupId)) {
       return NextResponse.json({ error: 'Invalid group ID' }, { status: 400 });
@@ -119,7 +119,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const groupId = parseInt(id);
     if (isNaN(groupId)) {
       return NextResponse.json({ error: 'Invalid group ID' }, { status: 400 });
