@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS event_responses (
     UNIQUE(event_id, user_id)
 );
 
--- Notifications table
+-- Notifications table (if not exists) - extend existing notifications
 CREATE TABLE IF NOT EXISTS notifications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -73,6 +73,62 @@ CREATE TABLE IF NOT EXISTS notifications (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_group_members_group_id ON group_members(group_id);
+CREATE INDEX IF NOT EXISTS idx_group_members_user_id ON group_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_group_posts_group_id ON group_posts(group_id);
+CREATE INDEX IF NOT EXISTS idx_group_events_group_id ON group_events(group_id);
+CREATE INDEX IF NOT EXISTS idx_event_responses_event_id ON event_responses(event_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
 `;
 
-export { createGroupsTables };
+/**
+ * Run the migration
+ * @param {Database} db - Database instance
+ */
+async function up(db) {
+    console.log('Creating groups tables...');
+
+    // Check if we're using better-sqlite3 or sqlite
+    if (db.exec) {
+        // better-sqlite3 style
+        db.exec(createGroupsTables);
+    } else {
+        // sqlite style
+        await db.exec(createGroupsTables);
+    }
+
+    console.log('Groups tables created successfully');
+}
+
+/**
+ * Rollback the migration
+ * @param {Database} db - Database instance  
+ */
+async function down(db) {
+    const dropTables = `
+    DROP INDEX IF EXISTS idx_notifications_user_id;
+    DROP INDEX IF EXISTS idx_event_responses_event_id;
+    DROP INDEX IF EXISTS idx_group_events_group_id;
+    DROP INDEX IF EXISTS idx_group_posts_group_id;
+    DROP INDEX IF EXISTS idx_group_members_user_id;
+    DROP INDEX IF EXISTS idx_group_members_group_id;
+    
+    DROP TABLE IF EXISTS event_responses;
+    DROP TABLE IF EXISTS group_events;
+    DROP TABLE IF EXISTS group_posts;
+    DROP TABLE IF EXISTS group_members;
+    DROP TABLE IF EXISTS groups;
+  `;
+
+    if (db.exec) {
+        db.exec(dropTables);
+    } else {
+        await db.exec(dropTables);
+    }
+
+    console.log('Groups tables dropped successfully');
+}
+
+module.exports = { up, down };
