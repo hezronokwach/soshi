@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { Group } from '@/lib/db/models/group';
 import { getCurrentUser } from '@/lib/auth';
-import db from '@/lib/db/sqlite';
+import { getDb } from '@/lib/db/index';
 
 export async function PUT(request, { params }) {
   try {
@@ -26,25 +26,28 @@ export async function PUT(request, { params }) {
 
     if (action === 'accept') {
       await Group.acceptInvitation(id, userId);
-      
+
       // Notify the user
-      const notificationStmt = db.prepare(`
+      const db = await getDb();
+      await db.run(`
         INSERT INTO notifications (user_id, type, message, related_id)
         VALUES (?, 'group_invite_accepted', ?, ?)
-      `);
-      notificationStmt.run(
+      `, [
         userId,
         `Your request to join "${group.title}" has been accepted`,
         id
-      );
-      
+      ]);
+
       return NextResponse.json({ message: 'Member accepted successfully' });
+
     } else if (action === 'decline') {
       await Group.declineInvitation(id, userId);
       return NextResponse.json({ message: 'Request declined successfully' });
+
     } else {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
+
   } catch (error) {
     console.error('Error managing group member:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -59,8 +62,8 @@ export async function DELETE(request, { params }) {
     }
 
     const { id, userId } = params;
+
     const group = await Group.getById(id);
-    
     if (!group) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 });
     }
@@ -71,7 +74,9 @@ export async function DELETE(request, { params }) {
     }
 
     await Group.declineInvitation(id, userId);
+
     return NextResponse.json({ message: 'Member removed successfully' });
+
   } catch (error) {
     console.error('Error removing group member:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
