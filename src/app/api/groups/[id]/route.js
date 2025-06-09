@@ -13,7 +13,6 @@ export async function GET(request, { params }) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
     const { id } = await params;
 
     // Validate ID
@@ -23,16 +22,18 @@ export async function GET(request, { params }) {
     }
 
     const group = await Group.getById(groupId);
-
     if (!group) {
       return NextResponse.json({ error: 'Group not found' }, { status: 404 });
     }
 
     // Check if user is a member
-    const memberStatus = await Group.isMember(groupId, user.id);
-
-    if (!memberStatus || memberStatus.status !== 'accepted') {
-      return NextResponse.json({ error: 'Access denied. You must be a member to view this group.' }, { status: 403 });
+    const membership = await Group.isMember(groupId, user.id);
+    if (!membership || membership.status !== 'accepted') {
+      return NextResponse.json({
+        error: 'Access denied. You must be a member to view this group.'
+      },
+        { status: 403 }
+      );
     }
 
     // Get group data - members, posts, and events
@@ -47,7 +48,7 @@ export async function GET(request, { params }) {
       members,
       posts,
       events,
-      userMemberStatus: memberStatus.status
+      userMemberStatus: membership.status
     });
 
   } catch (error) {
@@ -81,7 +82,6 @@ export async function PUT(request, { params }) {
     if (group.creator_id !== user.id) {
       return NextResponse.json({ error: 'Only group creator can update the group' }, { status: 403 });
     }
-
     const { title, description } = await request.json();
 
     // Validate input
