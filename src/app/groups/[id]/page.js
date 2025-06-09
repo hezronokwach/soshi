@@ -95,6 +95,72 @@ export default function GroupDetailPage() {
     }
   };
 
+  // New function to handle member requests
+  const handleMemberRequest = async (userId, action) => {
+    try {
+      const response = await fetch(`/api/groups/${params.id}/members/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      });
+
+      if (response.ok) {
+        fetchGroup(); // Refresh to get updated member list
+        alert(`Member ${action}ed successfully`);
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Failed to update member status');
+      }
+    } catch (error) {
+      console.error('Error managing member:', error);
+      alert('Failed to update member status');
+    }
+  };
+
+  // New function to remove member
+  const handleRemoveMember = async (userId) => {
+    if (!confirm('Are you sure you want to remove this member?')) return;
+
+    try {
+      const response = await fetch(`/api/groups/${params.id}/members/${userId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        fetchGroup(); // Refresh to get updated member list
+        alert('Member removed successfully');
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Failed to remove member');
+      }
+    } catch (error) {
+      console.error('Error removing member:', error);
+      alert('Failed to remove member');
+    }
+  };
+
+  // New function to leave group
+  const handleLeaveGroup = async () => {
+    if (!confirm('Are you sure you want to leave this group?')) return;
+
+    try {
+      const response = await fetch(`/api/groups/${params.id}/join`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        alert('Successfully left the group');
+        window.location.href = '/groups'; // Redirect to groups page
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Failed to leave group');
+      }
+    } catch (error) {
+      console.error('Error leaving group:', error);
+      alert('Failed to leave group');
+    }
+  };
+
   if (loading) {
     return <div className="flex justify-center p-8">Loading group...</div>;
   }
@@ -103,15 +169,32 @@ export default function GroupDetailPage() {
     return <div className="text-center p-8">Group not found or access denied</div>;
   }
 
+  const isCreator = user && group.creator_id === user.id;
+  const pendingMembers = group.members?.filter(member => member.status === 'pending') || [];
+  const acceptedMembers = group.members?.filter(member => member.status === 'accepted') || [];
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Group Header */}
       <Card className="p-6 mb-6">
-        <h1 className="text-3xl font-bold mb-2">{group.title}</h1>
-        <p className="text-gray-600 mb-4">{group.description}</p>
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-500">
-            Created by {group.first_name} {group.last_name} • {group.members?.length} members
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">{group.title}</h1>
+            <p className="text-gray-600 mb-4">{group.description}</p>
+            <div className="text-sm text-gray-500">
+              Created by {group.first_name} {group.last_name} • {acceptedMembers.length} members
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {!isCreator && (
+              <Button
+                variant="outline"
+                onClick={handleLeaveGroup}
+                className="text-red-600 hover:text-red-700"
+              >
+                Leave Group
+              </Button>
+            )}
           </div>
         </div>
       </Card>
@@ -126,6 +209,11 @@ export default function GroupDetailPage() {
             className="capitalize"
           >
             {tab}
+            {tab === 'members' && pendingMembers.length > 0 && (
+              <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                {pendingMembers.length}
+              </span>
+            )}
           </Button>
         ))}
       </div>
@@ -174,22 +262,85 @@ export default function GroupDetailPage() {
 
       {/* Members Tab */}
       {activeTab === 'members' && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {group.members?.map((member) => (
-            <Card key={member.id} className="p-4">
-              <div className="flex items-center gap-3">
-                {member.avatar ? (
-                  <img src={member.avatar} alt={member.first_name} className="w-12 h-12 rounded-full" />
-                ) : (
-                  <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
-                )}
-                <div>
-                  <p className="font-medium">{member.first_name} {member.last_name}</p>
-                  <p className="text-sm text-gray-500 capitalize">{member.status}</p>
-                </div>
+        <div className="space-y-6">
+          {/* Pending Requests (Only visible to group creator) */}
+          {isCreator && pendingMembers.length > 0 && (
+            <Card className="p-4">
+              <h3 className="font-semibold text-lg mb-4 text-orange-600">
+                Pending Join Requests ({pendingMembers.length})
+              </h3>
+              <div className="space-y-3">
+                {pendingMembers.map((member) => (
+                  <div key={member.id} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      {member.avatar ? (
+                        <img src={member.avatar} alt={member.first_name} className="w-10 h-10 rounded-full" />
+                      ) : (
+                        <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+                      )}
+                      <div>
+                        <p className="font-medium">{member.first_name} {member.last_name}</p>
+                        <p className="text-sm text-gray-500">Wants to join this group</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleMemberRequest(member.user_id, 'accept')}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleMemberRequest(member.user_id, 'decline')}
+                        className="text-red-600 border-red-300 hover:bg-red-50"
+                      >
+                        Decline
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </Card>
-          ))}
+          )}
+
+          {/* Accepted Members */}
+          <Card className="p-4">
+            <h3 className="font-semibold text-lg mb-4">
+              Members ({acceptedMembers.length})
+            </h3>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {acceptedMembers.map((member) => (
+                <div key={member.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    {member.avatar ? (
+                      <img src={member.avatar} alt={member.first_name} className="w-10 h-10 rounded-full" />
+                    ) : (
+                      <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+                    )}
+                    <div>
+                      <p className="font-medium">{member.first_name} {member.last_name}</p>
+                      {member.user_id === group.creator_id && (
+                        <p className="text-xs text-blue-600 font-medium">Creator</p>
+                      )}
+                    </div>
+                  </div>
+                  {isCreator && member.user_id !== group.creator_id && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleRemoveMember(member.user_id)}
+                      className="text-red-600 border-red-300 hover:bg-red-50"
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Card>
         </div>
       )}
 
@@ -235,15 +386,17 @@ export default function GroupDetailPage() {
                 <Button
                   size="sm"
                   onClick={() => handleEventResponse(event.id, 'going')}
+                  className="bg-green-600 hover:bg-green-700"
                 >
-                  Going ({event.going_count})
+                  Going ({event.going_count || 0})
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => handleEventResponse(event.id, 'not_going')}
+                  className="text-red-600 border-red-300 hover:bg-red-50"
                 >
-                  Not Going ({event.not_going_count})
+                  Not Going ({event.not_going_count || 0})
                 </Button>
               </div>
             </Card>
