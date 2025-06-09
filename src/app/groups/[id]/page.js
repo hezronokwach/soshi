@@ -84,7 +84,7 @@ export default function GroupDetailPage() {
 
   const handleEventResponse = async (eventId, response) => {
     try {
-      await fetch(`/api/events/${eventId}/respond`, {
+      await fetch(`/api/groups/events/${eventId}/respond`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ response })
