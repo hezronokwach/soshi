@@ -71,8 +71,8 @@ export class Group {
   static async getMembers(groupId) {
     const db = await getDb();
     const members = await db.all(`
-      SELECT u.id, u.first_name, u.last_name, u.avatar, 
-             gm.status, gm.joined_at
+      SELECT u.id as user_id, u.first_name, u.last_name, u.avatar, 
+             gm.status, gm.joined_at, gm.id
       FROM group_members gm
       JOIN users u ON gm.user_id = u.id
       WHERE gm.group_id = ?
