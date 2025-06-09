@@ -11,7 +11,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id, userId } = params;
+    const { id, userId } = await params;
     const { action } = await request.json(); // 'accept' or 'decline'
 
     const group = await Group.getById(id);
@@ -61,7 +61,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id, userId } = params;
+    const { id, userId } = await params;
 
     const group = await Group.getById(id);
     if (!group) {
