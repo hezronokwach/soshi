@@ -279,8 +279,8 @@ export default function GroupDetailPage() {
                         <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
                       )}
                       <div>
-                        <p className="font-medium">{member.first_name} {member.last_name}</p>
-                        <p className="text-sm text-gray-500">Wants to join this group</p>
+                        <p className="font-medium text-blue-500">{member.first_name} {member.last_name}</p>
+                        <p className="text-sm text-blue-500">Wants to join this group</p>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -321,7 +321,7 @@ export default function GroupDetailPage() {
                       <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
                     )}
                     <div>
-                      <p className="font-medium">{member.first_name} {member.last_name}</p>
+                      <p className="font-medium text-blue-500">{member.first_name} {member.last_name}</p>
                       {member.user_id === group.creator_id && (
                         <p className="text-xs text-blue-600 font-medium">Creator</p>
                       )}
