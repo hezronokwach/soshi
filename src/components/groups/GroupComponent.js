@@ -1,11 +1,3 @@
-// export default function GroupComponent() {
-//   return (
-//     <div className="border p-4 rounded-lg shadow-sm">
-//       <h2 className="text-lg font-semibold mb-2">Group Component</h2>
-//       <p>This is a placeholder for the group component.</p>
-//     </div>
-//   );
-// }
 // src/components/groups/GroupComponent.js
 'use client';
 import { useState, useEffect } from 'react';
@@ -124,31 +116,47 @@ export default function GroupComponent() {
         </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-4">
         {groups.map((group) => (
-          <Card key={group.id} className="p-4 hover:shadow-lg transition-shadow">
-            <div className="space-y-3">
-              <h3 className="font-semibold text-lg">{group.title}</h3>
-              <p className="text-gray-600 text-sm">{group.description}</p>
-
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <div className="flex items-center gap-1">
-                  {group.avatar ? (
-                    <img
-                      src={group.avatar}
-                      alt={`${group.first_name} ${group.last_name}`}
-                      className="w-5 h-5 rounded-full"
-                    />
-                  ) : (
-                    <div className="w-5 h-5 bg-gray-300 rounded-full"></div>
-                  )}
-                  <span>by {group.first_name} {group.last_name}</span>
+          <Card key={group.id} className="p-6 hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between">
+              {/* Left side: Group info */}
+              <div className="flex items-center space-x-4 flex-1">
+                {/* Group avatar */}
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">
+                      {group.title.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
                 </div>
-                <span>•</span>
-                <span>{group.member_count} members</span>
+
+                {/* Group details */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-lg mb-1">{group.title}</h3>
+                  <p className="text-gray-600 text-sm mb-2">{group.description}</p>
+
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <div className="flex items-center gap-1">
+                      {group.avatar ? (
+                        <img
+                          src={group.avatar}
+                          alt={`${group.first_name} ${group.last_name}`}
+                          className="w-5 h-5 rounded-full"
+                        />
+                      ) : (
+                        <div className="w-5 h-5 bg-gray-300 rounded-full"></div>
+                      )}
+                      <span>by {group.first_name} {group.last_name}</span>
+                    </div>
+                    <span>•</span>
+                    <span>{group.member_count} members</span>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex gap-2">
+              {/* Right side: Action buttons */}
+              <div className="flex gap-2 flex-shrink-0">
                 <Button
                   size="sm"
                   onClick={() => window.location.href = `/groups/${group.id}`}
