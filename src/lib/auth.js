@@ -37,7 +37,7 @@ export async function createSession(user) {
  */
 export async function getSession() {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionToken = cookieStore.get('session_token');
 
     if (!sessionToken) {
