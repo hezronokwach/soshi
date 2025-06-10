@@ -95,7 +95,7 @@ export default function GroupDetailPage() {
     }
   };
 
-  // New function to handle member requests
+  // Handle member requests
   const handleMemberRequest = async (userId, action) => {
     try {
       const response = await fetch(`/api/groups/${params.id}/members/${userId}`, {
@@ -117,7 +117,7 @@ export default function GroupDetailPage() {
     }
   };
 
-  // New function to remove member
+  // Remove member
   const handleRemoveMember = async (userId) => {
     if (!confirm('Are you sure you want to remove this member?')) return;
 
@@ -139,7 +139,7 @@ export default function GroupDetailPage() {
     }
   };
 
-  // New function to leave group
+  // Leave group
   const handleLeaveGroup = async () => {
     if (!confirm('Are you sure you want to leave this group?')) return;
 
@@ -174,13 +174,13 @@ export default function GroupDetailPage() {
   const acceptedMembers = group.members?.filter(member => member.status === 'accepted') || [];
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="container mx-auto p-4">
       {/* Group Header */}
       <Card className="p-6 mb-6">
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-3xl font-bold mb-2">{group.title}</h1>
-            <p className="text-gray-600 mb-4">{group.description}</p>
+            <p className="text-gray-400 mb-4">{group.description}</p>
             <div className="text-sm text-gray-500">
               Created by {group.first_name} {group.last_name} • {acceptedMembers.length} members
             </div>
@@ -190,7 +190,7 @@ export default function GroupDetailPage() {
               <Button
                 variant="outline"
                 onClick={handleLeaveGroup}
-                className="text-red-600 hover:text-red-700"
+                className="text-red-400 hover:text-red-300 border-red-400 hover:border-red-300"
               >
                 Leave Group
               </Button>
@@ -228,7 +228,7 @@ export default function GroupDetailPage() {
                 value={newPost}
                 onChange={(e) => setNewPost(e.target.value)}
                 placeholder="What's on your mind?"
-                className="w-full p-3 border rounded-md mb-3"
+                className="w-full p-3 border rounded-md mb-3 bg-background text-white"
                 rows="3"
               />
               <Button type="submit" disabled={!newPost.trim()}>
@@ -244,14 +244,14 @@ export default function GroupDetailPage() {
                 {post.avatar ? (
                   <img src={post.avatar} alt={post.first_name} className="w-8 h-8 rounded-full" />
                 ) : (
-                  <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
+                  <div className="w-8 h-8 bg-gray-600 rounded-full"></div>
                 )}
                 <div>
-                  <p className="font-medium">{post.first_name} {post.last_name}</p>
-                  <p className="text-sm text-gray-500">{new Date(post.created_at).toLocaleDateString()}</p>
+                  <p className="font-medium text-white">{post.first_name} {post.last_name}</p>
+                  <p className="text-sm text-gray-400">{new Date(post.created_at).toLocaleDateString()}</p>
                 </div>
               </div>
-              <p className="mb-3">{post.content}</p>
+              <p className="mb-3 text-white">{post.content}</p>
               {post.image_path && (
                 <img src={post.image_path} alt="Post image" className="max-w-full rounded-md" />
               )}
@@ -266,21 +266,21 @@ export default function GroupDetailPage() {
           {/* Pending Requests (Only visible to group creator) */}
           {isCreator && pendingMembers.length > 0 && (
             <Card className="p-4">
-              <h3 className="font-semibold text-lg mb-4 text-orange-600">
+              <h3 className="font-semibold text-lg mb-4 text-orange-400">
                 Pending Join Requests ({pendingMembers.length})
               </h3>
               <div className="space-y-3">
                 {pendingMembers.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                  <div key={member.id} className="flex items-center justify-between p-3 bg-orange-900/20 rounded-lg border border-orange-400/30">
                     <div className="flex items-center gap-3">
                       {member.avatar ? (
                         <img src={member.avatar} alt={member.first_name} className="w-10 h-10 rounded-full" />
                       ) : (
-                        <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+                        <div className="w-10 h-10 bg-gray-600 rounded-full"></div>
                       )}
                       <div>
-                        <p className="font-medium text-blue-500">{member.first_name} {member.last_name}</p>
-                        <p className="text-sm text-blue-500">Wants to join this group</p>
+                        <p className="font-medium text-blue-400">{member.first_name} {member.last_name}</p>
+                        <p className="text-sm text-blue-300">Wants to join this group</p>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -295,7 +295,7 @@ export default function GroupDetailPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleMemberRequest(member.user_id, 'decline')}
-                        className="text-red-600 border-red-300 hover:bg-red-50"
+                        className="text-red-400 border-red-400 hover:bg-red-900/20"
                       >
                         Decline
                       </Button>
@@ -308,22 +308,22 @@ export default function GroupDetailPage() {
 
           {/* Accepted Members */}
           <Card className="p-4">
-            <h3 className="font-semibold text-lg mb-4">
+            <h3 className="font-semibold text-lg mb-4 text-white">
               Members ({acceptedMembers.length})
             </h3>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {acceptedMembers.map((member) => (
-                <div key={member.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={member.id} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
                   <div className="flex items-center gap-3">
                     {member.avatar ? (
                       <img src={member.avatar} alt={member.first_name} className="w-10 h-10 rounded-full" />
                     ) : (
-                      <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+                      <div className="w-10 h-10 bg-gray-600 rounded-full"></div>
                     )}
                     <div>
-                      <p className="font-medium text-blue-500">{member.first_name} {member.last_name}</p>
+                      <p className="font-medium text-blue-400">{member.first_name} {member.last_name}</p>
                       {member.user_id === group.creator_id && (
-                        <p className="text-xs text-blue-600 font-medium">Creator</p>
+                        <p className="text-xs text-blue-300 font-medium">Creator</p>
                       )}
                     </div>
                   </div>
@@ -332,7 +332,7 @@ export default function GroupDetailPage() {
                       size="sm"
                       variant="outline"
                       onClick={() => handleRemoveMember(member.user_id)}
-                      className="text-red-600 border-red-300 hover:bg-red-50"
+                      className="text-red-400 border-red-400 hover:bg-red-900/20"
                     >
                       Remove
                     </Button>
@@ -349,25 +349,27 @@ export default function GroupDetailPage() {
         <div className="space-y-6">
           {/* Create Event Form */}
           <Card className="p-4">
-            <h3 className="font-semibold mb-3">Create New Event</h3>
+            <h3 className="font-semibold mb-3 text-white">Create New Event</h3>
             <form onSubmit={handleCreateEvent} className="space-y-3">
               <Input
                 value={newEvent.title}
                 onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                 placeholder="Event title"
+                className="bg-background text-white"
                 required
               />
               <textarea
                 value={newEvent.description}
                 onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
                 placeholder="Event description"
-                className="w-full p-2 border rounded-md"
+                className="w-full p-2 border rounded-md bg-background text-white"
                 rows="2"
               />
               <Input
                 type="datetime-local"
                 value={newEvent.eventDate}
                 onChange={(e) => setNewEvent({ ...newEvent, eventDate: e.target.value })}
+                className="bg-background text-white"
                 required
               />
               <Button type="submit">Create Event</Button>
@@ -377,8 +379,8 @@ export default function GroupDetailPage() {
           {/* Events List */}
           {group.events?.map((event) => (
             <Card key={event.id} className="p-4">
-              <h3 className="font-semibold text-lg mb-2">{event.title}</h3>
-              <p className="text-gray-600 mb-2">{event.description}</p>
+              <h3 className="font-semibold text-lg mb-2 text-white">{event.title}</h3>
+              <p className="text-gray-400 mb-2">{event.description}</p>
               <p className="text-sm text-gray-500 mb-3">
                 {new Date(event.event_date).toLocaleString()}
               </p>
@@ -394,7 +396,7 @@ export default function GroupDetailPage() {
                   size="sm"
                   variant="outline"
                   onClick={() => handleEventResponse(event.id, 'not_going')}
-                  className="text-red-600 border-red-300 hover:bg-red-50"
+                  className="text-red-400 border-red-400 hover:bg-red-900/20"
                 >
                   Not Going ({event.not_going_count || 0})
                 </Button>
