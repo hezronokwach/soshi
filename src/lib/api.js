@@ -1,0 +1,258 @@
+// API client for communicating with the Go backend
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
+
+// Helper function for making API requests
+async function fetchAPI(endpoint, options = {}) {
+  const url = `${API_URL}${endpoint}`
+
+  // Include credentials to send cookies
+  const fetchOptions = {
+    ...options,
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  }
+
+  const response = await fetch(url, fetchOptions)
+
+  // Handle non-JSON responses
+  const contentType = response.headers.get("content-type")
+  if (contentType && contentType.includes("application/json")) {
+    const data = await response.json()
+
+    // If response is not ok, throw error with message from API
+    if (!response.ok) {
+      throw new Error(data.error || "An error occurred")
+    }
+
+    return data
+  }
+
+  // For non-JSON responses
+  if (!response.ok) {
+    throw new Error("An error occurred")
+  }
+
+  return response
+}
+
+// Auth API
+export const auth = {
+  register: (userData) =>
+    fetchAPI("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify(userData),
+    }),
+
+  login: (credentials) =>
+    fetchAPI("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify(credentials),
+    }),
+
+  logout: () =>
+    fetchAPI("/api/auth/logout", {
+      method: "POST",
+    }),
+
+  getSession: () => fetchAPI("/api/auth/session"),
+}
+
+// Posts API
+export const posts = {
+  getPosts: (page = 1, limit = 10) => fetchAPI(`/api/posts?page=${page}&limit=${limit}`),
+
+  createPost: (postData) =>
+    fetchAPI("/api/posts", {
+      method: "POST",
+      body: JSON.stringify(postData),
+    }),
+
+  updatePost: (postData) =>
+    fetchAPI("/api/posts", {
+      method: "PUT",
+      body: JSON.stringify(postData),
+    }),
+
+  deletePost: (postId) =>
+    fetchAPI("/api/posts", {
+      method: "DELETE",
+      body: JSON.stringify({ id: postId }),
+    }),
+
+  getReactions: (postId) => fetchAPI(`/api/posts/${postId}/reactions`),
+
+  addReaction: (postId, reactionType) =>
+    fetchAPI(`/api/posts/${postId}/reactions`, {
+      method: "POST",
+      body: JSON.stringify({ reaction_type: reactionType }),
+    }),
+}
+
+// Comments API
+export const comments = {
+  getPostComments: (postId, page = 1, limit = 20, parentId = null) => {
+    let url = `/api/posts/${postId}/comments?page=${page}&limit=${limit}`
+    if (parentId) {
+      url += `&parentId=${parentId}`
+    }
+    return fetchAPI(url)
+  },
+
+  createComment: (postId, commentData) =>
+    fetchAPI(`/api/posts/${postId}/comments`, {
+      method: "POST",
+      body: JSON.stringify(commentData),
+    }),
+
+  updateComment: (commentId, commentData) =>
+    fetchAPI(`/api/comments/${commentId}`, {
+      method: "PUT",
+      body: JSON.stringify(commentData),
+    }),
+
+  deleteComment: (commentId) =>
+    fetchAPI(`/api/comments/${commentId}`, {
+      method: "DELETE",
+    }),
+
+  getReactions: (commentId) => fetchAPI(`/api/comments/${commentId}/reactions`),
+
+  addReaction: (commentId, reactionType) =>
+    fetchAPI(`/api/comments/${commentId}/reactions`, {
+      method: "POST",
+      body: JSON.stringify({ reaction_type: reactionType }),
+    }),
+}
+
+// Groups API
+export const groups = {
+  getGroups: () => fetchAPI("/api/groups"),
+
+  createGroup: (groupData) =>
+    fetchAPI("/api/groups", {
+      method: "POST",
+      body: JSON.stringify(groupData),
+    }),
+
+  getGroup: (groupId) => fetchAPI(`/api/groups/${groupId}`),
+
+  updateGroup: (groupId, groupData) =>
+    fetchAPI(`/api/groups/${groupId}`, {
+      method: "PUT",
+      body: JSON.stringify(groupData),
+    }),
+
+  deleteGroup: (groupId) =>
+    fetchAPI(`/api/groups/${groupId}`, {
+      method: "DELETE",
+    }),
+
+  joinGroup: (groupId, invitedBy = null) =>
+    fetchAPI(`/api/groups/${groupId}/join`, {
+      method: "POST",
+      body: JSON.stringify({ invited_by: invitedBy }),
+    }),
+
+  leaveGroup: (groupId) =>
+    fetchAPI(`/api/groups/${groupId}/join`, {
+      method: "DELETE",
+    }),
+
+  updateMember: (groupId, userId, status) =>
+    fetchAPI(`/api/groups/${groupId}/members/${userId}`, {
+      method: "PUT",
+      body: JSON.stringify({ status }),
+    }),
+
+  removeMember: (groupId, userId) =>
+    fetchAPI(`/api/groups/${groupId}/members/${userId}`, {
+      method: "DELETE",
+    }),
+
+  getPosts: (groupId, page = 1, limit = 10) => fetchAPI(`/api/groups/${groupId}/posts?page=${page}&limit=${limit}`),
+
+  createPost: (groupId, postData) =>
+    fetchAPI(`/api/groups/${groupId}/posts`, {
+      method: "POST",
+      body: JSON.stringify(postData),
+    }),
+
+  getEvents: (groupId) => fetchAPI(`/api/groups/${groupId}/events`),
+
+  createEvent: (groupId, eventData) =>
+    fetchAPI(`/api/groups/${groupId}/events`, {
+      method: "POST",
+      body: JSON.stringify(eventData),
+    }),
+
+  respondToEvent: (eventId, response) =>
+    fetchAPI(`/api/groups/events/${eventId}/respond`, {
+      method: "POST",
+      body: JSON.stringify({ response }),
+    }),
+}
+
+// Users API
+export const users = {
+  getFollowers: () => fetchAPI("/api/users/followers"),
+}
+
+// Upload API
+export const upload = {
+  uploadFile: (file) => {
+    const formData = new FormData()
+    formData.append("file", file)
+
+    return fetch(`${API_URL}/api/upload`, {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+    }).then((response) => {
+      if (!response.ok) {
+        throw new Error("Upload failed")
+      }
+      return response.json()
+    })
+  },
+}
+
+// WebSocket connection
+export const connectWebSocket = (onMessage) => {
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:"
+  const host = API_URL.replace(/^https?:\/\//, "")
+  const ws = new WebSocket(`${protocol}//${host}/ws`)
+
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data)
+      onMessage(data)
+    } catch (error) {
+      console.error("Error parsing WebSocket message:", error)
+    }
+  }
+
+  ws.onclose = () => {
+    console.log("WebSocket connection closed")
+    // Attempt to reconnect after a delay
+    setTimeout(() => connectWebSocket(onMessage), 5000)
+  }
+
+  ws.onerror = (error) => {
+    console.error("WebSocket error:", error)
+  }
+
+  return ws
+}
+
+export default {
+  auth,
+  posts,
+  comments,
+  groups,
+  users,
+  upload,
+  connectWebSocket,
+}
