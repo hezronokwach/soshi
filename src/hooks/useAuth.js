@@ -2,6 +2,7 @@
 
 import { useState, useEffect, createContext, useContext } from 'react';
 import { useRouter } from 'next/navigation';
+import { auth } from '@/lib/api';
 
 // Create auth context
 const AuthContext = createContext(null);
@@ -16,14 +17,17 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     async function loadUserFromSession() {
       try {
-        const response = await fetch('/api/auth/session');
-        const data = await response.json();
-
+        // const response = await fetch('/api/auth/session');
+        // const data = await response.json();
+        const data = await auth.getSession();
         if (data.user) {
           setUser(data.user);
+        } else if (data.id) {
+          setUser(data);
         }
       } catch (error) {
         console.error('Error loading user session:', error);
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -35,30 +39,35 @@ export function AuthProvider({ children }) {
   // Login function
   const login = async (email, password) => {
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      // const response = await fetch('/api/auth/login', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({ email, password }),
+      // });
 
-      const data = await response.json();
+      // const data = await response.json();
+      
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
-      }
+      // if (!response.ok) {
+      //   throw new Error(data.error || 'Login failed');
+      // }
+      const data = await auth.login({ email, password });
 
       // Reload user data
-      const userResponse = await fetch('/api/auth/session');
-      const userData = await userResponse.json();
+      // const userResponse = await fetch('/api/auth/session');
+      // const userData = await userResponse.json();
+      const userData = await auth.getSession();
 
       if (userData.user) {
         setUser(userData.user);
-
-        // Always redirect to feed page after login
-        router.push('/feed');
-
+        router.replace('/feed');
+        return true;
+      } else if (userData.id) {
+        // If userData has an id, it's likely the user object itself
+        setUser(userData);
+        router.replace('/feed');
         return true;
       }
 
@@ -72,33 +81,28 @@ export function AuthProvider({ children }) {
   // Register function
   const register = async (userData) => {
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
+      // const response = await fetch('/api/auth/register', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(userData),
+      // });
 
-      const data = await response.json();
+      // const data = await response.json();
+      const data = await auth.register(userData);
 
-      if (!response.ok) {
-        if (data.issues) {
-          // Format validation errors
-          const errorMessage = data.issues.map(issue => issue.message).join(', ');
-          throw new Error(errorMessage);
-        }
-        throw new Error(data.error || 'Registration failed');
-      }
+      // if (!response.ok) {
+      //   if (data.issues) {
+      //     // Format validation errors
+      //     const errorMessage = data.issues.map(issue => issue.message).join(', ');
+      //     throw new Error(errorMessage);
+      //   }
+      //   throw new Error(data.error || 'Registration failed');
+      // }
 
-      // Set user data from response
-      if (data.user) {
-        setUser(data.user);
 
-        // Redirect to feed page after successful registration
-        router.push('/feed');
-      }
-
+      router.push('/login?registered=true');
       return true;
     } catch (error) {
       console.error('Registration error:', error);
@@ -109,15 +113,12 @@ export function AuthProvider({ children }) {
   // Logout function
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-      });
-
+      // await fetch('/api/auth/logout', {
+      //   method: 'POST',
+      // });
+      await auth.logout();
       setUser(null);
-
-      // Redirect to login page after logout
-      router.push('/login');
-
+      router.replace('/login');
       return true;
     } catch (error) {
       console.error('Logout error:', error);
