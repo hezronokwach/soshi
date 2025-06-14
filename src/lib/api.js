@@ -5,37 +5,55 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
 async function fetchAPI(endpoint, options = {}) {
   const url = `${API_URL}${endpoint}`
 
-  // Include credentials to send cookies
   const fetchOptions = {
     ...options,
-    credentials: "include",
+    credentials: "include",   // Credentials to send cookies
     headers: {
       "Content-Type": "application/json",
       ...options.headers,
     },
   }
 
-  const response = await fetch(url, fetchOptions)
+  try {
+    const response = await fetch(url, fetchOptions)
 
-  // Handle non-JSON responses
-  const contentType = response.headers.get("content-type")
-  if (contentType && contentType.includes("application/json")) {
-    const data = await response.json()
+    // Handle non-JSON responses
+    const contentType = response.headers.get("content-type")
+    if (contentType && contentType.includes("application/json")) {
+      const data = await response.json()
 
-    // If response is not ok, throw error with message from API
-    if (!response.ok) {
-      throw new Error(data.error || "An error occurred")
+      // If response is not ok, throw error with message from API
+      if (!response.ok) {
+        // If unauthorized, clear local session state
+        if (response.status === 401) {
+          // Clear any client-side session data
+          if (typeof window !== 'undefined') {
+            // You can dispatch a logout event here if using context
+            window.dispatchEvent(new CustomEvent('unauthorized'))
+          }
+        }
+        throw new Error(data.error || "An error occurred")
+      }
+
+      return data
     }
 
-    return data
-  }
+    // For non-JSON responses
+    if (!response.ok) {
+      if (response.status === 401) {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('unauthorized'))
+        }
+      }
+      throw new Error("An error occurred")
+    }
 
-  // For non-JSON responses
-  if (!response.ok) {
-    throw new Error("An error occurred")
+    return response
+  } catch (error) {
+    // Handle network errors
+    console.error('API Error:', error)
+    throw error
   }
-
-  return response
 }
 
 // Auth API
@@ -58,6 +76,16 @@ export const auth = {
     }),
 
   getSession: () => fetchAPI("/api/auth/session"),
+
+  // New method to check if user is authenticated
+  checkAuth: async () => {
+    try {
+      const session = await fetchAPI("/api/auth/session")
+      return { isAuthenticated: true, user: session }
+    } catch (error) {
+      return { isAuthenticated: false, user: null }
+    }
+  }
 }
 
 // Posts API
