@@ -12,6 +12,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/hezronokwach/soshi/pkg/db/sqlite"
 	"github.com/hezronokwach/soshi/pkg/handlers"
+	middleware1 "github.com/hezronokwach/soshi/pkg/middleware"
 	"github.com/hezronokwach/soshi/pkg/websocket"
 	"github.com/joho/godotenv"
 )
@@ -47,7 +48,7 @@ func main() {
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:8080"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Cookie"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
 		MaxAge:           300,
@@ -65,6 +66,7 @@ func main() {
 	userHandler := handlers.NewUserHandler(db)
 	uploadHandler := handlers.NewUploadHandler()
 	wsHandler := handlers.NewWebSocketHandler(hub)
+	authMiddleware := middleware1.Auth(db)
 
 	// Routes
 	// Auth routes
@@ -77,6 +79,7 @@ func main() {
 
 	// Post routes
 	r.Route("/api/posts", func(r chi.Router) {
+		r.Use(authMiddleware)
 		r.Get("/", postHandler.GetPosts)
 		r.Post("/", postHandler.CreatePost)
 		r.Put("/", postHandler.UpdatePost)
@@ -84,12 +87,14 @@ func main() {
 
 		// Post comments
 		r.Route("/{postID}/comments", func(r chi.Router) {
+			r.Use(authMiddleware)
 			r.Get("/", commentHandler.GetPostComments)
 			r.Post("/", commentHandler.CreateComment)
 		})
 
 		// Post reactions
 		r.Route("/{postID}/reactions", func(r chi.Router) {
+			r.Use(authMiddleware)
 			r.Get("/", postHandler.GetReactions)
 			r.Post("/", postHandler.AddReaction)
 		})
@@ -97,12 +102,14 @@ func main() {
 
 	// Comment routes
 	r.Route("/api/comments/{commentID}", func(r chi.Router) {
+		r.Use(authMiddleware)
 		r.Get("/", commentHandler.GetComment)
 		r.Put("/", commentHandler.UpdateComment)
 		r.Delete("/", commentHandler.DeleteComment)
 
 		// Comment reactions
 		r.Route("/reactions", func(r chi.Router) {
+			r.Use(authMiddleware)
 			r.Get("/", commentHandler.GetReactions)
 			r.Post("/", commentHandler.AddReaction)
 		})
@@ -110,10 +117,12 @@ func main() {
 
 	// Group routes
 	r.Route("/api/groups", func(r chi.Router) {
+		r.Use(authMiddleware)
 		r.Get("/", groupHandler.GetGroups)
 		r.Post("/", groupHandler.CreateGroup)
 
 		r.Route("/{groupID}", func(r chi.Router) {
+			r.Use(authMiddleware)
 			r.Get("/", groupHandler.GetGroup)
 			r.Put("/", groupHandler.UpdateGroup)
 			r.Delete("/", groupHandler.DeleteGroup)
@@ -123,18 +132,21 @@ func main() {
 			r.Delete("/join", groupHandler.LeaveGroup)
 
 			r.Route("/members/{userID}", func(r chi.Router) {
+				r.Use(authMiddleware)
 				r.Put("/", groupHandler.UpdateMember)
 				r.Delete("/", groupHandler.RemoveMember)
 			})
 
 			// Group posts
 			r.Route("/posts", func(r chi.Router) {
+				r.Use(authMiddleware)
 				r.Get("/", groupHandler.GetPosts)
 				r.Post("/", groupHandler.CreatePost)
 			})
 
 			// Group events
 			r.Route("/events", func(r chi.Router) {
+				r.Use(authMiddleware)
 				r.Get("/", groupHandler.GetEvents)
 				r.Post("/", groupHandler.CreateEvent)
 			})
