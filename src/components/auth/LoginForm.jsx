@@ -1,12 +1,12 @@
 'use client';
-
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -17,14 +17,28 @@ export default function LoginForm() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // Check if user just registered
+  useEffect(() => {
+    if (searchParams.get('registered') === 'true') {
+      setSuccessMessage('Registration successful! Please log in with your credentials.');
+    }
+  }, [searchParams]);
 
   const handleChange = (e) => {
+    console.log('Input changed:', e.target.name, e.target.value); // DEBUG
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     // Clear error when user types
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+
+    // Clear submit error when user starts typing
+    if (submitError) {
+      setSubmitError('');
     }
   };
 
@@ -70,6 +84,14 @@ export default function LoginForm() {
     <div className="glassmorphism p-6 rounded-lg shadow-lg max-w-md w-full mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-center text-gradient">Welcome Back</h2>
 
+      {/* Success message for new registrations */}
+      {successMessage && (
+        <div className="bg-green-500 bg-opacity-20 border border-green-500 text-green-500 px-4 py-3 rounded mb-4">
+          {successMessage}
+        </div>
+      )}
+
+      {/* Error message */}
       {submitError && (
         <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-500 px-4 py-3 rounded mb-4">
           {submitError}
@@ -121,6 +143,15 @@ export default function LoginForm() {
             Register
           </Link>
         </p>
+      </div>
+
+      {/* Debug info */}
+      <div className="mt-4 p-2 bg-gray-800 text-xs text-green-400 rounded">
+        <strong>Debug Info:</strong>
+        <br />Email: {formData.email}
+        <br />Password: {formData.password ? '***' : '(empty)'}
+        <br />Submitting: {isSubmitting ? 'Yes' : 'No'}
+        <br />Errors: {Object.keys(errors).length}
       </div>
     </div>
   );

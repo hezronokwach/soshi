@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
+import { groups } from '@/lib/api';
 
 export default function GroupDetailPage() {
   const params = useParams();
@@ -28,16 +29,46 @@ export default function GroupDetailPage() {
 
   const fetchGroup = async () => {
     try {
-      const response = await fetch(`/api/groups/${params.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setGroup(data);
-      } else if (response.status === 403) {
-        alert('You need to be a member to view this group');
-      }
+      const data = await groups.getGroup(params.id);
+      console.log('Raw group data from API:', data);
+
+      // Get posts and events for the group
+      const [postsData, eventsData] = await Promise.all([
+        groups.getPosts(params.id).catch(() => ({ posts: [] })),
+        groups.getEvents(params.id).catch(() => [])
+      ]);
+
+      // Ensure we have the basic group structure with defaults
+      const groupData = {
+        id: data.id,
+        title: data.title || '',
+        description: data.description || '',
+        creator_id: data.creator_id,
+        // Handle creator info - extract from nested creator object
+        first_name: data.creator?.first_name || data.first_name || data.creator_first_name || '',
+        last_name: data.creator?.last_name || data.last_name || data.creator_last_name || '',
+        // Handle members array - ensure it exists
+        members: Array.isArray(data.members) ? data.members : [],
+        // Handle posts and events
+        posts: postsData.posts || postsData || [],
+        events: Array.isArray(eventsData) ? eventsData : eventsData.events || [],
+        // Copy any other fields
+        ...data
+      };
+      console.log('Group members:', groupData.members);
+      groupData.members?.forEach((member, index) => {
+        console.log(`Member ${index}:`, member);
+      });
+
+      console.log('Final group data:', groupData);
+      setGroup(groupData);
     } catch (error) {
       console.error('Error fetching group:', error);
+      if (error.message.includes('403') || error.message.includes('access')) {
+        alert('You need to be a member to view this group');
+      }
     } finally {
+      console.log('Setting loading to false');
       setLoading(false);
     }
   };
@@ -47,16 +78,9 @@ export default function GroupDetailPage() {
     if (!newPost.trim()) return;
 
     try {
-      const response = await fetch(`/api/groups/${params.id}/posts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newPost })
-      });
-
-      if (response.ok) {
-        setNewPost('');
-        fetchGroup(); // Refresh to get new post
-      }
+      await groups.createPost(params.id, { content: newPost });
+      setNewPost('');
+      fetchGroup(); // Refresh to get new post
     } catch (error) {
       console.error('Error creating post:', error);
     }
@@ -67,16 +91,9 @@ export default function GroupDetailPage() {
     if (!newEvent.title.trim() || !newEvent.eventDate) return;
 
     try {
-      const response = await fetch(`/api/groups/${params.id}/events`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newEvent)
-      });
-
-      if (response.ok) {
-        setNewEvent({ title: '', description: '', eventDate: '' });
-        fetchGroup(); // Refresh to get new event
-      }
+      await groups.createEvent(params.id, newEvent);
+      setNewEvent({ title: '', description: '', eventDate: '' });
+      fetchGroup(); // Refresh to get new event
     } catch (error) {
       console.error('Error creating event:', error);
     }
@@ -84,11 +101,7 @@ export default function GroupDetailPage() {
 
   const handleEventResponse = async (eventId, response) => {
     try {
-      await fetch(`/api/groups/events/${eventId}/respond`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ response })
-      });
+      await groups.respondToEvent(eventId, response);
       fetchGroup(); // Refresh to get updated counts
     } catch (error) {
       console.error('Error responding to event:', error);
@@ -98,22 +111,12 @@ export default function GroupDetailPage() {
   // Handle member requests
   const handleMemberRequest = async (userId, action) => {
     try {
-      const response = await fetch(`/api/groups/${params.id}/members/${userId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action })
-      });
-
-      if (response.ok) {
-        fetchGroup(); // Refresh to get updated member list
-        alert(`Member ${action}ed successfully`);
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to update member status');
-      }
+      await groups.updateMember(params.id, userId, action);
+      fetchGroup(); // Refresh to get updated member list
+      alert(`Member ${action}ed successfully`);
     } catch (error) {
       console.error('Error managing member:', error);
-      alert('Failed to update member status');
+      alert(error.message || 'Failed to update member status');
     }
   };
 
@@ -122,20 +125,12 @@ export default function GroupDetailPage() {
     if (!confirm('Are you sure you want to remove this member?')) return;
 
     try {
-      const response = await fetch(`/api/groups/${params.id}/members/${userId}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        fetchGroup(); // Refresh to get updated member list
-        alert('Member removed successfully');
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to remove member');
-      }
+      await groups.removeMember(params.id, userId);
+      fetchGroup(); // Refresh to get updated member list
+      alert('Member removed successfully');
     } catch (error) {
       console.error('Error removing member:', error);
-      alert('Failed to remove member');
+      alert(error.message || 'Failed to remove member');
     }
   };
 
@@ -144,20 +139,12 @@ export default function GroupDetailPage() {
     if (!confirm('Are you sure you want to leave this group?')) return;
 
     try {
-      const response = await fetch(`/api/groups/${params.id}/join`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        alert('Successfully left the group');
-        window.location.href = '/groups'; // Redirect to groups page
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to leave group');
-      }
+      await groups.leaveGroup(params.id);
+      alert('Successfully left the group');
+      window.location.href = '/groups'; // Redirect to groups page
     } catch (error) {
       console.error('Error leaving group:', error);
-      alert('Failed to leave group');
+      alert(error.message || 'Failed to leave group');
     }
   };
 
@@ -273,13 +260,15 @@ export default function GroupDetailPage() {
                 {pendingMembers.map((member) => (
                   <div key={member.id} className="flex items-center justify-between p-3 bg-orange-900/20 rounded-lg border border-orange-400/30">
                     <div className="flex items-center gap-3">
-                      {member.avatar ? (
-                        <img src={member.avatar} alt={member.first_name} className="w-10 h-10 rounded-full" />
+                      {member.user?.avatar || member.avatar ? (
+                        <img src={member.user?.avatar || member.avatar} alt={member.user?.first_name} className="w-10 h-10 rounded-full" />
                       ) : (
                         <div className="w-10 h-10 bg-gray-600 rounded-full"></div>
                       )}
                       <div>
-                        <p className="font-medium text-blue-400">{member.first_name} {member.last_name}</p>
+                        <p className="font-medium text-blue-400">
+                          {member.user?.first_name || member.first_name} {member.user?.last_name || member.last_name}
+                        </p>
                         <p className="text-sm text-blue-300">Wants to join this group</p>
                       </div>
                     </div>
@@ -315,13 +304,15 @@ export default function GroupDetailPage() {
               {acceptedMembers.map((member) => (
                 <div key={member.id} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
                   <div className="flex items-center gap-3">
-                    {member.avatar ? (
-                      <img src={member.avatar} alt={member.first_name} className="w-10 h-10 rounded-full" />
+                    {member.user?.avatar || member.avatar ? (
+                      <img src={member.user?.avatar || member.avatar} alt={member.user?.first_name} className="w-10 h-10 rounded-full" />
                     ) : (
                       <div className="w-10 h-10 bg-gray-600 rounded-full"></div>
                     )}
                     <div>
-                      <p className="font-medium text-blue-400">{member.first_name} {member.last_name}</p>
+                      <p className="font-medium text-blue-400">
+                        {member.user?.first_name || member.first_name} {member.user?.last_name || member.last_name}
+                      </p>
                       {member.user_id === group.creator_id && (
                         <p className="text-xs text-blue-300 font-medium">Creator</p>
                       )}

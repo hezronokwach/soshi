@@ -1,14 +1,35 @@
 version: '3'
 
 services:
-  app:
+  frontend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: frontend/Dockerfile
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://backend:8080
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - DB_PATH=/app/data/soshi.db
+      - MIGRATIONS_PATH=file:///app/pkg/db/migrations/sqlite
     volumes:
       - ./data:/app/data
-    restart: unless-stopped
+      - ./uploads:/app/uploads
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

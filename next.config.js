@@ -2,12 +2,22 @@
 const nextConfig = {
   // Enable output standalone for Docker
   output: 'standalone',
-  
+
   // Configure image domains if needed
   images: {
     domains: ['localhost'],
   },
-  
+
+  // API rewrites to proxy to Go backend
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:8080/api/:path*',
+      },
+    ]
+  },
+
   // Configure WebSocket if needed
   webpack: (config, { isServer }) => {
     // Add WebSocket support
@@ -17,10 +27,9 @@ const nextConfig = {
         'bufferutil': 'commonjs bufferutil',
       });
     }
-    
     return config;
   },
-  
+
   // Configure experimental features
   experimental: {
     // Enable server actions with the new format
