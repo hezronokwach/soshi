@@ -90,7 +90,22 @@ export const auth = {
 
 // Posts API
 export const posts = {
-  getPosts: (page = 1, limit = 10) => fetchAPI(`/api/posts?page=${page}&limit=${limit}`),
+  getPosts: async (page = 1, limit = 10) => {
+    const data = await fetchAPI(`/api/posts?page=${page}&limit=${limit}`);
+
+    // Normalize response: if backend returns array directly, wrap it in an object
+    if (Array.isArray(data)) {
+      return {
+        posts: data,
+        page: page,
+        limit: limit,
+        total: data.length,
+        hasMore: data.length === limit // Assume more posts if we got full page
+      };
+    }
+
+    return data;
+  },
 
   createPost: (postData) =>
     fetchAPI("/api/posts", {
@@ -121,12 +136,24 @@ export const posts = {
 
 // Comments API
 export const comments = {
-  getPostComments: (postId, page = 1, limit = 20, parentId = null) => {
+  getPostComments: async (postId, page = 1, limit = 20, parentId = null) => {
     let url = `/api/posts/${postId}/comments?page=${page}&limit=${limit}`
     if (parentId) {
       url += `&parentId=${parentId}`
     }
-    return fetchAPI(url)
+    const data = await fetchAPI(url);
+
+    // Normalize comments response if it's an array
+    if (Array.isArray(data)) {
+      return {
+        comments: data,
+        page: page,
+        limit: limit,
+        total: data.length
+      };
+    }
+
+    return data;
   },
 
   createComment: (postId, commentData) =>
@@ -157,7 +184,19 @@ export const comments = {
 
 // Groups API
 export const groups = {
-  getGroups: () => fetchAPI("/api/groups"),
+  getGroups: async () => {
+    const data = await fetchAPI("/api/groups");
+
+    // Normalize groups response if it's an array
+    if (Array.isArray(data)) {
+      return {
+        groups: data,
+        total: data.length
+      };
+    }
+
+    return data;
+  },
 
   createGroup: (groupData) =>
     fetchAPI("/api/groups", {
@@ -200,7 +239,21 @@ export const groups = {
       method: "DELETE",
     }),
 
-  getPosts: (groupId, page = 1, limit = 10) => fetchAPI(`/api/groups/${groupId}/posts?page=${page}&limit=${limit}`),
+  getPosts: async (groupId, page = 1, limit = 10) => {
+    const data = await fetchAPI(`/api/groups/${groupId}/posts?page=${page}&limit=${limit}`);
+
+    // Normalize group posts response if it's an array
+    if (Array.isArray(data)) {
+      return {
+        posts: data,
+        page: page,
+        limit: limit,
+        total: data.length
+      };
+    }
+
+    return data;
+  },
 
   createPost: (groupId, postData) =>
     fetchAPI(`/api/groups/${groupId}/posts`, {
