@@ -63,40 +63,10 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create session
-	sessionToken := uuid.New().String()
-	err = models.CreateSession(h.db, userId, sessionToken)
-	if err != nil {
-		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to create session")
-		return
-	}
-
-	// Set session cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session_token",
-		Value:    sessionToken,
-		Path:     "/",
-		Expires:  time.Now().Add(7 * 24 * time.Hour),
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-		Secure: false,
+	utils.RespondWithJSON(w, http.StatusCreated, map[string]interface{}{
+		"message": "User registered successfully",
+		"user_id": userId,
 	})
-
-	// Get user without password
-	userPtr, err := models.GetUserById(h.db, userId)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			utils.RespondWithError(w, http.StatusNotFound, "User not found")
-		} else {
-			utils.RespondWithError(w, http.StatusInternalServerError, "Failed to retrieve user")
-		}
-		return
-	}
-
-	// Dereference the pointer to get the user value
-	user = *userPtr
-	user.Password = "" // Clear password
-	utils.RespondWithJSON(w, http.StatusCreated, user)
 }
 
 // Login handles user login
@@ -139,7 +109,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Now().Add(7 * 24 * time.Hour),
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
-		Secure: false,
+		Secure:   false,
 	})
 
 	utils.RespondWithJSON(w, http.StatusOK, user)
@@ -174,7 +144,7 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Now().Add(-time.Hour),
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
-		Secure: false,
+		Secure:   false,
 	})
 
 	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Logged out successfully"})
