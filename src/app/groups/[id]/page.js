@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
+import { groups } from '@/lib/api';
 
 export default function GroupDetailPage() {
   const params = useParams();
@@ -28,15 +29,13 @@ export default function GroupDetailPage() {
 
   const fetchGroup = async () => {
     try {
-      const response = await fetch(`/api/groups/${params.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setGroup(data);
-      } else if (response.status === 403) {
-        alert('You need to be a member to view this group');
-      }
+      const data = await groups.getGroup(params.id);
+      setGroup(data);
     } catch (error) {
       console.error('Error fetching group:', error);
+      if (error.message.includes('403') || error.message.includes('access')) {
+        alert('You need to be a member to view this group');
+      }
     } finally {
       setLoading(false);
     }
@@ -47,16 +46,9 @@ export default function GroupDetailPage() {
     if (!newPost.trim()) return;
 
     try {
-      const response = await fetch(`/api/groups/${params.id}/posts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newPost })
-      });
-
-      if (response.ok) {
-        setNewPost('');
-        fetchGroup(); // Refresh to get new post
-      }
+      await groups.createPost(params.id, { content: newPost });
+      setNewPost('');
+      fetchGroup(); // Refresh to get new post
     } catch (error) {
       console.error('Error creating post:', error);
     }
@@ -67,16 +59,9 @@ export default function GroupDetailPage() {
     if (!newEvent.title.trim() || !newEvent.eventDate) return;
 
     try {
-      const response = await fetch(`/api/groups/${params.id}/events`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newEvent)
-      });
-
-      if (response.ok) {
-        setNewEvent({ title: '', description: '', eventDate: '' });
-        fetchGroup(); // Refresh to get new event
-      }
+      await groups.createEvent(params.id, newEvent);
+      setNewEvent({ title: '', description: '', eventDate: '' });
+      fetchGroup(); // Refresh to get new event
     } catch (error) {
       console.error('Error creating event:', error);
     }
@@ -84,11 +69,7 @@ export default function GroupDetailPage() {
 
   const handleEventResponse = async (eventId, response) => {
     try {
-      await fetch(`/api/groups/events/${eventId}/respond`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ response })
-      });
+      await groups.respondToEvent(eventId, response);
       fetchGroup(); // Refresh to get updated counts
     } catch (error) {
       console.error('Error responding to event:', error);
@@ -98,22 +79,12 @@ export default function GroupDetailPage() {
   // Handle member requests
   const handleMemberRequest = async (userId, action) => {
     try {
-      const response = await fetch(`/api/groups/${params.id}/members/${userId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action })
-      });
-
-      if (response.ok) {
-        fetchGroup(); // Refresh to get updated member list
-        alert(`Member ${action}ed successfully`);
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to update member status');
-      }
+      await groups.updateMember(params.id, userId, action);
+      fetchGroup(); // Refresh to get updated member list
+      alert(`Member ${action}ed successfully`);
     } catch (error) {
       console.error('Error managing member:', error);
-      alert('Failed to update member status');
+      alert(error.message || 'Failed to update member status');
     }
   };
 
@@ -122,20 +93,12 @@ export default function GroupDetailPage() {
     if (!confirm('Are you sure you want to remove this member?')) return;
 
     try {
-      const response = await fetch(`/api/groups/${params.id}/members/${userId}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        fetchGroup(); // Refresh to get updated member list
-        alert('Member removed successfully');
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to remove member');
-      }
+      await groups.removeMember(params.id, userId);
+      fetchGroup(); // Refresh to get updated member list
+      alert('Member removed successfully');
     } catch (error) {
       console.error('Error removing member:', error);
-      alert('Failed to remove member');
+      alert(error.message || 'Failed to remove member');
     }
   };
 
@@ -144,20 +107,12 @@ export default function GroupDetailPage() {
     if (!confirm('Are you sure you want to leave this group?')) return;
 
     try {
-      const response = await fetch(`/api/groups/${params.id}/join`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        alert('Successfully left the group');
-        window.location.href = '/groups'; // Redirect to groups page
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to leave group');
-      }
+      await groups.leaveGroup(params.id);
+      alert('Successfully left the group');
+      window.location.href = '/groups'; // Redirect to groups page
     } catch (error) {
       console.error('Error leaving group:', error);
-      alert('Failed to leave group');
+      alert(error.message || 'Failed to leave group');
     }
   };
 
