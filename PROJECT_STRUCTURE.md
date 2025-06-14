@@ -162,6 +162,12 @@ The application uses Tailwind CSS for styling:
 ## Development Workflow
 
 1. **Start Development Server**:
+   start the go server
+   ```
+   cd backend
+   go run server.go
+   ```
+
    ```
    npm run dev:webpack
    ```
