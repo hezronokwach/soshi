@@ -126,16 +126,16 @@ export default function GroupComponent() {
 
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <div className="flex items-center gap-1">
-                      {group.avatar ? (
+                      {group.creator?.avatar || group.avatar ? (
                         <img
-                          src={group.avatar}
-                          alt={`${group.first_name} ${group.last_name}`}
+                          src={group.creator?.avatar || group.avatar}
+                          alt={`${group.creator?.first_name || group.first_name} ${group.creator?.last_name || group.last_name}`}
                           className="w-5 h-5 rounded-full"
                         />
                       ) : (
                         <div className="w-5 h-5 bg-gray-300 rounded-full"></div>
                       )}
-                      <span>by {group.first_name} {group.last_name}</span>
+                      <span>by {group.creator?.first_name || group.first_name} {group.creator?.last_name || group.last_name}</span>
                     </div>
                     <span>•</span>
                     <span>{group.member_count} members</span>
