@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { posts as postsAPI } from "@/lib/api";
 import CreatePostComponent from "@/components/posts/CreatePostComponent";
 import PostCard from "@/components/posts/PostCard";
 
@@ -14,12 +15,8 @@ export default function FeedPage() {
   // Fetch posts
   const fetchPosts = async () => {
     try {
-      const res = await fetch(
-        `/api/posts?userId=${user?.id}&page=${page}&privacy=public,followers`
-      );
-      if (!res.ok) throw new Error("Failed to fetch posts");
-      
-      const data = await res.json();
+      // Using API client - now returns normalized {posts: [...]} structure
+      const data = await postsAPI.getPosts(page, 10);
       setPosts(prev => page === 1 ? data.posts : [...prev, ...data.posts]);
       setIsLoading(false);
     } catch (error) {
@@ -63,8 +60,8 @@ export default function FeedPage() {
                 setPosts(posts.filter(p => p.id !== postId));
               }}
               onUpdate={(updatedPost) => {
-                setPosts(prevPosts => 
-                  prevPosts.map(p => 
+                setPosts(prevPosts =>
+                  prevPosts.map(p =>
                     p.id === updatedPost.id ? { ...p, ...updatedPost } : p
                   )
                 );
@@ -76,6 +73,7 @@ export default function FeedPage() {
             <p>No posts yet. Be the first to post something!</p>
           </div>
         )}
+
         {/* Load more button */}
         {posts.length > 0 && (
           <div className="text-center pt-4">

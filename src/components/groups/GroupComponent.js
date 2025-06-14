@@ -5,10 +5,11 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
+import { groups } from '@/lib/api';
 
 export default function GroupComponent() {
   const { user } = useAuth();
-  const [groups, setGroups] = useState([]);
+  const [groupsList, setGroupsList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newGroup, setNewGroup] = useState({ title: '', description: '' });
@@ -19,11 +20,10 @@ export default function GroupComponent() {
 
   const fetchGroups = async () => {
     try {
-      const response = await fetch('/api/groups');
-      if (response.ok) {
-        const data = await response.json();
-        setGroups(data);
-      }
+      const data = await groups.getGroups();
+      // Handle normalized response structure
+      const groupsArray = Array.isArray(data) ? data : data.groups || [];
+      setGroupsList(groupsArray);
     } catch (error) {
       console.error('Error fetching groups:', error);
     } finally {
@@ -34,17 +34,10 @@ export default function GroupComponent() {
   const handleCreateGroup = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/groups', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newGroup)
-      });
-
-      if (response.ok) {
-        setNewGroup({ title: '', description: '' });
-        setShowCreateForm(false);
-        fetchGroups(); // Refresh groups
-      }
+      await groups.createGroup(newGroup);
+      setNewGroup({ title: '', description: '' });
+      setShowCreateForm(false);
+      fetchGroups(); // Refresh groups
     } catch (error) {
       console.error('Error creating group:', error);
     }
@@ -52,14 +45,9 @@ export default function GroupComponent() {
 
   const handleJoinRequest = async (groupId) => {
     try {
-      const response = await fetch(`/api/groups/${groupId}/join`, {
-        method: 'POST'
-      });
-
-      if (response.ok) {
-        alert('Join request sent!');
-        fetchGroups();
-      }
+      await groups.joinGroup(groupId);
+      alert('Join request sent!');
+      fetchGroups();
     } catch (error) {
       console.error('Error sending join request:', error);
     }
@@ -117,7 +105,7 @@ export default function GroupComponent() {
       )}
 
       <div className="space-y-4">
-        {groups.map((group) => (
+        {groupsList.map((group) => (
           <Card key={group.id} className="p-6 hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between">
               {/* Left side: Group info */}
@@ -138,16 +126,16 @@ export default function GroupComponent() {
 
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <div className="flex items-center gap-1">
-                      {group.avatar ? (
+                      {group.creator?.avatar || group.avatar ? (
                         <img
-                          src={group.avatar}
-                          alt={`${group.first_name} ${group.last_name}`}
+                          src={group.creator?.avatar || group.avatar}
+                          alt={`${group.creator?.first_name || group.first_name} ${group.creator?.last_name || group.last_name}`}
                           className="w-5 h-5 rounded-full"
                         />
                       ) : (
                         <div className="w-5 h-5 bg-gray-300 rounded-full"></div>
                       )}
-                      <span>by {group.first_name} {group.last_name}</span>
+                      <span>by {group.creator?.first_name || group.first_name} {group.creator?.last_name || group.last_name}</span>
                     </div>
                     <span>•</span>
                     <span>{group.member_count} members</span>
@@ -178,7 +166,7 @@ export default function GroupComponent() {
         ))}
       </div>
 
-      {groups.length === 0 && (
+      {groupsList.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500">No groups found. Create the first one!</p>
         </div>
