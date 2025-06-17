@@ -5,11 +5,18 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
 async function fetchAPI(endpoint, options = {}) {
   const url = `${API_URL}${endpoint}`
 
+  // Don't override Content-Type for FormData (file uploads)
+  const isFormData = options.body instanceof FormData
+  const defaultHeaders = isFormData
+    ? {}
+    : { "Content-Type": "application/json" }
+
   const fetchOptions = {
     ...options,
-    credentials: "include",   // Credentials to send cookies
+    credentials: "include",   // Always include credentials (cookies)
+    mode: "cors",            // Enable CORS
     headers: {
-      "Content-Type": "application/json",
+      ...defaultHeaders,
       ...options.headers,
     },
   }
@@ -286,16 +293,16 @@ export const upload = {
   uploadFile: (file) => {
     const formData = new FormData()
     formData.append("file", file)
+    formData.append("type", "posts")
 
-    return fetch(`${API_URL}/api/upload`, {
+    return fetchAPI("/api/upload", {
       method: "POST",
       body: formData,
-      credentials: "include",
     }).then((response) => {
-      if (!response.ok) {
-        throw new Error("Upload failed")
+      if (!response || !response.url) {
+        throw new Error("Invalid response from server")
       }
-      return response.json()
+      return response
     })
   },
 }

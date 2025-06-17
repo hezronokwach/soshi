@@ -40,10 +40,19 @@ export default function PostCard({ post, onDelete, onUpdate }) {
     setImagePreview(post.image_url || null);
   }, [post.image_url]);
 
-  // Add a timestamp to the image URL to force a refresh
+  // Get the correct image URL, handling both relative and absolute paths
   const getImageUrl = (url) => {
     if (!url) return null;
-    return `${url}?t=${new Date().getTime()}`;
+    
+    // If the URL is already absolute, use it as is
+    if (url.startsWith('http') || url.startsWith('blob:')) {
+      return `${url}${url.includes('?') ? '&' : '?'}t=${new Date().getTime()}`;
+    }
+    
+    // For relative paths, prepend the backend URL
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    const baseUrl = url.startsWith('/') ? backendUrl : '';
+    return `${baseUrl}${url}?t=${new Date().getTime()}`;
   };
 
   const handleImageChange = async (e) => {
