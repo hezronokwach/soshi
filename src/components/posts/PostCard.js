@@ -175,10 +175,15 @@ export default function PostCard({ post, onDelete, onUpdate }) {
 
     try {
       setIsDeleting(true);
-      const res = await fetch(
-        `/api/posts?postId=${post.id}&userId=${user.id}`,
-        { method: "DELETE" }
-      );
+      const res = await fetch('/api/posts', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: post.id
+        })
+      });
 
       if (!res.ok) throw new Error("Failed to delete post");
 
