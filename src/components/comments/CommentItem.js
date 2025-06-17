@@ -221,9 +221,6 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
                     }}
                     onLoad={() => console.log('Successfully loaded comment image:', getImageUrl(comment.image_url))}
                   />
-                  <div className="text-xs text-gray-500 mt-1">
-                    URL: {getImageUrl(comment.image_url)}
-                  </div>
                 </div>
               )}
             </>
@@ -287,13 +284,19 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
               parentId={comment.id}
               onSubmit={async (data) => {
                 try {
+                  const { imageUrl, ...restData } = data;
+                  const requestBody = {
+                    user_id: user.id,
+                    ...restData,
+                    image_url: imageUrl // Use snake_case for the backend
+                  };
+
+                  console.log('Sending reply data:', requestBody);
+                  
                   const res = await fetch(`/api/posts/${comment.post_id}/comments`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      userId: user.id,
-                      ...data
-                    })
+                    body: JSON.stringify(requestBody)
                   });
 
                   if (!res.ok) throw new Error('Failed to create reply');
@@ -316,7 +319,7 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
                   setIsReplying(false);
                 } catch (error) {
                   console.error('Error creating reply:', error);
-                  alert('Failed to post reply. Please try again.');
+                  alert(error.message || 'Failed to post reply. Please try again.');
                 }
               }}
               onCancel={() => setIsReplying(false)}
