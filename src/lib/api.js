@@ -293,9 +293,56 @@ export const users = {
     }),
     
   updatePrivacy: (isPublic) =>
-    fetchAPI("/api/users/profile/privacy", {
-      method: "PUT", 
-      body: JSON.stringify({ is_public: isPublic }),
+  fetchAPI("/api/users/profile/privacy", {
+  method: "PUT", 
+  body: JSON.stringify({ is_public: isPublic }),
+  }),
+}
+
+// Activity API
+export const activity = {
+  getUserActivities: (userID = null, params = {}) => {
+    const endpoint = userID ? `/api/activity/${userID}` : "/api/activity/"
+    const searchParams = new URLSearchParams()
+    
+    if (params.page) searchParams.append("page", params.page)
+    if (params.limit) searchParams.append("limit", params.limit)
+    if (params.types && params.types.length > 0) {
+      searchParams.append("types", params.types.join(","))
+    }
+    if (params.showHidden) searchParams.append("show_hidden", "true")
+    
+    const queryString = searchParams.toString()
+    return fetchAPI(`${endpoint}${queryString ? `?${queryString}` : ""}`)
+  },
+
+  getUserPosts: (userID = null, params = {}) => {
+    const endpoint = userID ? `/api/activity/${userID}/posts` : "/api/activity/posts"
+    const searchParams = new URLSearchParams()
+    
+    if (params.page) searchParams.append("page", params.page)
+    if (params.limit) searchParams.append("limit", params.limit)
+    
+    const queryString = searchParams.toString()
+    return fetchAPI(`${endpoint}${queryString ? `?${queryString}` : ""}`)
+  },
+
+  hideActivity: (activityID) =>
+    fetchAPI(`/api/activity/${activityID}/hide`, {
+      method: "PUT",
+    }),
+
+  unhideActivity: (activityID) =>
+    fetchAPI(`/api/activity/${activityID}/unhide`, {
+      method: "PUT",
+    }),
+
+  getActivitySettings: () => fetchAPI("/api/activity/settings"),
+
+  updateActivitySettings: (settings) =>
+    fetchAPI("/api/activity/settings", {
+      method: "PUT",
+      body: JSON.stringify(settings),
     }),
 }
 
@@ -352,6 +399,7 @@ export default {
   comments,
   groups,
   users,
+  activity,
   upload,
   connectWebSocket,
 }
