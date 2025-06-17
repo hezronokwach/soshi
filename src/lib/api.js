@@ -279,6 +279,24 @@ export const groups = {
 // Users API
 export const users = {
   getFollowers: () => fetchAPI("/api/users/followers"),
+  
+  // Profile API methods
+  getProfile: (userId = null) => {
+    const endpoint = userId ? `/api/users/${userId}/profile` : "/api/users/profile"
+    return fetchAPI(endpoint)
+  },
+  
+  updateProfile: (profileData) =>
+    fetchAPI("/api/users/profile", {
+      method: "PUT",
+      body: JSON.stringify(profileData),
+    }),
+    
+  updatePrivacy: (isPublic) =>
+    fetchAPI("/api/users/profile/privacy", {
+      method: "PUT", 
+      body: JSON.stringify({ is_public: isPublic }),
+    }),
 }
 
 // Upload API
