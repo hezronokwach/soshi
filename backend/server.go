@@ -161,12 +161,23 @@ func main() {
 	r.Route("/api/users", func(r chi.Router) {
 		r.Use(authMiddleware)
 		r.Get("/followers", userHandler.GetFollowers)
+		r.Get("/following", userHandler.GetFollowing)
+		r.Get("/counts", userHandler.GetFollowCounts)
 		
 		// Profile routes
 		r.Get("/profile", userHandler.GetProfile)
 		r.Put("/profile", userHandler.UpdateProfile)
 		r.Put("/profile/privacy", userHandler.UpdateProfilePrivacy)
 		r.Get("/{userID}/profile", userHandler.GetProfile)
+		
+		// Follow routes for specific users
+		r.Get("/{userID}/followers", userHandler.GetFollowers)
+		r.Get("/{userID}/following", userHandler.GetFollowing)
+		r.Get("/{userID}/counts", userHandler.GetFollowCounts)
+		r.Get("/{userID}/follow-status", userHandler.GetFollowStatus)
+		r.Post("/{userID}/follow", userHandler.FollowUser)
+		r.Delete("/{userID}/follow", userHandler.UnfollowUser)
+		r.Delete("/{userID}/follow-request", userHandler.CancelFollowRequest)
 	})
 
 	// Activity routes
