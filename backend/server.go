@@ -158,7 +158,14 @@ func main() {
 
 	// User routes
 	r.Route("/api/users", func(r chi.Router) {
+		r.Use(authMiddleware)
 		r.Get("/followers", userHandler.GetFollowers)
+		
+		// Profile routes
+		r.Get("/profile", userHandler.GetProfile)
+		r.Put("/profile", userHandler.UpdateProfile)
+		r.Put("/profile/privacy", userHandler.UpdateProfilePrivacy)
+		r.Get("/{userID}/profile", userHandler.GetProfile)
 	})
 
 	// Upload route
