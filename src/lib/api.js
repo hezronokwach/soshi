@@ -297,6 +297,40 @@ export const users = {
   method: "PUT", 
   body: JSON.stringify({ is_public: isPublic }),
   }),
+
+  // Follow functionality
+  getFollowers: (userID = null) => {
+    const endpoint = userID ? `/api/users/${userID}/followers` : "/api/users/followers"
+    return fetchAPI(endpoint)
+  },
+
+  getFollowing: (userID = null) => {
+    const endpoint = userID ? `/api/users/${userID}/following` : "/api/users/following"
+    return fetchAPI(endpoint)
+  },
+
+  getFollowCounts: (userID = null) => {
+    const endpoint = userID ? `/api/users/${userID}/counts` : "/api/users/counts"
+    return fetchAPI(endpoint)
+  },
+
+  getFollowStatus: (userID) =>
+    fetchAPI(`/api/users/${userID}/follow-status`),
+
+  followUser: (userID) =>
+    fetchAPI(`/api/users/${userID}/follow`, {
+      method: "POST",
+    }),
+
+  unfollowUser: (userID) =>
+    fetchAPI(`/api/users/${userID}/follow`, {
+      method: "DELETE",
+    }),
+
+  cancelFollowRequest: (userID) =>
+    fetchAPI(`/api/users/${userID}/follow-request`, {
+      method: "DELETE",
+    }),
 }
 
 // Activity API
