@@ -145,3 +145,16 @@ func AuthenticateUser(db *sql.DB, email, password string) (*User, error) {
 
 	return user, nil
 }
+
+// UpdateUser updates user information
+func UpdateUser(db *sql.DB, user *User) error {
+	_, err := db.Exec(
+		`UPDATE users SET 
+		first_name = ?, last_name = ?, date_of_birth = ?, 
+		avatar = ?, nickname = ?, about_me = ?, updated_at = CURRENT_TIMESTAMP
+		WHERE id = ?`,
+		user.FirstName, user.LastName, user.DateOfBirth,
+		user.Avatar, user.Nickname, user.AboutMe, user.ID,
+	)
+	return err
+}
