@@ -108,10 +108,23 @@ func GetPostComments(db *sql.DB, postId int, options map[string]interface{}) ([]
 			FROM comments c
 			JOIN users u ON c.user_id = u.id
 			WHERE c.post_id = ? AND c.parent_id IS NULL
-			ORDER BY c.created_at ASC
+			ORDER BY c.created_at DESC
 			LIMIT ? OFFSET ?
 		`
 		args = []interface{}{postId, limit, offset}
+	} else if *parentId == -1 {
+		// Special case: get all replies for the post (no pagination)
+		query = `
+			SELECT c.id, c.post_id, c.user_id, c.parent_id, c.content, c.image_url, 
+			COALESCE(c.like_count, 0) as like_count, COALESCE(c.dislike_count, 0) as dislike_count, 
+			c.created_at, c.updated_at,
+			u.id as user_id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
+			FROM comments c
+			JOIN users u ON c.user_id = u.id
+			WHERE c.post_id = ? AND c.parent_id IS NOT NULL
+			ORDER BY c.created_at DESC
+		`
+		args = []interface{}{postId}
 	} else {
 		// Get replies to a specific comment
 		query = `
@@ -122,7 +135,7 @@ func GetPostComments(db *sql.DB, postId int, options map[string]interface{}) ([]
 			FROM comments c
 			JOIN users u ON c.user_id = u.id
 			WHERE c.parent_id = ?
-			ORDER BY c.created_at ASC
+			ORDER BY c.created_at DESC
 			LIMIT ? OFFSET ?
 		`
 		args = []interface{}{*parentId, limit, offset}

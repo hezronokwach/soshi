@@ -55,7 +55,12 @@ func (h *CommentHandler) GetPostComments(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	if parentIdStr := r.URL.Query().Get("parentId"); parentIdStr != "" {
+	parentIdStr := r.URL.Query().Get("parentId")
+	if parentIdStr == "all" {
+		// Special case: get all replies (no pagination)
+		parentId = new(int) // Set to non-nil to indicate we want replies
+		*parentId = -1      // Use -1 as a marker to get all replies
+	} else if parentIdStr != "" {
 		if p, err := strconv.Atoi(parentIdStr); err == nil && p > 0 {
 			parentId = &p
 		}
@@ -77,12 +82,16 @@ func (h *CommentHandler) GetPostComments(w http.ResponseWriter, r *http.Request)
 	// Log comment data for debugging and enhance with user data
 	for i := range comments {
 		if comments[i].ImageURL != "" {
-			log.Printf("Comment %d - Image URL: %s", comments[i].ID, comments[i].ImageURL)
+			log.Printf("Comment %d - Image URL: %s, ParentID: %v", comments[i].ID, comments[i].ImageURL, comments[i].ParentID)
 		}
 		// Get user data for each comment
 		user, err := models.GetUserById(h.db, comments[i].UserID)
 		if err == nil {
 			comments[i].User = user
+		}
+		// Ensure ParentID is properly set
+		if comments[i].ParentID != nil && *comments[i].ParentID == 0 {
+			comments[i].ParentID = nil
 		}
 	}
 
