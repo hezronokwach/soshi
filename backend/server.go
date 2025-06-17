@@ -171,8 +171,8 @@ func main() {
 	r.Get("/ws", wsHandler.ServeWS)
 
 	// Serve static files for uploads
-	fileServer := http.FileServer(http.Dir("./uploads"))
-	r.Handle("/uploads/*", http.StripPrefix("/uploads/", fileServer))
+	fs := http.FileServer(http.Dir("./uploads"))
+	r.Handle("/uploads/*", http.StripPrefix("/uploads/", fs))
 
 	// Get port from environment or use default
 	port := os.Getenv("PORT")

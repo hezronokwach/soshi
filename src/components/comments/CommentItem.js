@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { MessageSquare, ThumbsUp, ThumbsDown, Edit, Trash2 } from 'lucide-react';
+import { getImageUrl } from '@/utils/image';
 import CommentForm from './CommentForm';
 import CommentList from './CommentList';
+import { useEffect } from 'react';
 
 export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -135,6 +137,18 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
     }
   };
 
+  // Debug log comment data
+  useEffect(() => {
+    if (comment.image_url) {
+      console.log('Comment data:', {
+        commentId: comment.id,
+        imageUrl: comment.image_url,
+        fullImageUrl: getImageUrl(comment.image_url),
+        commentData: comment
+      });
+    }
+  }, [comment]);
+
   return (
     <div className="flex gap-3">
       {/* User Avatar */}
@@ -191,11 +205,26 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
             <>
               <p className="mb-2">{comment.content}</p>
               {comment.image_url && (
-                <img
-                  src={comment.image_url}
-                  alt="Comment attachment"
-                  className="max-h-60 rounded-md"
-                />
+                <div className="mt-2">
+                  <img
+                    src={getImageUrl(comment.image_url)}
+                    alt="Comment attachment"
+                    className="max-h-60 rounded-md"
+                    onError={(e) => {
+                      console.error('Error loading comment image:', {
+                        originalUrl: comment.image_url,
+                        processedUrl: getImageUrl(comment.image_url),
+                        commentId: comment.id,
+                        timestamp: new Date().toISOString()
+                      });
+                      e.target.style.display = 'none';
+                    }}
+                    onLoad={() => console.log('Successfully loaded comment image:', getImageUrl(comment.image_url))}
+                  />
+                  <div className="text-xs text-gray-500 mt-1">
+                    URL: {getImageUrl(comment.image_url)}
+                  </div>
+                </div>
               )}
             </>
           )}

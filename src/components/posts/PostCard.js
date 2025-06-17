@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { upload } from "@/lib/api";
+import { getImageUrl } from "@/utils/image";
 import { Edit, Trash2, ThumbsUp, ThumbsDown, MessageSquare, Share2 } from "lucide-react";
 import CommentSection from "@/components/comments/CommentSection";
 import SelectFollowersModal from "./SelectFollowersModal";
@@ -40,20 +42,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
     setImagePreview(post.image_url || null);
   }, [post.image_url]);
 
-  // Get the correct image URL, handling both relative and absolute paths
-  const getImageUrl = (url) => {
-    if (!url) return null;
-    
-    // If the URL is already absolute, use it as is
-    if (url.startsWith('http') || url.startsWith('blob:')) {
-      return `${url}${url.includes('?') ? '&' : '?'}t=${new Date().getTime()}`;
-    }
-    
-    // For relative paths, prepend the backend URL
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-    const baseUrl = url.startsWith('/') ? backendUrl : '';
-    return `${baseUrl}${url}?t=${new Date().getTime()}`;
-  };
+
 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
@@ -94,18 +83,11 @@ export default function PostCard({ post, onDelete, onUpdate }) {
 
       // Upload new image if provided
       if (image) {
-        const formData = new FormData();
-        formData.append("file", image);
-        formData.append("type", "posts");
-
-        const uploadRes = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!uploadRes.ok) throw new Error("Failed to upload image");
-        const { url } = await uploadRes.json();
-        imageUrl = url;
+        const result = await upload.uploadFile(image);
+        if (!result || !result.url) {
+          throw new Error("Failed to upload image");
+        }
+        imageUrl = result.url;
       }
 
       // Update post

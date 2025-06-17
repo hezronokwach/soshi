@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -73,6 +74,18 @@ func (h *CommentHandler) GetPostComments(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// Log comment data for debugging and enhance with user data
+	for i := range comments {
+		if comments[i].ImageURL != "" {
+			log.Printf("Comment %d - Image URL: %s", comments[i].ID, comments[i].ImageURL)
+		}
+		// Get user data for each comment
+		user, err := models.GetUserById(h.db, comments[i].UserID)
+		if err == nil {
+			comments[i].User = user
+		}
+	}
+
 	utils.RespondWithJSON(w, http.StatusOK, comments)
 }
 
@@ -131,6 +144,16 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to retrieve created comment")
 		return
+	}
+
+	// Log the created comment data for debugging
+	log.Printf("Created comment: ID=%d, PostID=%d, UserID=%d, ImageURL=%s", 
+		createdComment.ID, createdComment.PostID, createdComment.UserID, createdComment.ImageURL)
+
+	// Get user data for the comment
+	commentUser, err := models.GetUserById(h.db, createdComment.UserID)
+	if err == nil {
+		createdComment.User = commentUser
 	}
 
 	utils.RespondWithJSON(w, http.StatusCreated, createdComment)

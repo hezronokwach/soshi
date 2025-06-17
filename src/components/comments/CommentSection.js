@@ -19,7 +19,10 @@ export default function CommentSection({ postId, postOwnerId, onCommentAdded }) 
       const res = await fetch(`/api/posts/${postId}/comments?page=${pageNum}`);
       if (!res.ok) throw new Error('Failed to fetch comments');
       
-      const data = await res.json();
+      let data = await res.json();
+      
+      // Sort comments by created_at in descending order (newest first)
+      data = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       
       if (pageNum === 1) {
         setComments(data);
@@ -52,18 +55,25 @@ export default function CommentSection({ postId, postOwnerId, onCommentAdded }) 
   // Handle new comment creation
   const handleNewComment = async (commentData) => {
     try {
+      const { imageUrl, ...restData } = commentData;
+      const requestBody = {
+        user_id: user.id,
+        ...restData,
+        image_url: imageUrl
+      };
+      
+      console.log('Sending comment data:', requestBody);
+      
       const res = await fetch(`/api/posts/${postId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          ...commentData
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!res.ok) throw new Error('Failed to create comment');
       
       const newComment = await res.json();
+      // Add new comment to the beginning of the array (newest first)
       setComments(prev => [newComment, ...prev]);
       
       // Notify parent component that a new comment was added

@@ -77,17 +77,8 @@ func (h *UploadHandler) UploadFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Return full file URL
-	host := r.Host
-	if host == "" {
-		host = "localhost:8080" // Default host if not set
-	}
-	// Use http by default, or https if the request was secure
-	scheme := "http://"
-	if r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
-		scheme = "https://"
-	}
-	fileURL := fmt.Sprintf("%s%s/uploads/%s", scheme, host, filename)
+	// Return the full URL path for the uploaded file
+	fileURL := fmt.Sprintf("/uploads/%s", filename)
 	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"url": fileURL})
 }
 

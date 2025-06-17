@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { upload } from '@/lib/api';
 import { ImagePlus, X } from 'lucide-react';
 
 export default function CommentForm({ onSubmit, parentId = null, onCancel, initialContent = '' }) {
@@ -32,18 +33,19 @@ export default function CommentForm({ onSubmit, parentId = null, onCancel, initi
 
       // Upload image if provided
       if (image) {
-        const formData = new FormData();
-        formData.append('file', image);
-        formData.append('type', 'comments');
-
-        const uploadRes = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (!uploadRes.ok) throw new Error('Failed to upload image');
-        const { url } = await uploadRes.json();
-        imageUrl = url;
+        try {
+          const result = await upload.uploadFile(image);
+          console.log('Upload result:', result);
+          if (!result || !result.url) {
+            throw new Error('Invalid response from server');
+          }
+          // Ensure the URL is a full URL if it's not already
+          imageUrl = result.url.startsWith('http') ? result.url : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}${result.url}`;
+          console.log('Final image URL:', imageUrl);
+        } catch (error) {
+          console.error('Upload error:', error);
+          throw new Error(error.message || 'Failed to upload image');
+        }
       }
 
       // Submit comment

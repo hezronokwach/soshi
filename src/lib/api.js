@@ -290,20 +290,27 @@ export const users = {
 
 // Upload API
 export const upload = {
-  uploadFile: (file) => {
+  uploadFile: async (file) => {
     const formData = new FormData()
     formData.append("file", file)
-    formData.append("type", "posts")
 
-    return fetchAPI("/api/upload", {
-      method: "POST",
-      body: formData,
-    }).then((response) => {
+    try {
+      const response = await fetchAPI("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+      
       if (!response || !response.url) {
+        console.error('Invalid response from server:', response)
         throw new Error("Invalid response from server")
       }
+      
+      console.log('Upload successful, URL:', response.url)
       return response
-    })
+    } catch (error) {
+      console.error('Upload error:', error)
+      throw error
+    }
   },
 }
 
