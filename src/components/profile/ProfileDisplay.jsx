@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   User, 
   Calendar, 
@@ -11,6 +11,8 @@ import {
   UserCheck,
   Users
 } from 'lucide-react';
+import FollowButton from '@/components/connections/FollowButton';
+import { users } from '@/lib/api';
 
 export default function ProfileDisplay({ 
   user, 
@@ -20,6 +22,26 @@ export default function ProfileDisplay({
 }) {
   // Use profileData if available, otherwise fall back to user
   const profile = profileData || user;
+  const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 });
+  const [countsLoading, setCountsLoading] = useState(true);
+
+  useEffect(() => {
+    if (profile?.id) {
+      fetchFollowCounts();
+    }
+  }, [profile?.id]);
+
+  const fetchFollowCounts = async () => {
+    try {
+      setCountsLoading(true);
+      const counts = await users.getFollowCounts(isOwnProfile ? null : profile.id);
+      setFollowCounts(counts);
+    } catch (error) {
+      console.error('Failed to fetch follow counts:', error);
+    } finally {
+      setCountsLoading(false);
+    }
+  };
   
   if (!profile) {
     return (
@@ -99,16 +121,25 @@ export default function ProfileDisplay({
             </div>
           </div>
           
-          {isOwnProfile && onEditClick && (
-            <button
-              onClick={onEditClick}
-              className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg 
-                       flex items-center gap-2 transition-colors"
-            >
-              <Edit2 size={16} />
-              Edit Profile
-            </button>
-          )}
+          <div className="flex gap-2">
+            {!isOwnProfile && (
+              <FollowButton 
+                targetUserID={profile.id} 
+                onStatusChange={fetchFollowCounts}
+              />
+            )}
+            
+            {isOwnProfile && onEditClick && (
+              <button
+                onClick={onEditClick}
+                className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg 
+                         flex items-center gap-2 transition-colors"
+              >
+                <Edit2 size={16} />
+                Edit Profile
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -156,19 +187,23 @@ export default function ProfileDisplay({
           )}
         </div>
 
-        {/* Social stats placeholder */}
+        {/* Social stats */}
         <div className="border-t border-border pt-6">
           <div className="flex items-center gap-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-text-primary">0</div>
               <div className="text-text-secondary text-sm">Posts</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-text-primary">0</div>
+            <div className="text-center cursor-pointer hover:bg-background/50 p-2 rounded-lg transition-colors">
+              <div className="text-2xl font-bold text-text-primary">
+                {countsLoading ? '...' : followCounts.followers}
+              </div>
               <div className="text-text-secondary text-sm">Followers</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-text-primary">0</div>
+            <div className="text-center cursor-pointer hover:bg-background/50 p-2 rounded-lg transition-colors">
+              <div className="text-2xl font-bold text-text-primary">
+                {countsLoading ? '...' : followCounts.following}
+              </div>
               <div className="text-text-secondary text-sm">Following</div>
             </div>
           </div>
