@@ -45,31 +45,33 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
   };
 
   const handleReaction = async (type) => {
-    try {
-      const prevReactions = { ...reactions };
-      const isRemoving = reactions.userReaction === type;
+    // Save current reactions for rollback in case of error
+    const currentReactions = { ...reactions };
+    const isRemoving = reactions.userReaction === type;
 
-      setReactions(curr => {
-        const update = { ...curr };
-        if (isRemoving) {
-          update[`${type}Count`]--;
-          update.userReaction = null;
-        } else {
-          if (curr.userReaction) {
-            update[`${curr.userReaction}Count`]--;
-          }
-          update[`${type}Count`]++;
-          update.userReaction = type;
+    // Optimistically update the UI
+    setReactions(curr => {
+      const update = { ...curr };
+      if (isRemoving) {
+        update[`${type}Count`]--;
+        update.userReaction = null;
+      } else {
+        if (curr.userReaction) {
+          update[`${curr.userReaction}Count`]--;
         }
-        return update;
-      });
-
+        update[`${type}Count`]++;
+        update.userReaction = type;
+      }
+      return update;
+    });
+    
+    try {
       const res = await fetch(`/api/comments/${comment.id}/reactions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: user.id,
-          type
+          user_id: user.id,
+          reaction_type: type
         })
       });
 
@@ -78,7 +80,8 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
       setReactions(data);
     } catch (error) {
       console.error('Error updating reaction:', error);
-      setReactions(prevReactions);
+      // Rollback to previous reactions on error
+      setReactions(currentReactions);
     }
   };
 
