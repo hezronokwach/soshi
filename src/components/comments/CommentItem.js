@@ -219,7 +219,7 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
   return (
     <div className="flex gap-3">
       <div className="h-8 w-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center text-white">
-        {comment.first_name?.[0] || 'U'}
+        {comment.user?.first_name?.[0] || 'U'}
       </div>
 
       <div className="flex-1">
@@ -227,7 +227,7 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
           <div className="flex justify-between items-start mb-2">
             <div>
               <h4 className="font-medium">
-                {comment.first_name} {comment.last_name}
+                {comment.user?.first_name || 'Unknown'} {comment.user?.last_name || ''}
               </h4>
               <p className="text-xs text-text-secondary">
                 {formatTimestamp(comment.created_at)}

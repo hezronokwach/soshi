@@ -6,6 +6,7 @@ import CommentForm from './CommentForm';
 import CommentList from './CommentList';
 
 export default function CommentSection({ postId, postOwnerId, onCommentAdded }) {
+  console.log('CommentSection mounted with onCommentAdded:', !!onCommentAdded);
   const [comments, setComments] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -139,6 +140,7 @@ export default function CommentSection({ postId, postOwnerId, onCommentAdded }) 
 
   // Handle new comment creation
   const handleNewComment = async (commentData) => {
+    console.log('handleNewComment called with:', commentData);
     try {
       const { imageUrl, ...restData } = commentData;
       const requestBody = {
@@ -198,8 +200,11 @@ export default function CommentSection({ postId, postOwnerId, onCommentAdded }) 
       }
       
       // Notify parent component that a new comment was added
+      console.log('Calling onCommentAdded with new comment:', newComment);
       if (onCommentAdded) {
-        onCommentAdded();
+        onCommentAdded(newComment);
+      } else {
+        console.warn('onCommentAdded prop is not defined');
       }
       
       return newComment;
