@@ -150,3 +150,201 @@ func (h *UserHandler) UpdateProfilePrivacy(w http.ResponseWriter, r *http.Reques
 		"is_public": privacyData.IsPublic,
 	})
 }
+
+// GetFollowing retrieves users that the current user is following
+func (h *UserHandler) GetFollowing(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Check if requesting another user's following list
+	userIDParam := chi.URLParam(r, "userID")
+	var targetUserID int
+	var err error
+
+	if userIDParam != "" {
+		targetUserID, err = strconv.Atoi(userIDParam)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
+			return
+		}
+	} else {
+		targetUserID = user.ID
+	}
+
+	// Get following list
+	following, err := models.GetFollowing(h.db, targetUserID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to retrieve following")
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, following)
+}
+
+// GetFollowCounts retrieves follower and following counts for a user
+func (h *UserHandler) GetFollowCounts(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Check if requesting another user's counts
+	userIDParam := chi.URLParam(r, "userID")
+	var targetUserID int
+	var err error
+
+	if userIDParam != "" {
+		targetUserID, err = strconv.Atoi(userIDParam)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
+			return
+		}
+	} else {
+		targetUserID = user.ID
+	}
+
+	// Get follow counts
+	counts, err := models.GetFollowCounts(h.db, targetUserID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to retrieve follow counts")
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, counts)
+}
+
+// FollowUser handles following a user
+func (h *UserHandler) FollowUser(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Get user ID to follow from URL
+	userIDParam := chi.URLParam(r, "userID")
+	targetUserID, err := strconv.Atoi(userIDParam)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	// Follow the user
+	err = models.FollowUser(h.db, user.ID, targetUserID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Get the follow status to return
+	status, err := models.IsFollowing(h.db, user.ID, targetUserID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to get follow status")
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+		"success": true,
+		"status":  status,
+		"message": "Follow request sent successfully",
+	})
+}
+
+// UnfollowUser handles unfollowing a user
+func (h *UserHandler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Get user ID to unfollow from URL
+	userIDParam := chi.URLParam(r, "userID")
+	targetUserID, err := strconv.Atoi(userIDParam)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	// Unfollow the user
+	err = models.UnfollowUser(h.db, user.ID, targetUserID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+		"success": true,
+		"status":  "none",
+		"message": "Successfully unfollowed user",
+	})
+}
+
+// GetFollowStatus gets the follow status between current user and target user
+func (h *UserHandler) GetFollowStatus(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Get target user ID from URL
+	userIDParam := chi.URLParam(r, "userID")
+	targetUserID, err := strconv.Atoi(userIDParam)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	// Get follow status
+	status, err := models.IsFollowing(h.db, user.ID, targetUserID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to get follow status")
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+		"status": status,
+		"is_self": user.ID == targetUserID,
+	})
+}
+
+// CancelFollowRequest cancels a pending follow request
+func (h *UserHandler) CancelFollowRequest(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Get target user ID from URL
+	userIDParam := chi.URLParam(r, "userID")
+	targetUserID, err := strconv.Atoi(userIDParam)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	// Cancel follow request
+	err = models.CancelFollowRequest(h.db, user.ID, targetUserID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+		"success": true,
+		"status":  "none",
+		"message": "Follow request cancelled",
+	})
+}
