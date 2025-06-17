@@ -136,11 +136,10 @@ export default function PostCard({ post, onDelete, onUpdate }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          postId: post.id,
-          userId: user.id,
+          id: post.id,
           content: editedContent,
           privacy: editedPrivacy,
-          image_url: imageUrl,
+          selected_users: post.selected_users || []
         }),
       });
 
