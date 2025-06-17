@@ -5,12 +5,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import ProfileDisplay from '@/components/profile/ProfileDisplay';
 import ProfileEditForm from '@/components/profile/ProfileEditForm';
+import ActivityPage from '@/components/activity/ActivityPage';
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const { profile, loading, error, updateProfile } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('profile');
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -74,19 +76,57 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto max-w-4xl p-4 space-y-6">
-      {isEditing ? (
-        <ProfileEditForm
-          user={profile || user}
-          onSave={handleSave}
-          onCancel={handleCancel}
-          loading={updateLoading}
-        />
-      ) : (
-        <ProfileDisplay
-          user={user}
-          profileData={profile}
+      {/* Tab Navigation */}
+      <div className="bg-surface border border-border rounded-lg p-4">
+        <div className="flex gap-2 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
+              activeTab === 'profile'
+                ? 'bg-primary text-white'
+                : 'bg-background hover:bg-border text-text-primary'
+            }`}
+          >
+            Profile
+          </button>
+          <button
+            onClick={() => setActiveTab('activity')}
+            className={`px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
+              activeTab === 'activity'
+                ? 'bg-primary text-white'
+                : 'bg-background hover:bg-border text-text-primary'
+            }`}
+          >
+            Activity
+          </button>
+        </div>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'profile' && (
+        <>
+          {isEditing ? (
+            <ProfileEditForm
+              user={profile || user}
+              onSave={handleSave}
+              onCancel={handleCancel}
+              loading={updateLoading}
+            />
+          ) : (
+            <ProfileDisplay
+              user={user}
+              profileData={profile}
+              isOwnProfile={true}
+              onEditClick={handleEditClick}
+            />
+          )}
+        </>
+      )}
+
+      {activeTab === 'activity' && (
+        <ActivityPage
+          userID={null}
           isOwnProfile={true}
-          onEditClick={handleEditClick}
         />
       )}
     </div>
