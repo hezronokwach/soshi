@@ -64,6 +64,7 @@ func main() {
 	commentHandler := handlers.NewCommentHandler(db)
 	groupHandler := handlers.NewGroupHandler(db)
 	userHandler := handlers.NewUserHandler(db)
+	activityHandler := handlers.NewActivityHandler(db)
 	uploadHandler := handlers.NewUploadHandler()
 	wsHandler := handlers.NewWebSocketHandler(hub)
 	authMiddleware := middleware1.Auth(db)
@@ -166,6 +167,21 @@ func main() {
 		r.Put("/profile", userHandler.UpdateProfile)
 		r.Put("/profile/privacy", userHandler.UpdateProfilePrivacy)
 		r.Get("/{userID}/profile", userHandler.GetProfile)
+	})
+
+	// Activity routes
+	r.Route("/api/activity", func(r chi.Router) {
+		r.Use(authMiddleware)
+		r.Get("/", activityHandler.GetUserActivities)
+		r.Get("/posts", activityHandler.GetUserPosts)
+		r.Get("/settings", activityHandler.GetActivitySettings)
+		r.Put("/settings", activityHandler.UpdateActivitySettings)
+		r.Put("/{activityID}/hide", activityHandler.HideActivity)
+		r.Put("/{activityID}/unhide", activityHandler.UnhideActivity)
+		
+		// Other user's activities (with privacy filtering)
+		r.Get("/{userID}", activityHandler.GetUserActivities)
+		r.Get("/{userID}/posts", activityHandler.GetUserPosts)
 	})
 
 	// Upload route
