@@ -6,6 +6,7 @@ import { useProfile } from '@/hooks/useProfile';
 import ProfileDisplay from '@/components/profile/ProfileDisplay';
 import ProfileEditForm from '@/components/profile/ProfileEditForm';
 import ActivityPage from '@/components/activity/ActivityPage';
+import ConnectionsPage from '@/components/connections/ConnectionsPage';
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -99,6 +100,16 @@ export default function ProfilePage() {
           >
             Activity
           </button>
+          <button
+            onClick={() => setActiveTab('connections')}
+            className={`px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
+              activeTab === 'connections'
+                ? 'bg-primary text-white'
+                : 'bg-background hover:bg-border text-text-primary'
+            }`}
+          >
+            Connections
+          </button>
         </div>
       </div>
 
@@ -125,6 +136,13 @@ export default function ProfilePage() {
 
       {activeTab === 'activity' && (
         <ActivityPage
+          userID={null}
+          isOwnProfile={true}
+        />
+      )}
+
+      {activeTab === 'connections' && (
+        <ConnectionsPage
           userID={null}
           isOwnProfile={true}
         />
