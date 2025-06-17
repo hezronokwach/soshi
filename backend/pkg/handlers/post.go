@@ -104,6 +104,12 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Create activity record
+	if err := models.CreatePostActivity(h.db, user.ID, postId, req.Content); err != nil {
+		// Log error but don't fail the request
+		// In production, you might want to use a proper logger
+	}
+
 	// Get created post
 	createdPost, err := models.GetPostById(h.db, postId, user.ID)
 	if err != nil {
@@ -265,11 +271,25 @@ func (h *PostHandler) AddReaction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get post owner before adding reaction
+	post, err := models.GetPostById(h.db, postId, user.ID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to get post")
+		return
+	}
+
 	// Add reaction
 	result, err := models.AddPostReaction(h.db, postId, user.ID, req.ReactionType)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
+	}
+
+	// Create activity record for reaction (only if not removing reaction)
+	if result["userReaction"] != nil {
+		if err := models.CreateReactionActivity(h.db, user.ID, "post", postId, req.ReactionType, post.UserID); err != nil {
+			// Log error but don't fail the request
+		}
 	}
 
 	utils.RespondWithJSON(w, http.StatusOK, result)
