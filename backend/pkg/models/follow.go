@@ -172,3 +172,175 @@ func RespondToFollowRequest(db *sql.DB, followerId int, followingId int, status 
 	}
 	return errors.New("invalid status")
 }
+
+// GetFollowCounts returns follower and following counts for a user
+func GetFollowCounts(db *sql.DB, userId int) (map[string]int, error) {
+	counts := make(map[string]int)
+
+	// Get follower count
+	var followerCount int
+	err := db.QueryRow(
+		"SELECT COUNT(*) FROM follows WHERE following_id = ? AND status = 'accepted'",
+		userId,
+	).Scan(&followerCount)
+	if err != nil {
+		return nil, err
+	}
+	counts["followers"] = followerCount
+
+	// Get following count
+	var followingCount int
+	err = db.QueryRow(
+		"SELECT COUNT(*) FROM follows WHERE follower_id = ? AND status = 'accepted'",
+		userId,
+	).Scan(&followingCount)
+	if err != nil {
+		return nil, err
+	}
+	counts["following"] = followingCount
+
+	return counts, nil
+}
+
+// IsFollowing checks if user A is following user B
+func IsFollowing(db *sql.DB, followerId int, followingId int) (string, error) {
+	var status string
+	err := db.QueryRow(
+		"SELECT status FROM follows WHERE follower_id = ? AND following_id = ?",
+		followerId, followingId,
+	).Scan(&status)
+	if err == sql.ErrNoRows {
+		return "none", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	return status, nil
+}
+
+// GetFollowersWithCursor retrieves followers with pagination
+func GetFollowersWithCursor(db *sql.DB, userId int, limit int, cursor string) ([]User, string, error) {
+	followers := []User{}
+	query := `
+		SELECT u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname, u.about_me, 
+		u.created_at, u.updated_at, COALESCE(p.is_public, 1) as is_public, f.created_at as follow_date
+		FROM follows f
+		JOIN users u ON f.follower_id = u.id
+		LEFT JOIN user_profiles p ON u.id = p.user_id
+		WHERE f.following_id = ? AND f.status = 'accepted'
+	`
+
+	args := []interface{}{userId}
+	if cursor != "" {
+		query += " AND f.created_at < ?"
+		args = append(args, cursor)
+	}
+
+	query += " ORDER BY f.created_at DESC LIMIT ?"
+	args = append(args, limit+1) // Get one extra to check if there are more
+
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		return nil, "", err
+	}
+	defer rows.Close()
+
+	var nextCursor string
+	for rows.Next() {
+		var user User
+		var followDate string
+		err := rows.Scan(
+			&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.Avatar, &user.Nickname, &user.AboutMe,
+			&user.CreatedAt, &user.UpdatedAt, &user.IsPublic, &followDate,
+		)
+		if err != nil {
+			return nil, "", err
+		}
+		followers = append(followers, user)
+		nextCursor = followDate
+	}
+
+	// If we got more results than requested, remove the last one and set cursor
+	if len(followers) > limit {
+		followers = followers[:limit]
+	} else {
+		nextCursor = "" // No more results
+	}
+
+	return followers, nextCursor, nil
+}
+
+// GetFollowingWithCursor retrieves following with pagination
+func GetFollowingWithCursor(db *sql.DB, userId int, limit int, cursor string) ([]User, string, error) {
+	following := []User{}
+	query := `
+		SELECT u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname, u.about_me, 
+		u.created_at, u.updated_at, COALESCE(p.is_public, 1) as is_public, f.created_at as follow_date
+		FROM follows f
+		JOIN users u ON f.following_id = u.id
+		LEFT JOIN user_profiles p ON u.id = p.user_id
+		WHERE f.follower_id = ? AND f.status = 'accepted'
+	`
+
+	args := []interface{}{userId}
+	if cursor != "" {
+		query += " AND f.created_at < ?"
+		args = append(args, cursor)
+	}
+
+	query += " ORDER BY f.created_at DESC LIMIT ?"
+	args = append(args, limit+1) // Get one extra to check if there are more
+
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		return nil, "", err
+	}
+	defer rows.Close()
+
+	var nextCursor string
+	for rows.Next() {
+		var user User
+		var followDate string
+		err := rows.Scan(
+			&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.Avatar, &user.Nickname, &user.AboutMe,
+			&user.CreatedAt, &user.UpdatedAt, &user.IsPublic, &followDate,
+		)
+		if err != nil {
+			return nil, "", err
+		}
+		following = append(following, user)
+		nextCursor = followDate
+	}
+
+	// If we got more results than requested, remove the last one and set cursor
+	if len(following) > limit {
+		following = following[:limit]
+	} else {
+		nextCursor = "" // No more results
+	}
+
+	return following, nextCursor, nil
+}
+
+// CancelFollowRequest cancels a pending follow request
+func CancelFollowRequest(db *sql.DB, followerId int, followingId int) error {
+	// Check if pending request exists
+	var exists bool
+	err := db.QueryRow(
+		"SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id = ? AND following_id = ? AND status = 'pending')",
+		followerId, followingId,
+	).Scan(&exists)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return errors.New("no pending follow request found")
+	}
+
+	// Delete the request
+	_, err = db.Exec(
+		"DELETE FROM follows WHERE follower_id = ? AND following_id = ? AND status = 'pending'",
+		followerId, followingId,
+	)
+	return err
+}
