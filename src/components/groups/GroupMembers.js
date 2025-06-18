@@ -9,9 +9,10 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
     // Handle member requests
     const handleMemberRequest = async (userId, action) => {
         try {
+            console.log('Updating member with status:', action);
             await groups.updateMember(params.id, userId, action);
             fetchGroup(); // Refresh to get updated member list
-            alert(`Member ${action}ed successfully`);
+            // alert(`Member ${action}ed successfully`);
         } catch (error) {
             console.error('Error managing member:', error);
             alert(error.message || 'Failed to update member status');
@@ -59,7 +60,7 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
                                 <div className="flex gap-2">
                                     <Button
                                         size="sm"
-                                        onClick={() => handleMemberRequest(member.user_id, 'accept')}
+                                        onClick={() => handleMemberRequest(member.user_id, 'accepted')}
                                         className="bg-green-600 hover:bg-green-700"
                                     >
                                         Accept
@@ -67,7 +68,7 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
                                     <Button
                                         size="sm"
                                         variant="outline"
-                                        onClick={() => handleMemberRequest(member.user_id, 'decline')}
+                                        onClick={() => handleMemberRequest(member.user_id, 'declined')}
                                         className="text-red-400 border-red-400 hover:bg-red-900/20"
                                     >
                                         Decline
