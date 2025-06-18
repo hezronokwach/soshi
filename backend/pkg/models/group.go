@@ -33,16 +33,18 @@ type Member struct {
 }
 
 type Event struct {
-	ID          int        `json:"id"`
-	GroupID     int        `json:"group_id"`
-	CreatorID   int        `json:"creator_id"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	EventDate   time.Time  `json:"event_date"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
-	Creator     *User      `json:"creator,omitempty"`
-	Responses   []Response `json:"responses,omitempty"`
+	ID            int        `json:"id"`
+	GroupID       int        `json:"group_id"`
+	CreatorID     int        `json:"creator_id"`
+	Title         string     `json:"title"`
+	Description   string     `json:"description"`
+	EventDate     time.Time  `json:"event_date"`
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     time.Time  `json:"updated_at"`
+	Creator       *User      `json:"creator,omitempty"`
+	Responses     []Response `json:"responses,omitempty"`
+	GoingCount    int        `json:"going_count,omitempty"`
+	NotGoingCount int        `json:"not_going_count,omitempty"`
 }
 
 type Response struct {
@@ -490,11 +492,16 @@ func GetGroupEvents(db *sql.DB, groupId int, userId int) ([]Event, error) {
 	events := []Event{}
 
 	rows, err := db.Query(`
-		SELECT ge.id, ge.group_id, ge.creator_id, ge.title, ge.description, ge.event_date, ge.created_at, ge.updated_at,
-		u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
+		SELECT 
+			ge.id, ge.group_id, ge.creator_id, ge.title, ge.description, ge.event_date, ge.created_at, ge.updated_at,
+			u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname,
+			COUNT(CASE WHEN ger.response = 'going' THEN 1 END) AS going_count,
+			COUNT(CASE WHEN ger.response = 'not_going' THEN 1 END) AS not_going_count
 		FROM group_events ge
 		JOIN users u ON ge.creator_id = u.id
+		LEFT JOIN group_event_responses ger ON ger.event_id = ge.id
 		WHERE ge.group_id = ?
+		GROUP BY ge.id
 		ORDER BY ge.event_date ASC
 	`, groupId)
 	if err != nil {
@@ -510,6 +517,7 @@ func GetGroupEvents(db *sql.DB, groupId int, userId int) ([]Event, error) {
 			&event.ID, &event.GroupID, &event.CreatorID, &event.Title, &event.Description, &event.EventDate,
 			&event.CreatedAt, &event.UpdatedAt,
 			&creator.ID, &creator.Email, &creator.FirstName, &creator.LastName, &creator.Avatar, &creator.Nickname,
+			&event.GoingCount, &event.NotGoingCount,
 		)
 		if err != nil {
 			return nil, err
