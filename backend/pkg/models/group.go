@@ -215,7 +215,7 @@ func JoinGroup(db *sql.DB, groupId int, userId int, invitedBy *int) error {
 		return err
 	}
 	if exists {
-		return errors.New("user is already a member or has a pending request")
+		return nil
 	}
 
 	// Determine status based on whether it's an invitation or request
