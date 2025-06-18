@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { upload } from "@/lib/api";
+import { getImageUrl } from "@/utils/image";
 import { Edit, Trash2, ThumbsUp, ThumbsDown, MessageSquare, Share2 } from "lucide-react";
 import CommentSection from "@/components/comments/CommentSection";
 import SelectFollowersModal from "./SelectFollowersModal";
@@ -22,7 +24,46 @@ export default function PostCard({ post, onDelete, onUpdate }) {
   });
   const [isReacting, setIsReacting] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  const [commentCount, setCommentCount] = useState(post.comment_count || 0);
+  // Use refs to track state that shouldn't trigger re-renders
+  const commentCountRef = useRef(0);
+  
+  // Initialize comment count from post data or use 0 as fallback
+  const [commentCount, _setCommentCount] = useState(0);
+  
+  // Keep ref in sync with state
+  const setCommentCount = (newCount) => {
+    console.log('Updating comment count from', commentCountRef.current, 'to', newCount);
+    commentCountRef.current = newCount;
+    _setCommentCount(newCount);
+  };
+  
+  // Set initial comment count when the component mounts or post data changes
+  useEffect(() => {
+    // First try to get count from post data
+    if (post.comment_count !== undefined || post.comments_count !== undefined) {
+      const count = post.comment_count || post.comments_count || 0;
+      console.log('Setting initial comment count from post data:', count, 'for post:', post.id);
+      setCommentCount(count);
+    } else {
+      // If not in post data, fetch the comments and count them
+      const fetchAndCountComments = async () => {
+        try {
+          const response = await fetch(`/api/posts/${post.id}/comments?limit=100`);
+          if (response.ok) {
+            const comments = await response.json();
+            // Count only top-level comments (replies have parent_id)
+            const count = comments.filter(comment => !comment.parent_id).length;
+            console.log('Counted comments from API:', count, 'for post:', post.id);
+            setCommentCount(count);
+          }
+        } catch (error) {
+          console.error('Error fetching comments for count:', error);
+        }
+      };
+      
+      fetchAndCountComments();
+    }
+  }, [post.id, post.comment_count, post.comments_count]);
   const { user } = useAuth();
 
   // Fetch initial reaction status
@@ -40,11 +81,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
     setImagePreview(post.image_url || null);
   }, [post.image_url]);
 
-  // Add a timestamp to the image URL to force a refresh
-  const getImageUrl = (url) => {
-    if (!url) return null;
-    return `${url}?t=${new Date().getTime()}`;
-  };
+
 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
@@ -85,18 +122,11 @@ export default function PostCard({ post, onDelete, onUpdate }) {
 
       // Upload new image if provided
       if (image) {
-        const formData = new FormData();
-        formData.append("file", image);
-        formData.append("type", "posts");
-
-        const uploadRes = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!uploadRes.ok) throw new Error("Failed to upload image");
-        const { url } = await uploadRes.json();
-        imageUrl = url;
+        const result = await upload.uploadFile(image);
+        if (!result || !result.url) {
+          throw new Error("Failed to upload image");
+        }
+        imageUrl = result.url;
       }
 
       // Update post
@@ -106,11 +136,10 @@ export default function PostCard({ post, onDelete, onUpdate }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          postId: post.id,
-          userId: user.id,
+          id: post.id,
           content: editedContent,
           privacy: editedPrivacy,
-          image_url: imageUrl,
+          selected_users: post.selected_users || []
         }),
       });
 
@@ -145,10 +174,15 @@ export default function PostCard({ post, onDelete, onUpdate }) {
 
     try {
       setIsDeleting(true);
-      const res = await fetch(
-        `/api/posts?postId=${post.id}&userId=${user.id}`,
-        { method: "DELETE" }
-      );
+      const res = await fetch('/api/posts', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: post.id
+        })
+      });
 
       if (!res.ok) throw new Error("Failed to delete post");
 
@@ -193,8 +227,8 @@ export default function PostCard({ post, onDelete, onUpdate }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: user.id,
-          reactionType: type
+          user_id: user.id,
+          reaction_type: type
         })
       });
       
@@ -217,11 +251,11 @@ export default function PostCard({ post, onDelete, onUpdate }) {
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center">
           <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white mr-3">
-            {post.first_name?.[0] || "U"}
+            {post.user?.first_name?.[0] || "U"}
           </div>
           <div>
             <h3 className="font-medium">
-              {post.first_name} {post.last_name}
+              {post.user?.first_name || 'Unknown'} {post.user?.last_name || ''}
             </h3>
             <p className="text-sm text-text-secondary">
               {new Date(post.created_at).toLocaleString()}
@@ -423,8 +457,10 @@ export default function PostCard({ post, onDelete, onUpdate }) {
           title="Comment"
         >
           <MessageSquare size={20} strokeWidth={2} />
-          <span className="text-sm">
+          <span className="text-sm" data-comment-count={commentCount} data-post-id={post.id}>
             {commentCount > 0 ? `${commentCount} Comment${commentCount !== 1 ? 's' : ''}` : 'Comment'}
+            <span className="sr-only">(current count: {commentCount})</span>
+            <span style={{ display: 'none' }} data-debug-comment-count={commentCount}></span>
           </span>
         </button>
         <button 
@@ -441,9 +477,17 @@ export default function PostCard({ post, onDelete, onUpdate }) {
         <CommentSection
           postId={post.id}
           postOwnerId={post.user_id}
-          onCommentAdded={() => {
-            // Increment comment count when a new comment is added
-            setCommentCount(prev => prev + 1);
+          onCommentAdded={(newComment) => {
+            console.log('New comment added:', newComment);
+            // Only increment if it's a top-level comment (not a reply)
+            if (!newComment.parent_id) {
+              console.log('Incrementing comment count for post:', post.id);
+              const newCount = commentCountRef.current + 1;
+              console.log('Updated comment count:', newCount);
+              setCommentCount(newCount);
+            } else {
+              console.log('Not incrementing count - this is a reply');
+            }
           }}
         />
       )}

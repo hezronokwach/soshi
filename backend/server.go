@@ -49,9 +49,9 @@ func main() {
 		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:8080"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Cookie"},
-		ExposedHeaders:   []string{"Link"},
+		ExposedHeaders:   []string{"Link", "Set-Cookie"},
 		AllowCredentials: true,
-		MaxAge:           300,
+		MaxAge:           86400, // 24 hours
 	}))
 
 	// Initialize websocket hub
@@ -162,14 +162,17 @@ func main() {
 	})
 
 	// Upload route
-	r.Post("/api/upload", uploadHandler.UploadFile)
+	r.Route("/api/upload", func(r chi.Router) {
+		r.Use(authMiddleware)
+		r.Post("/", uploadHandler.UploadFile)
+	})
 
 	// WebSocket route
 	r.Get("/ws", wsHandler.ServeWS)
 
 	// Serve static files for uploads
-	fileServer := http.FileServer(http.Dir("./uploads"))
-	r.Handle("/uploads/*", http.StripPrefix("/uploads/", fileServer))
+	fs := http.FileServer(http.Dir("./uploads"))
+	r.Handle("/uploads/*", http.StripPrefix("/uploads/", fs))
 
 	// Get port from environment or use default
 	port := os.Getenv("PORT")
