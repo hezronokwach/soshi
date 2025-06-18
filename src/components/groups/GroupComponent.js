@@ -9,19 +9,8 @@ import { groups } from '@/lib/api';
 
 // Predefined categories (you can also make this dynamic)
 const GROUP_CATEGORIES = [
-  'Technology',
-  'Art',
-  'Travel',
-  'Photography',
-  'Books',
-  'Music',
-  'Sports',
-  'Gaming',
-  'Food',
-  'Business',
-  'Education',
-  'Health',
-  'Other'
+  'Technology', 'Art', 'Travel', 'Photography', 'Books', 'Music',
+  'Sports', 'General', 'Food', 'Business', 'Education', 'Health', 'Other'
 ];
 
 export default function GroupComponent() {
@@ -29,7 +18,7 @@ export default function GroupComponent() {
   const [groupsList, setGroupsList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newGroup, setNewGroup] = useState({ title: '', description: '', category: 'Other' });
+  const [newGroup, setNewGroup] = useState({ title: '', description: '', category: 'General' });
   const [requestStates, setRequestStates] = useState({}); // Track join request states
 
   useEffect(() => {
@@ -53,7 +42,7 @@ export default function GroupComponent() {
     e.preventDefault();
     try {
       await groups.createGroup(newGroup);
-      setNewGroup({ title: '', description: '', category: 'Other' });
+      setNewGroup({ title: '', description: '', category: 'General' });
       setShowCreateForm(false);
       fetchGroups(); // Refresh groups
     } catch (error) {
@@ -218,7 +207,7 @@ export default function GroupComponent() {
                       <h3 className="font-semibold text-lg">{group.title}</h3>
                       {/* Category badge */}
                       <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                        {group.category || 'Other'}
+                        {group.category || 'General'}
                       </span>
                     </div>
                     <p className="text-gray-600 text-sm mb-2">{group.description}</p>
