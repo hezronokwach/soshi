@@ -16,9 +16,15 @@ export default function GroupEvents({ params, group, fetchGroup }) {
   const handleCreateEvent = async (e) => {
     e.preventDefault();
     if (!newEvent.title.trim() || !newEvent.eventDate) return;
-
     try {
-      await groups.createEvent(params.id, newEvent);
+      // Transform  variable names for use by the API
+      const eventData = {
+        title: newEvent.title,
+        description: newEvent.description,
+        event_date: new Date(newEvent.eventDate).toISOString()
+      };
+      
+      await groups.createEvent(params.id, eventData);
       setNewEvent({ title: '', description: '', eventDate: '' });
       fetchGroup(); // Refresh to get new event
     } catch (error) {
