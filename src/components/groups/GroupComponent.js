@@ -7,6 +7,23 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { groups } from '@/lib/api';
 
+// Predefined categories (you can also make this dynamic)
+const GROUP_CATEGORIES = [
+  'Technology',
+  'Art',
+  'Travel',
+  'Photography',
+  'Books',
+  'Music',
+  'Sports',
+  'Gaming',
+  'Food',
+  'Business',
+  'Education',
+  'Health',
+  'Other'
+];
+
 export default function GroupComponent() {
   const { user } = useAuth();
   const [groupsList, setGroupsList] = useState([]);
@@ -36,7 +53,7 @@ export default function GroupComponent() {
     e.preventDefault();
     try {
       await groups.createGroup(newGroup);
-      setNewGroup({ title: '', description: '' });
+      setNewGroup({ title: '', description: '', category: 'Other' });
       setShowCreateForm(false);
       fetchGroups(); // Refresh groups
     } catch (error) {
@@ -50,8 +67,8 @@ export default function GroupComponent() {
       setRequestStates(prev => ({ ...prev, [groupId]: 'sent' }));
 
       await groups.joinGroup(groupId);
-      alert('Join request sent!');
-      fetchGroups();
+      // Keep the "Request Sent" state
+      fetchGroups(); // Refresh to get updated membership status
     } catch (error) {
       console.error('Error sending join request:', error);
       // Reset the state if request failed
@@ -137,6 +154,19 @@ export default function GroupComponent() {
                   placeholder="Enter group title"
                   required
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Category</label>
+                <select
+                  value={newGroup.category}
+                  onChange={(e) => setNewGroup({ ...newGroup, category: e.target.value })}
+                  className="w-full p-2 border rounded-md bg-grey"
+                  required
+                >
+                  {GROUP_CATEGORIES.map(category => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Description</label>
