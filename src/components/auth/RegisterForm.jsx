@@ -90,7 +90,7 @@ export default function RegisterForm() {
       <h2 className="text-2xl font-bold mb-6 text-center text-gradient">Create an Account</h2>
 
       {submitError && (
-        <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-500 px-4 py-3 rounded mb-4">
+        <div className="bg-opacity-20 border border-red-500 text-red-500 px-4 py-3 rounded mb-4">
           {submitError}
         </div>
       )}

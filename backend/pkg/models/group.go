@@ -10,6 +10,8 @@ type Group struct {
 	ID          int       `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
+	Category    string    `json:"category"`
+	Avatar      string    `json:"avatar"`
 	CreatorID   int       `json:"creator_id"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
@@ -54,7 +56,7 @@ type Response struct {
 }
 
 // CreateGroup creates a new group
-func CreateGroup(db *sql.DB, title string, description string, creatorId int) (int, error) {
+func CreateGroup(db *sql.DB, title string, description string, category string, avatar string, creatorId int) (int, error) {
 	// Begin transaction
 	tx, err := db.Begin()
 	if err != nil {
@@ -62,10 +64,15 @@ func CreateGroup(db *sql.DB, title string, description string, creatorId int) (i
 	}
 	defer tx.Rollback()
 
+	// Set default category if empty
+	if category == "" {
+		category = "General"
+	}
+
 	// Insert group
 	result, err := tx.Exec(
-		`INSERT INTO groups (title, description, creator_id) VALUES (?, ?, ?)`,
-		title, description, creatorId,
+		`INSERT INTO groups (title, description, category, avatar, creator_id) VALUES (?, ?, ?, ?, ?)`,
+		title, description, category, avatar, creatorId,
 	)
 	if err != nil {
 		return 0, err
@@ -99,7 +106,7 @@ func GetAllGroups(db *sql.DB) ([]Group, error) {
 	groups := []Group{}
 
 	rows, err := db.Query(`
-		SELECT g.id, g.title, g.description, g.creator_id, g.created_at, g.updated_at,
+		SELECT g.id, g.title, g.description, g.category, g.avatar, g.creator_id, g.created_at, g.updated_at,
 		u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
 		FROM groups g
 		JOIN users u ON g.creator_id = u.id
@@ -115,7 +122,7 @@ func GetAllGroups(db *sql.DB) ([]Group, error) {
 		var creator User
 
 		err := rows.Scan(
-			&group.ID, &group.Title, &group.Description, &group.CreatorID, &group.CreatedAt, &group.UpdatedAt,
+			&group.ID, &group.Title, &group.Description, &group.Category, &group.Avatar, &group.CreatorID, &group.CreatedAt, &group.UpdatedAt,
 			&creator.ID, &creator.Email, &creator.FirstName, &creator.LastName, &creator.Avatar, &creator.Nickname,
 		)
 		if err != nil {
@@ -136,15 +143,15 @@ func GetGroupById(db *sql.DB, groupId int) (*Group, error) {
 
 	// Get group data
 	err := db.QueryRow(`
-		SELECT g.id, g.title, g.description, g.creator_id, g.created_at, g.updated_at,
+		SELECT g.id, g.title, g.description, g.category, g.avatar, g.creator_id, g.created_at, g.updated_at,
 		u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
 		FROM groups g
 		JOIN users u ON g.creator_id = u.id
 		WHERE g.id = ?
 	`, groupId).Scan(
-		&group.ID, &group.Title, &group.Description, &group.CreatorID, &group.CreatedAt, &group.UpdatedAt,
+		&group.ID, &group.Title, &group.Description, &group.Category, &group.Avatar, &group.CreatorID, &group.CreatedAt, &group.UpdatedAt,
 		&creator.ID, &creator.Email, &creator.FirstName, &creator.LastName,
-		&creator.Avatar, &creator.Nickname, // Scan into creator variable
+		&creator.Avatar, &creator.Nickname,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -153,7 +160,7 @@ func GetGroupById(db *sql.DB, groupId int) (*Group, error) {
 		return nil, err
 	}
 
-	group.Creator = &creator // Assign the address of creator to group.Creator
+	group.Creator = &creator
 
 	return group, nil
 }
