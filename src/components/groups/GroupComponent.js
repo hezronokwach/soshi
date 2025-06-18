@@ -12,7 +12,8 @@ export default function GroupComponent() {
   const [groupsList, setGroupsList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newGroup, setNewGroup] = useState({ title: '', description: '' });
+  const [newGroup, setNewGroup] = useState({ title: '', description: '', category: 'Other' });
+  const [requestStates, setRequestStates] = useState({}); // Track join request states
 
   useEffect(() => {
     fetchGroups();
@@ -45,12 +46,70 @@ export default function GroupComponent() {
 
   const handleJoinRequest = async (groupId) => {
     try {
+      // Update UI immediately to show "Request Sent"
+      setRequestStates(prev => ({ ...prev, [groupId]: 'sent' }));
+
       await groups.joinGroup(groupId);
       alert('Join request sent!');
       fetchGroups();
     } catch (error) {
       console.error('Error sending join request:', error);
+      // Reset the state if request failed
+      setRequestStates(prev => ({ ...prev, [groupId]: 'idle' }));
+      alert('Failed to send join request. Please try again.');
     }
+  };
+
+  // Check if user is a member of the group
+  const isMember = (group) => {
+    // Check if user is the creator
+    if (group.creator_id === user?.id) return true;
+
+    // Check if user is in members list (if available)
+    if (group.members && Array.isArray(group.members)) {
+      return group.members.some(member =>
+        member.user_id === user?.id && member.status === 'accepted'
+      );
+    }
+
+    // Check if user_membership status is provided
+    if (group.user_membership) {
+      return group.user_membership === 'accepted';
+    }
+
+    return false;
+  };
+
+  // Check if user has pending request
+  const hasPendingRequest = (group) => {
+    if (group.members && Array.isArray(group.members)) {
+      return group.members.some(member =>
+        member.user_id === user?.id && member.status === 'pending'
+      );
+    }
+
+    if (group.user_membership) {
+      return group.user_membership === 'pending';
+    }
+
+    return false;
+  };
+
+  const getJoinButtonState = (group) => {
+    const groupId = group.id;
+
+    // Check local request state first
+    if (requestStates[groupId] === 'sent') {
+      return { text: 'Request Sent', disabled: true, variant: 'outline' };
+    }
+
+    // Check if user has pending request from backend
+    if (hasPendingRequest(group)) {
+      return { text: 'Request Sent', disabled: true, variant: 'outline' };
+    }
+
+    // Default join request button
+    return { text: 'Request to Join', disabled: false, variant: 'outline' };
   };
 
   if (loading) {
@@ -105,65 +164,80 @@ export default function GroupComponent() {
       )}
 
       <div className="space-y-4">
-        {groupsList.map((group) => (
-          <Card key={group.id} className="p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              {/* Left side: Group info */}
-              <div className="flex items-center space-x-4 flex-1">
-                {/* Group avatar */}
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">
-                      {group.title.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                </div>
+        {groupsList.map((group) => {
+          const userIsMember = isMember(group);
+          const joinButtonState = getJoinButtonState(group);
 
-                {/* Group details */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg mb-1">{group.title}</h3>
-                  <p className="text-gray-600 text-sm mb-2">{group.description}</p>
-
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <div className="flex items-center gap-1">
-                      {group.creator?.avatar || group.avatar ? (
-                        <img
-                          src={group.creator?.avatar || group.avatar}
-                          alt={`${group.creator?.first_name || group.first_name} ${group.creator?.last_name || group.last_name}`}
-                          className="w-5 h-5 rounded-full"
-                        />
-                      ) : (
-                        <div className="w-5 h-5 bg-gray-300 rounded-full"></div>
-                      )}
-                      <span>by {group.creator?.first_name || group.first_name} {group.creator?.last_name || group.last_name}</span>
+          return (
+            <Card key={group.id} className="p-6 hover:shadow-lg transition-shadow">
+              <div className="flex items-center justify-between">
+                {/* Left side: Group info */}
+                <div className="flex items-center space-x-4 flex-1">
+                  {/* Group avatar */}
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">
+                        {group.title.charAt(0).toUpperCase()}
+                      </span>
                     </div>
-                    <span>•</span>
-                    <span>{group.member_count} members</span>
+                  </div>
+
+                  {/* Group details */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-lg">{group.title}</h3>
+                      {/* Category badge */}
+                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
+                        {group.category || 'Other'}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 text-sm mb-2">{group.description}</p>
+
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <div className="flex items-center gap-1">
+                        {group.creator?.avatar || group.avatar ? (
+                          <img
+                            src={group.creator?.avatar || group.avatar}
+                            alt={`${group.creator?.first_name || group.first_name} ${group.creator?.last_name || group.last_name}`}
+                            className="w-5 h-5 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-5 h-5 bg-gray-300 rounded-full"></div>
+                        )}
+                        <span>by {group.creator?.first_name || group.first_name} {group.creator?.last_name || group.last_name}</span>
+                      </div>
+                      <span>•</span>
+                      <span>{group.member_count} members</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Right side: Action buttons */}
-              <div className="flex gap-2 flex-shrink-0">
-                <Button
-                  size="sm"
-                  onClick={() => window.location.href = `/groups/${group.id}`}
-                >
-                  View Group
-                </Button>
-                {group.creator_id !== user?.id && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleJoinRequest(group.id)}
-                  >
-                    Request to Join
-                  </Button>
-                )}
+                {/* Right side: Action buttons */}
+                <div className="flex gap-2 flex-shrink-0">
+                  {userIsMember ? (
+                    // Show View Group button if user is a member
+                    <Button
+                      size="sm"
+                      onClick={() => window.location.href = `/groups/${group.id}`}
+                    >
+                      View Group
+                    </Button>
+                  ) : (
+                    // Show Join Request button if user is not a member
+                    <Button
+                      size="sm"
+                      variant={joinButtonState.variant}
+                      disabled={joinButtonState.disabled}
+                      onClick={() => handleJoinRequest(group.id)}
+                    >
+                      {joinButtonState.text}
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </div>
 
       {groupsList.length === 0 && (
