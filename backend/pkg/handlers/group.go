@@ -46,6 +46,8 @@ func (h *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Title       string `json:"title"`
 		Description string `json:"description"`
+		Category    string `json:"category"`
+		Avatar      string `json:"avatar"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -59,8 +61,27 @@ func (h *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate category (set default if empty or invalid)
+	validCategories := []string{
+		"Technology", "Art", "Travel", "Photography", "Books",
+		"Music", "Sports", "General", "Food", "Business",
+		"Education", "Health", "Other",
+	}
+
+	categoryValid := false
+	for _, valid := range validCategories {
+		if req.Category == valid {
+			categoryValid = true
+			break
+		}
+	}
+
+	if !categoryValid {
+		req.Category = "General" // Default to Other if invalid or empty category
+	}
+
 	// Create group
-	groupId, err := models.CreateGroup(h.db, req.Title, req.Description, user.ID)
+	groupId, err := models.CreateGroup(h.db, req.Title, req.Description, req.Category, req.Avatar, user.ID)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to create group")
 		return
@@ -144,6 +165,8 @@ func (h *GroupHandler) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Title       string `json:"title"`
 		Description string `json:"description"`
+		Category    string `json:"category"`
+		Avatar      string `json:"avatar"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -157,10 +180,29 @@ func (h *GroupHandler) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate category (set default if empty or invalid)
+	validCategories := []string{
+		"Technology", "Art", "Travel", "Photography", "Books",
+		"Music", "Sports", "General", "Food", "Business",
+		"Education", "Health", "Other",
+	}
+
+	categoryValid := false
+	for _, valid := range validCategories {
+		if req.Category == valid {
+			categoryValid = true
+			break
+		}
+	}
+
+	if !categoryValid {
+		req.Category = "General" // Default to General if invalid or empty category
+	}
+
 	// Update group
 	_, err = h.db.Exec(
-		"UPDATE groups SET title = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-		req.Title, req.Description, groupId,
+		"UPDATE groups SET title = ?, description = ?, category = ?, avatar = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+		req.Title, req.Description, req.Category, req.Avatar, groupId,
 	)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to update group")
