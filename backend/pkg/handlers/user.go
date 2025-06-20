@@ -185,6 +185,25 @@ func (h *UserHandler) GetFollowing(w http.ResponseWriter, r *http.Request) {
 	utils.RespondWithJSON(w, http.StatusOK, following)
 }
 
+// GetSuggestedUsers retrieves users that the current user might want to follow
+func (h *UserHandler) GetSuggestedUsers(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Get suggested users (users not followed by current user)
+	suggestedUsers, err := models.GetSuggestedUsers(h.db, user.ID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to retrieve suggested users")
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, suggestedUsers)
+}
+
 // GetFollowCounts retrieves follower and following counts for a user
 func (h *UserHandler) GetFollowCounts(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
@@ -249,6 +268,10 @@ func (h *UserHandler) FollowUser(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to get follow status")
 		return
 	}
+
+	// Create notification for the followed user
+	notificationMessage := user.FirstName + " " + user.LastName + " started following you"
+	_, _ = models.CreateNotification(h.db, targetUserID, "follow", notificationMessage, user.ID)
 
 	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
 		"success": true,
