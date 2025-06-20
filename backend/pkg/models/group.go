@@ -19,6 +19,7 @@ type Group struct {
 	Members     []Member  `json:"members,omitempty"`
 	Posts       []Post    `json:"posts,omitempty"`
 	Events      []Event   `json:"events,omitempty"`
+	MemberCount int       `json:"member_count,omitempty"`
 }
 
 type Member struct {
@@ -109,9 +110,13 @@ func GetAllGroups(db *sql.DB) ([]Group, error) {
 
 	rows, err := db.Query(`
 		SELECT g.id, g.title, g.description, g.category, g.avatar, g.creator_id, g.created_at, g.updated_at,
-		u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
+			u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname,
+			COUNT(CASE WHEN gm.status = 'accepted' THEN 1 END) AS member_count
 		FROM groups g
 		JOIN users u ON g.creator_id = u.id
+		LEFT JOIN group_members gm ON g.id = gm.group_id
+		GROUP BY g.id, g.title, g.description, g.category, g.avatar, g.creator_id, g.created_at, g.updated_at,
+			u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
 		ORDER BY g.created_at DESC
 	`)
 	if err != nil {
@@ -122,19 +127,16 @@ func GetAllGroups(db *sql.DB) ([]Group, error) {
 	for rows.Next() {
 		var group Group
 		var creator User
-
 		err := rows.Scan(
 			&group.ID, &group.Title, &group.Description, &group.Category, &group.Avatar, &group.CreatorID, &group.CreatedAt, &group.UpdatedAt,
-			&creator.ID, &creator.Email, &creator.FirstName, &creator.LastName, &creator.Avatar, &creator.Nickname,
+			&creator.ID, &creator.Email, &creator.FirstName, &creator.LastName, &creator.Avatar, &creator.Nickname, &group.MemberCount,
 		)
 		if err != nil {
 			return nil, err
 		}
-
 		group.Creator = &creator
 		groups = append(groups, group)
 	}
-
 	return groups, nil
 }
 
@@ -146,14 +148,18 @@ func GetGroupById(db *sql.DB, groupId int) (*Group, error) {
 	// Get group data
 	err := db.QueryRow(`
 		SELECT g.id, g.title, g.description, g.category, g.avatar, g.creator_id, g.created_at, g.updated_at,
-		u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
+			u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname,
+			COUNT(CASE WHEN gm.status = 'accepted' THEN 1 END) AS member_count
 		FROM groups g
 		JOIN users u ON g.creator_id = u.id
+		LEFT JOIN group_members gm ON g.id = gm.group_id
 		WHERE g.id = ?
+		GROUP BY g.id, g.title, g.description, g.category, g.avatar, g.creator_id, g.created_at, g.updated_at,
+			u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
 	`, groupId).Scan(
 		&group.ID, &group.Title, &group.Description, &group.Category, &group.Avatar, &group.CreatorID, &group.CreatedAt, &group.UpdatedAt,
 		&creator.ID, &creator.Email, &creator.FirstName, &creator.LastName,
-		&creator.Avatar, &creator.Nickname,
+		&creator.Avatar, &creator.Nickname, &group.MemberCount,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -163,7 +169,6 @@ func GetGroupById(db *sql.DB, groupId int) (*Group, error) {
 	}
 
 	group.Creator = &creator
-
 	return group, nil
 }
 
@@ -215,7 +220,7 @@ func JoinGroup(db *sql.DB, groupId int, userId int, invitedBy *int) error {
 		return err
 	}
 	if exists {
-		return errors.New("user is already a member or has a pending request")
+		return nil
 	}
 
 	// Determine status based on whether it's an invitation or request

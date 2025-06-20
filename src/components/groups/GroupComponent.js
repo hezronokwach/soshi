@@ -19,18 +19,20 @@ export default function GroupComponent() {
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newGroup, setNewGroup] = useState({ title: '', description: '', category: 'General' });
-  const [requestStates, setRequestStates] = useState({}); // Track join request states
+  const [membershipStates, setMembershipStates] = useState({}); // Track membership states per group
 
   useEffect(() => {
-    fetchGroups();
-  }, []);
+    if (user?.id) {
+      fetchGroups();
+    }
+  }, [user]);
 
   const fetchGroups = async () => {
     try {
       const data = await groups.getGroups();
-      // Handle normalized response structure
       const groupsArray = Array.isArray(data) ? data : data.groups || [];
       setGroupsList(groupsArray);
+      await fetchMembershipStates(groupsArray);
     } catch (error) {
       console.error('Error fetching groups:', error);
     } finally {
@@ -38,84 +40,108 @@ export default function GroupComponent() {
     }
   };
 
+  const fetchMembershipStates = async (groupsArray) => {
+    if (!user?.id) {
+      console.warn('User not loaded or user.id missing');
+      return;
+    }
+
+    const states = {};
+    await Promise.all(
+      groupsArray.map(async (group) => {
+        try {
+          const groupDetail = await groups.getGroup(group.id);
+          if (groupDetail?.members && Array.isArray(groupDetail.members)) {
+            const userMembership = groupDetail.members.find(
+              member => parseInt(member.user_id) === parseInt(user.id)
+            );
+            states[group.id] = userMembership ? userMembership.status : 'none';
+          } else {
+            states[group.id] = 'none';
+          }
+        } catch (error) {
+          console.error(`Error fetching membership for group ${group.id}:`, error);
+          states[group.id] = 'none';
+        }
+      })
+    );
+
+    setMembershipStates(states);
+  };
+
   const handleCreateGroup = async (e) => {
     e.preventDefault();
     try {
-      await groups.createGroup(newGroup);
+      const newGroupData = await groups.createGroup(newGroup);
       setNewGroup({ title: '', description: '', category: 'General' });
       setShowCreateForm(false);
-      fetchGroups(); // Refresh groups
+
+      if (newGroupData) {
+        setGroupsList(prev => [...prev, newGroupData]);
+        // Creator is automatically added as 'accepted' member by backend
+        setMembershipStates(prev => ({ ...prev, [newGroupData.id]: 'accepted' }));
+      } else {
+        fetchGroups(); // Refresh groups
+      }
     } catch (error) {
       console.error('Error creating group:', error);
+    }
+  };
+
+  const getJoinButtonState = (group) => {
+    const membershipStatus = membershipStates[group.id];
+
+    switch (membershipStatus) {
+      case 'accepted':
+        return { text: 'View Group', disabled: false, variant: 'default', action: 'view' };
+      case 'pending':
+        return { text: 'Request Sent', disabled: true, variant: 'outline', action: 'none' };
+      default:
+        return { text: 'Request to Join', disabled: false, variant: 'outline', action: 'join' };
     }
   };
 
   const handleJoinRequest = async (groupId) => {
     try {
       // Update UI immediately to show "Request Sent"
-      setRequestStates(prev => ({ ...prev, [groupId]: 'sent' }));
+      setMembershipStates(prev => ({ ...prev, [groupId]: 'pending' }));
 
       await groups.joinGroup(groupId);
-      // Keep the "Request Sent" state
-      fetchGroups(); // Refresh to get updated membership status
+      await refreshGroupMembership(groupId);
     } catch (error) {
       console.error('Error sending join request:', error);
       // Reset the state if request failed
-      setRequestStates(prev => ({ ...prev, [groupId]: 'idle' }));
+      setMembershipStates(prev => ({ ...prev, [groupId]: 'none' }));
       alert('Failed to send join request. Please try again.');
     }
   };
 
-  // Check if user is a member of the group
-  const isMember = (group) => {
-    // Check if user is the creator
-    if (group.creator_id === user?.id) return true;
+  const refreshGroupMembership = async (groupId) => {
+    try {
+      const groupDetail = await groups.getGroup(groupId);
 
-    // Check if user is in members list (if available)
-    if (group.members && Array.isArray(group.members)) {
-      return group.members.some(member =>
-        member.user_id === user?.id && member.status === 'accepted'
-      );
+      if (groupDetail?.members && Array.isArray(groupDetail.members)) {
+        const userMembership = groupDetail.members.find(
+          member => parseInt(member.user_id) === parseInt(user.id)
+        );
+        const status = userMembership ? userMembership.status : 'none';
+        setMembershipStates(prev => ({ ...prev, [groupId]: status }));
+      } else {
+        setMembershipStates(prev => ({ ...prev, [groupId]: 'none' }));
+      }
+    } catch (error) {
+      console.error(`Error refreshing membership for group ${groupId}:`, error);
     }
-
-    // Check if user_membership status is provided
-    if (group.user_membership) {
-      return group.user_membership === 'accepted';
-    }
-
-    return false;
   };
 
-  // Check if user has pending request
-  const hasPendingRequest = (group) => {
-    if (group.members && Array.isArray(group.members)) {
-      return group.members.some(member =>
-        member.user_id === user?.id && member.status === 'pending'
-      );
+  const handleButtonClick = (group) => {
+    const buttonState = getJoinButtonState(group);
+
+    if (buttonState.action === 'view') {
+      window.location.href = `/groups/${group.id}`;
+    } else if (buttonState.action === 'join') {
+      handleJoinRequest(group.id);
     }
-
-    if (group.user_membership) {
-      return group.user_membership === 'pending';
-    }
-
-    return false;
-  };
-
-  const getJoinButtonState = (group) => {
-    const groupId = group.id;
-
-    // Check local request state first
-    if (requestStates[groupId] === 'sent') {
-      return { text: 'Request Sent', disabled: true, variant: 'outline' };
-    }
-
-    // Check if user has pending request from backend
-    if (hasPendingRequest(group)) {
-      return { text: 'Request Sent', disabled: true, variant: 'outline' };
-    }
-
-    // Default join request button
-    return { text: 'Request to Join', disabled: false, variant: 'outline' };
   };
 
   if (loading) {
@@ -184,7 +210,6 @@ export default function GroupComponent() {
 
       <div className="space-y-4">
         {groupsList.map((group) => {
-          const userIsMember = isMember(group);
           const joinButtonState = getJoinButtonState(group);
 
           return (
@@ -233,25 +258,14 @@ export default function GroupComponent() {
 
                 {/* Right side: Action buttons */}
                 <div className="flex gap-2 flex-shrink-0">
-                  {userIsMember ? (
-                    // Show View Group button if user is a member
-                    <Button
-                      size="sm"
-                      onClick={() => window.location.href = `/groups/${group.id}`}
-                    >
-                      View Group
-                    </Button>
-                  ) : (
-                    // Show Join Request button if user is not a member
-                    <Button
-                      size="sm"
-                      variant={joinButtonState.variant}
-                      disabled={joinButtonState.disabled}
-                      onClick={() => handleJoinRequest(group.id)}
-                    >
-                      {joinButtonState.text}
-                    </Button>
-                  )}
+                  <Button
+                    size="sm"
+                    variant={joinButtonState.variant}
+                    disabled={joinButtonState.disabled}
+                    onClick={() => handleButtonClick(group)}
+                  >
+                    {joinButtonState.text}
+                  </Button>
                 </div>
               </div>
             </Card>
