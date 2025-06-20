@@ -13,6 +13,7 @@ export default function GroupEvents({ params, group, fetchGroup }) {
     eventDate: ''
   });
   const [error, setError] = useState('');
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   const handleCreateEvent = async (e) => {
     e.preventDefault();
@@ -38,6 +39,7 @@ export default function GroupEvents({ params, group, fetchGroup }) {
       await groups.createEvent(params.id, eventData);
       setNewEvent({ title: '', description: '', eventDate: '' });
       setError(''); // Clear any previous errors
+      setShowCreateForm(false); // Hide form after successful creation
       fetchGroup(); // Refresh to get new event
     } catch (error) {
       console.error('Error creating event:', error);
@@ -63,41 +65,67 @@ export default function GroupEvents({ params, group, fetchGroup }) {
 
   return (
     <div className="space-y-6">
+      {/* Create Event Toggle Button */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold text-white">Events</h2>
+        <Button
+          onClick={() => setShowCreateForm(!showCreateForm)}
+          variant={showCreateForm ? "outline" : "default"}
+        >
+          {showCreateForm ? 'Cancel' : 'Create Event'}
+        </Button>
+      </div>
+
       {/* Create Event Form */}
-      <Card className="p-4">
-        <h3 className="font-semibold mb-3 text-white">Create New Event</h3>
-        <form onSubmit={handleCreateEvent} className="space-y-3">
-          <Input
-            value={newEvent.title}
-            onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-            placeholder="Event title"
-            className="bg-background text-white"
-            required
-          />
-          <textarea
-            value={newEvent.description}
-            onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
-            placeholder="Event description"
-            className="w-full p-2 border rounded-md bg-background text-white"
-            rows="2"
-          />
-          <Input
-            type="datetime-local"
-            value={newEvent.eventDate}
-            onChange={(e) => {
-              setNewEvent({ ...newEvent, eventDate: e.target.value });
-              setError(''); // Clear error when user changes date
-            }}
-            min={getMinDateTime()} // Prevent selecting past dates in the UI
-            className="bg-background text-white"
-            required
-          />
-          {error && (
-            <p className="text-red-400 text-sm">{error}</p>
-          )}
-          <Button type="submit">Create Event</Button>
-        </form>
-      </Card>
+      {showCreateForm && (
+        <Card className="p-4">
+          <h3 className="font-semibold mb-3 text-white">Create New Event</h3>
+          <form onSubmit={handleCreateEvent} className="space-y-3">
+            <Input
+              value={newEvent.title}
+              onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+              placeholder="Event title"
+              className="bg-background text-white"
+              required
+            />
+            <textarea
+              value={newEvent.description}
+              onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+              placeholder="Event description"
+              className="w-full p-2 border rounded-md bg-background text-white"
+              rows="2"
+            />
+            <Input
+              type="datetime-local"
+              value={newEvent.eventDate}
+              onChange={(e) => {
+                setNewEvent({ ...newEvent, eventDate: e.target.value });
+                setError(''); // Clear error when user changes date
+              }}
+              min={getMinDateTime()} // Prevent selecting past dates in the UI
+              className="bg-background text-white"
+              required
+            />
+            {error && (
+              <p className="text-red-400 text-sm">{error}</p>
+            )}
+            <div className="flex gap-2">
+              <Button type="submit">Create Event</Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowCreateForm(false);
+                  setNewEvent({ title: '', description: '', eventDate: '' });
+                  setError('');
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </Card>
+      )}
 
       {/* Events List */}
       {group.events?.map((event) => (
