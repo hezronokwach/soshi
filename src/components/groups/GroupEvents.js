@@ -12,23 +12,36 @@ export default function GroupEvents({ params, group, fetchGroup }) {
     description: '',
     eventDate: ''
   });
+  const [error, setError] = useState('');
 
   const handleCreateEvent = async (e) => {
     e.preventDefault();
     if (!newEvent.title.trim() || !newEvent.eventDate) return;
+
+    // Validate that the event date is in the future
+    const selectedDate = new Date(newEvent.eventDate);
+    const now = new Date();
+
+    if (selectedDate <= now) {
+      setError('Event date must be in the future');
+      return;
+    }
+
     try {
-      // Transform  variable names for use by the API
+      // Transform variable names for use by the API
       const eventData = {
         title: newEvent.title,
         description: newEvent.description,
-        event_date: new Date(newEvent.eventDate).toISOString()
+        event_date: selectedDate.toISOString()
       };
-      
+
       await groups.createEvent(params.id, eventData);
       setNewEvent({ title: '', description: '', eventDate: '' });
+      setError(''); // Clear any previous errors
       fetchGroup(); // Refresh to get new event
     } catch (error) {
       console.error('Error creating event:', error);
+      setError('Failed to create event. Please try again.');
     }
   };
 
@@ -39,6 +52,13 @@ export default function GroupEvents({ params, group, fetchGroup }) {
     } catch (error) {
       console.error('Error responding to event:', error);
     }
+  };
+
+  // Helper function to get minimum datetime for the input (current time)
+  const getMinDateTime = () => {
+    const now = new Date();
+    // Format as YYYY-MM-DDTHH:MM for datetime-local input
+    return now.toISOString().slice(0, 16);
   };
 
   return (
@@ -64,10 +84,17 @@ export default function GroupEvents({ params, group, fetchGroup }) {
           <Input
             type="datetime-local"
             value={newEvent.eventDate}
-            onChange={(e) => setNewEvent({ ...newEvent, eventDate: e.target.value })}
+            onChange={(e) => {
+              setNewEvent({ ...newEvent, eventDate: e.target.value });
+              setError(''); // Clear error when user changes date
+            }}
+            min={getMinDateTime()} // Prevent selecting past dates in the UI
             className="bg-background text-white"
             required
           />
+          {error && (
+            <p className="text-red-400 text-sm">{error}</p>
+          )}
           <Button type="submit">Create Event</Button>
         </form>
       </Card>
