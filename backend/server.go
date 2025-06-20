@@ -163,6 +163,7 @@ func main() {
 		r.Get("/followers", userHandler.GetFollowers)
 		r.Get("/following", userHandler.GetFollowing)
 		r.Get("/counts", userHandler.GetFollowCounts)
+		r.Get("/suggested", userHandler.GetSuggestedUsers)
 		
 		// Profile routes
 		r.Get("/profile", userHandler.GetProfile)
@@ -193,6 +194,16 @@ func main() {
 		// Other user's activities (with privacy filtering)
 		r.Get("/{userID}", activityHandler.GetUserActivities)
 		r.Get("/{userID}/posts", activityHandler.GetUserPosts)
+	})
+
+	// Notification routes
+	notificationHandler := handlers.NewNotificationHandler(db)
+	r.Route("/api/notifications", func(r chi.Router) {
+		r.Use(authMiddleware)
+		r.Get("/", notificationHandler.GetNotifications)
+		r.Put("/read", notificationHandler.MarkNotificationAsRead)
+		r.Put("/read-all", notificationHandler.MarkAllNotificationsAsRead)
+		r.Get("/unread-count", notificationHandler.GetUnreadCount)
 	})
 
 	// Upload route
