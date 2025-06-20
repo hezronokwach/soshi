@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import Navbar from '@/components/layout/Navbar';
 import ProfileDisplay from '@/components/profile/ProfileDisplay';
 import ProfileEditForm from '@/components/profile/ProfileEditForm';
 import ActivityPage from '@/components/activity/ActivityPage';
@@ -76,7 +77,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="container mx-auto max-w-4xl p-4 space-y-6">
+    <>
+      <Navbar />
+      <div className="container mx-auto max-w-4xl p-4 space-y-6" style={{ paddingTop: '5rem' }}>
       {/* Tab Navigation */}
       <div className="bg-surface border border-border rounded-lg p-4">
         <div className="flex gap-2 overflow-x-auto">
@@ -147,6 +150,7 @@ export default function ProfilePage() {
           isOwnProfile={true}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }
