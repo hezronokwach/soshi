@@ -282,7 +282,6 @@ export default function RightSidebar() {
             {/* Debug info */}
             {process.env.NODE_ENV === 'development' && (
               <div style={{fontSize: '0.75rem', color: '#B8C1CF', marginBottom: '0.5rem'}}>
-                Debug: Loading={loading.toString()}, Users={suggestedUsers.length}
               </div>
             )}
             
