@@ -12,7 +12,6 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
             console.log('Updating member with status:', action);
             await groups.updateMember(params.id, userId, action);
             fetchGroup(); // Refresh to get updated member list
-            // alert(`Member ${action}ed successfully`);
         } catch (error) {
             console.error('Error managing member:', error);
             alert(error.message || 'Failed to update member status');
@@ -26,7 +25,6 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
         try {
             await groups.removeMember(params.id, userId);
             fetchGroup(); // Refresh to get updated member list
-            alert('Member removed successfully');
         } catch (error) {
             console.error('Error removing member:', error);
             alert(error.message || 'Failed to remove member');
@@ -68,7 +66,7 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
                                     <Button
                                         size="sm"
                                         variant="outline"
-                                        onClick={() => handleMemberRequest(member.user_id, 'declined')}
+                                        onClick={() => handleRemoveMember(member.user_id)} // Handle decline as member removal
                                         className="text-red-400 border-red-400 hover:bg-red-900/20"
                                     >
                                         Decline
