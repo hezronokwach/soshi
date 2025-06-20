@@ -331,6 +331,28 @@ export const users = {
     fetchAPI(`/api/users/${userID}/follow-request`, {
       method: "DELETE",
     }),
+
+  getSuggestedUsers: () => fetchAPI("/api/users/suggested"),
+}
+
+// Notifications API
+export const notifications = {
+  getNotifications: (page = 1, limit = 20) => {
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+    return fetchAPI(`/api/notifications?${params}`);
+  },
+  
+  markAsRead: (notificationId) => 
+    fetchAPI(`/api/notifications/read?id=${notificationId}`, {
+      method: "PUT",
+    }),
+    
+  markAllAsRead: () =>
+    fetchAPI("/api/notifications/read-all", {
+      method: "PUT",
+    }),
+    
+  getUnreadCount: () => fetchAPI("/api/notifications/unread-count"),
 }
 
 // Activity API
