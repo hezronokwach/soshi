@@ -1,27 +1,42 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { User, Users, Plus } from "lucide-react";
+import { users } from "@/lib/api";
+import FollowButton from "@/components/connections/FollowButton";
 
 export default function RightSidebar() {
-  // Mock data for online users
-  const onlineUsers = [
-    { id: 1, name: "Alex Johnson", username: "alexj", status: "online" },
-    { id: 2, name: "Samantha Lee", username: "samlee", status: "online" },
-    { id: 3, name: "Marcus Chen", username: "mchen", status: "online" },
-    { id: 4, name: "Jessica Wong", username: "jwong", status: "online" },
-    { id: 5, name: "David Kim", username: "dkim", status: "online" },
-    { id: 6, name: "Emily Davis", username: "edavis", status: "online" },
-    { id: 7, name: "Michael Brown", username: "mbrown", status: "online" },
-    { id: 8, name: "Sarah Miller", username: "smiller", status: "online" },
-  ];
+  const [suggestedUsers, setSuggestedUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data for suggested users
-  const suggestedUsers = [
-    { id: 11, name: "Taylor Swift", username: "tswift", mutualFriends: 5 },
-    { id: 12, name: "John Smith", username: "jsmith", mutualFriends: 3 },
-    { id: 13, name: "Olivia Parker", username: "oparker", mutualFriends: 2 },
-  ];
+  useEffect(() => {
+    fetchSuggestedUsers();
+  }, []);
+
+  const fetchSuggestedUsers = async () => {
+    try {
+      setLoading(true);
+      console.log('🔍 Fetching suggested users...');
+      const data = await users.getSuggestedUsers();
+      console.log('📊 Suggested users data:', data);
+      setSuggestedUsers(data || []);
+    } catch (error) {
+      console.error('❌ Failed to fetch suggested users:', error);
+      setSuggestedUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFollowStatusChange = (userID, status) => {
+    // Keep all users in the list but the follow button will update its state automatically
+    // No need to remove users from the suggested list anymore
+  };
+
+  const getInitials = (firstName, lastName) => {
+    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
+  };
 
   // Mock data for user's groups
   const userGroups = [
@@ -222,30 +237,6 @@ export default function RightSidebar() {
   return (
     <aside style={sidebarStyles}>
       <div style={containerStyles}>
-        {/* Online Users */}
-        <div style={sectionStyles}>
-          <div style={sectionHeaderStyles}>
-            <h3 style={sectionTitleStyles}>Online Users ({onlineUsers.length})</h3>
-            <Link href="/friends" style={seeAllLinkStyles}>
-              See All
-            </Link>
-          </div>
-
-          <div style={userListStyles}>
-            {onlineUsers.map(user => (
-              <div key={user.id} style={userItemStyles}>
-                <div style={userAvatarStyles}>
-                  <User style={{ width: '1.25rem', height: '1.25rem' }} />
-                </div>
-                <div style={userInfoStyles}>
-                  <p style={userNameStyles}>{user.name}</p>
-                  <p style={userMetaStyles}>@{user.username}</p>
-                </div>
-                <div style={onlineIndicatorStyles}></div>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Your Groups */}
         <div style={sectionStyles}>
@@ -278,30 +269,71 @@ export default function RightSidebar() {
           </div>
         </div>
 
-        {/* Suggested Users */}
+        {/* All Users */}
         <div style={sectionStyles}>
           <div style={sectionHeaderStyles}>
-            <h3 style={sectionTitleStyles}>Suggested Users</h3>
+            <h3 style={sectionTitleStyles}>All Users</h3>
             <Link href="/discover/people" style={seeAllLinkStyles}>
               See All
             </Link>
           </div>
 
           <div>
-            {suggestedUsers.map(user => (
-              <div key={user.id} style={{...userItemStyles, backgroundColor: '#0F1624', padding: '0.75rem'}}>
-                <div style={userAvatarStyles}>
-                  <User style={{ width: '1.25rem', height: '1.25rem' }} />
-                </div>
-                <div style={userInfoStyles}>
-                  <p style={userNameStyles}>{user.name}</p>
-                  <p style={userMetaStyles}>{user.mutualFriends} mutual connections</p>
-                </div>
-                <button style={followButtonStyles}>
-                  <Plus style={{ width: '1rem', height: '1rem' }} />
-                </button>
+            {/* Debug info */}
+            {process.env.NODE_ENV === 'development' && (
+              <div style={{fontSize: '0.75rem', color: '#B8C1CF', marginBottom: '0.5rem'}}>
+                Debug: Loading={loading.toString()}, Users={suggestedUsers.length}
               </div>
-            ))}
+            )}
+            
+            {loading ? (
+              // Loading skeleton
+              [...Array(3)].map((_, i) => (
+                <div key={i} style={{...userItemStyles, backgroundColor: '#0F1624', padding: '0.75rem'}}>
+                  <div style={{...userAvatarStyles, backgroundColor: '#2A3343'}}></div>
+                  <div style={userInfoStyles}>
+                    <div style={{height: '1rem', backgroundColor: '#2A3343', borderRadius: '0.25rem', marginBottom: '0.5rem'}}></div>
+                    <div style={{height: '0.75rem', backgroundColor: '#2A3343', borderRadius: '0.25rem', width: '70%'}}></div>
+                  </div>
+                  <div style={{...followButtonStyles, backgroundColor: '#2A3343'}}></div>
+                </div>
+              ))
+            ) : suggestedUsers.length > 0 ? (
+              suggestedUsers.map(user => (
+                <div key={user.id} style={{...userItemStyles, backgroundColor: '#0F1624', padding: '0.75rem'}}>
+                  <Link href={`/profile/${user.id}`} style={{display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, textDecoration: 'none'}}>
+                    {user.avatar ? (
+                      <img 
+                        src={user.avatar} 
+                        alt={`${user.first_name} ${user.last_name}`}
+                        style={{...userAvatarStyles, objectFit: 'cover'}}
+                      />
+                    ) : (
+                      <div style={userAvatarStyles}>
+                        {getInitials(user.first_name, user.last_name)}
+                      </div>
+                    )}
+                    <div style={userInfoStyles}>
+                      <p style={userNameStyles}>{user.first_name} {user.last_name}</p>
+                      <p style={userMetaStyles}>
+                        {user.nickname ? `@${user.nickname}` : 'New user'}
+                      </p>
+                    </div>
+                  </Link>
+                  <div style={{flexShrink: 0}}>
+                    <FollowButton
+                      targetUserID={user.id}
+                      onStatusChange={(status) => handleFollowStatusChange(user.id, status)}
+                      size="small"
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{textAlign: 'center', padding: '2rem', color: '#B8C1CF'}}>
+                <p style={{fontSize: '0.875rem'}}>No other users found</p>
+              </div>
+            )}
           </div>
         </div>
 
