@@ -158,3 +158,38 @@ func UpdateUser(db *sql.DB, user *User) error {
 	)
 	return err
 }
+
+// GetSuggestedUsers returns all users in the database (except current user)
+func GetSuggestedUsers(db *sql.DB, userID int) ([]User, error) {
+	query := `
+		SELECT u.id, u.email, u.first_name, u.last_name, u.date_of_birth, 
+		       u.avatar, u.nickname, u.about_me, u.created_at, u.updated_at
+		FROM users u
+		WHERE u.id != ?
+		ORDER BY u.created_at DESC
+		LIMIT 20
+	`
+	
+	rows, err := db.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []User
+	for rows.Next() {
+		var user User
+		// Set IsPublic to true by default since the column doesn't exist in the table
+		user.IsPublic = true
+		err := rows.Scan(
+			&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.DateOfBirth,
+			&user.Avatar, &user.Nickname, &user.AboutMe, &user.CreatedAt, &user.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}
