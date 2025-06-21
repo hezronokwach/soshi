@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { User, Users, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { groups } from "@/lib/api";
+import { users, groups } from "@/lib/api";
+import FollowButton from "@/components/connections/FollowButton";
 
 export default function RightSidebar() {
   const { user } = useAuth();
@@ -13,7 +14,6 @@ export default function RightSidebar() {
   const [userGroups, setUserGroups] = useState([]);
   const [suggestedGroups, setSuggestedGroups] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [membershipStates, setMembershipStates] = useState({});
 
   useEffect(() => {
     if (user?.id) {
@@ -27,7 +27,7 @@ export default function RightSidebar() {
       await Promise.all([
         fetchOnlineUsers(),
         fetchSuggestedUsers(),
-        fetchGroupsData() // Single function for both user and suggested groups
+        fetchGroupsData()
       ]);
     } catch (error) {
       console.error('Error fetching sidebar data:', error);
@@ -36,15 +36,14 @@ export default function RightSidebar() {
     }
   };
 
-  // Fetch online users - you'll need to implement this API endpoint
+  // Fetch online users - using mock data until API is implemented
   const fetchOnlineUsers = async () => {
     try {
-      // Replace with your actual API call
-      // const response = await api.getOnlineUsers();
+      // Replace with your actual API call when ready
+      // const response = await users.getOnlineUsers();
       // setOnlineUsers(response);
 
-      // For now, keeping a smaller mock dataset until you implement the API
-      // Limit to 4 items for better presentation
+      // Mock data for now - limit to 4 items for better presentation
       setOnlineUsers([
         { id: 1, name: "Alex Johnson", username: "alexj", status: "online" },
         { id: 2, name: "Samantha Lee", username: "samlee", status: "online" },
@@ -56,23 +55,17 @@ export default function RightSidebar() {
     }
   };
 
-  // Fetch suggested users - you'll need to implement this API endpoint
+  // Fetch suggested users using the API
   const fetchSuggestedUsers = async () => {
     try {
-      // Replace with your actual API call
-      // const response = await api.getSuggestedUsers();
-      // setSuggestedUsers(response);
-
-      // For now, keeping a smaller mock dataset until you implement the API
-      // Limit to 4 items for better presentation
-      setSuggestedUsers([
-        { id: 11, name: "John Smith", username: "jsmith", mutualFriends: 3 },
-        { id: 12, name: "Olivia Parker", username: "oparker", mutualFriends: 2 },
-        { id: 13, name: "Taylor Swift", username: "tswift", mutualFriends: 5 },
-        { id: 14, name: "Emily Davis", username: "edavis", mutualFriends: 1 },
-      ].slice(0, 4));
+      setLoading(true);
+      console.log('🔍 Fetching suggested users...');
+      const data = await users.getSuggestedUsers();
+      console.log('📊 Suggested users data:', data);
+      setSuggestedUsers(data || []);
     } catch (error) {
-      console.error('Error fetching suggested users:', error);
+      console.error('❌ Failed to fetch suggested users:', error);
+      setSuggestedUsers([]);
     }
   };
 
@@ -127,11 +120,21 @@ export default function RightSidebar() {
     }
   };
 
-  // Handle follow user action
+  // Handle follow status change
+  const handleFollowStatusChange = (userID, status) => {
+    // Keep all users in the list but the follow button will update its state automatically
+    // No need to remove users from the suggested list anymore
+  };
+
+  // Get user initials for avatar display
+  const getInitials = (firstName, lastName) => {
+    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
+  };
+
+  // Handle follow user action (for online users section)
   const handleFollowUser = async (userId) => {
     try {
-      // Implement follow user API call here
-      // await api.followUser(userId);
+      // This will be handled by the FollowButton component
       console.log('Following user:', userId);
     } catch (error) {
       console.error('Error following user:', error);
@@ -343,47 +346,149 @@ export default function RightSidebar() {
   return (
     <aside style={sidebarStyles}>
       <div style={containerStyles}>
-      {/* Online Users */}
-      {onlineUsers.length > 0 && (
-        <div style={sectionStyles}>
-          <div style={sectionHeaderStyles}>
-            <h3 style={sectionTitleStyles}>Online Users ({onlineUsers.length})</h3>
-            <Link href="/friends" style={seeAllLinkStyles}>
-              See All
-            </Link>
-          </div>
+        {/* Online Users */}
+        {onlineUsers.length > 0 && (
+          <div style={sectionStyles}>
+            <div style={sectionHeaderStyles}>
+              <h3 style={sectionTitleStyles}>Online Users ({onlineUsers.length})</h3>
+              <Link href="/friends" style={seeAllLinkStyles}>
+                See All
+              </Link>
+            </div>
 
-          <div style={userListStyles}>
-            {onlineUsers.map(user => (
-              <div key={user.id} style={userItemStyles}>
-                <div style={userAvatarStyles}>
-                  <User style={{ width: '1.25rem', height: '1.25rem' }} />
+            <div style={userListStyles}>
+              {onlineUsers.map(user => (
+                <div key={user.id} style={userItemStyles}>
+                  <div style={userAvatarStyles}>
+                    <User style={{ width: '1.25rem', height: '1.25rem' }} />
+                  </div>
+                  <div style={userInfoStyles}>
+                    <p style={userNameStyles}>{user.name}</p>
+                    <p style={userMetaStyles}>@{user.username}</p>
+                  </div>
+                  <div style={onlineIndicatorStyles}></div>
                 </div>
-                <div style={userInfoStyles}>
-                  <p style={userNameStyles}>{user.name}</p>
-                  <p style={userMetaStyles}>@{user.username}</p>
-                </div>
-                <div style={onlineIndicatorStyles}></div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
         {/* Your Groups */}
         {userGroups.length > 0 && (
+          <div style={sectionStyles}>
+            <div style={sectionHeaderStyles}>
+              <h3 style={sectionTitleStyles}>Your Groups</h3>
+              <Link href="/groups" style={seeAllLinkStyles}>
+                See All
+              </Link>
+            </div>
+
+            <div>
+              {userGroups.map(group => (
+                <Link key={group.id} href={`/groups/${group.id}`} style={{ textDecoration: 'none' }}>
+                  <div style={groupItemStyles}>
+                    <div style={groupHeaderStyles}>
+                      <div style={groupAvatarStyles}>
+                        <Users style={{ width: '1.25rem', height: '1.25rem' }} />
+                      </div>
+                      <div style={groupInfoStyles}>
+                        <p style={groupNameStyles}>{group.name}</p>
+                        <p style={groupMetaStyles}>{group.category} • {group.members.toLocaleString()} members</p>
+                      </div>
+                      {group.unread > 0 && (
+                        <div style={unreadBadgeStyles}>
+                          {group.unread}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* All Users (Suggested Users) */}
         <div style={sectionStyles}>
           <div style={sectionHeaderStyles}>
-            <h3 style={sectionTitleStyles}>Your Groups</h3>
-            <Link href="/groups" style={seeAllLinkStyles}>
+            <h3 style={sectionTitleStyles}>All Users</h3>
+            <Link href="/discover/people" style={seeAllLinkStyles}>
               See All
             </Link>
           </div>
 
           <div>
-            {userGroups.map(group => (
-              <Link key={group.id} href={`/groups/${group.id}`} style={{ textDecoration: 'none' }}>
-                <div style={groupItemStyles}>
+            {/* Debug info for development */}
+            {process.env.NODE_ENV === 'development' && (
+              <div style={{fontSize: '0.75rem', color: '#B8C1CF', marginBottom: '0.5rem'}}>
+                {/* Debug info can be added here if needed */}
+              </div>
+            )}
+            
+            {loading ? (
+              // Loading skeleton
+              [...Array(3)].map((_, i) => (
+                <div key={i} style={{...userItemStyles, backgroundColor: '#0F1624', padding: '0.75rem'}}>
+                  <div style={{...userAvatarStyles, backgroundColor: '#2A3343'}}></div>
+                  <div style={userInfoStyles}>
+                    <div style={{height: '1rem', backgroundColor: '#2A3343', borderRadius: '0.25rem', marginBottom: '0.5rem'}}></div>
+                    <div style={{height: '0.75rem', backgroundColor: '#2A3343', borderRadius: '0.25rem', width: '70%'}}></div>
+                  </div>
+                  <div style={{...followButtonStyles, backgroundColor: '#2A3343'}}></div>
+                </div>
+              ))
+            ) : suggestedUsers.length > 0 ? (
+              suggestedUsers.map(user => (
+                <div key={user.id} style={{...userItemStyles, backgroundColor: '#0F1624', padding: '0.75rem'}}>
+                  <Link href={`/profile/${user.id}`} style={{display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, textDecoration: 'none'}}>
+                    {user.avatar ? (
+                      <img 
+                        src={user.avatar} 
+                        alt={`${user.first_name} ${user.last_name}`}
+                        style={{...userAvatarStyles, objectFit: 'cover'}}
+                      />
+                    ) : (
+                      <div style={userAvatarStyles}>
+                        {getInitials(user.first_name, user.last_name)}
+                      </div>
+                    )}
+                    <div style={userInfoStyles}>
+                      <p style={userNameStyles}>{user.first_name} {user.last_name}</p>
+                      <p style={userMetaStyles}>
+                        {user.nickname ? `@${user.nickname}` : 'New user'}
+                      </p>
+                    </div>
+                  </Link>
+                  <div style={{flexShrink: 0}}>
+                    <FollowButton
+                      targetUserID={user.id}
+                      onStatusChange={(status) => handleFollowStatusChange(user.id, status)}
+                      size="small"
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{textAlign: 'center', padding: '2rem', color: '#B8C1CF'}}>
+                <p style={{fontSize: '0.875rem'}}>No other users found</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Suggested Groups */}
+        {suggestedGroups.length > 0 && (
+          <div style={sectionStyles}>
+            <div style={sectionHeaderStyles}>
+              <h3 style={sectionTitleStyles}>Suggested Groups</h3>
+              <Link href="/discover/groups" style={seeAllLinkStyles}>
+                See All
+              </Link>
+            </div>
+
+            <div>
+              {suggestedGroups.map(group => (
+                <div key={group.id} style={groupItemStyles}>
                   <div style={groupHeaderStyles}>
                     <div style={groupAvatarStyles}>
                       <Users style={{ width: '1.25rem', height: '1.25rem' }} />
@@ -392,77 +497,14 @@ export default function RightSidebar() {
                       <p style={groupNameStyles}>{group.name}</p>
                       <p style={groupMetaStyles}>{group.category} • {group.members.toLocaleString()} members</p>
                     </div>
-                    {group.unread > 0 && (
-                      <div style={unreadBadgeStyles}>
-                        {group.unread}
-                      </div>
-                    )}
                   </div>
+                  <button style={joinButtonStyles} onClick={() => handleJoinGroup(group.id)}>
+                    Join Group
+                  </button>
                 </div>
-              </Link>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* Suggested Users */}
-      {suggestedUsers.length > 0 && (
-        <div style={sectionStyles}>
-          <div style={sectionHeaderStyles}>
-            <h3 style={sectionTitleStyles}>Suggested Users</h3>
-            <Link href="/discover/people" style={seeAllLinkStyles}>
-              See All
-            </Link>
-          </div>
-
-          <div>
-            {suggestedUsers.map(user => (
-              <div key={user.id} style={{ ...userItemStyles, backgroundColor: '#0F1624', padding: '0.75rem' }}>
-                <div style={userAvatarStyles}>
-                  <User style={{ width: '1.25rem', height: '1.25rem' }} />
-                </div>
-                <div style={userInfoStyles}>
-                  <p style={userNameStyles}>{user.name}</p>
-                  <p style={userMetaStyles}>{user.mutualFriends} mutual connections</p>
-                </div>
-                <button style={followButtonStyles} onClick={() => handleFollowUser(user.id)}>
-                  <Plus style={{ width: '1rem', height: '1rem' }} />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-        {/* Suggested Groups */}
-        {suggestedGroups.length > 0 && (
-        <div style={sectionStyles}>
-          <div style={sectionHeaderStyles}>
-            <h3 style={sectionTitleStyles}>Suggested Groups</h3>
-            <Link href="/discover/groups" style={seeAllLinkStyles}>
-              See All
-            </Link>
-          </div>
-
-          <div>
-            {suggestedGroups.map(group => (
-              <div key={group.id} style={groupItemStyles}>
-                <div style={groupHeaderStyles}>
-                  <div style={groupAvatarStyles}>
-                    <Users style={{ width: '1.25rem', height: '1.25rem' }} />
-                  </div>
-                  <div style={groupInfoStyles}>
-                    <p style={groupNameStyles}>{group.name}</p>
-                    <p style={groupMetaStyles}>{group.category} • {group.members.toLocaleString()} members</p>
-                  </div>
-                </div>
-                <button style={joinButtonStyles} onClick={() => handleJoinGroup(group.id)}>
-                  Join Group
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
         )}
       </div>
     </aside>

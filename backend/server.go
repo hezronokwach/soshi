@@ -64,6 +64,7 @@ func main() {
 	commentHandler := handlers.NewCommentHandler(db)
 	groupHandler := handlers.NewGroupHandler(db)
 	userHandler := handlers.NewUserHandler(db)
+	activityHandler := handlers.NewActivityHandler(db)
 	uploadHandler := handlers.NewUploadHandler()
 	wsHandler := handlers.NewWebSocketHandler(hub)
 	authMiddleware := middleware1.Auth(db)
@@ -158,7 +159,51 @@ func main() {
 
 	// User routes
 	r.Route("/api/users", func(r chi.Router) {
+		r.Use(authMiddleware)
 		r.Get("/followers", userHandler.GetFollowers)
+		r.Get("/following", userHandler.GetFollowing)
+		r.Get("/counts", userHandler.GetFollowCounts)
+		r.Get("/suggested", userHandler.GetSuggestedUsers)
+		
+		// Profile routes
+		r.Get("/profile", userHandler.GetProfile)
+		r.Put("/profile", userHandler.UpdateProfile)
+		r.Put("/profile/privacy", userHandler.UpdateProfilePrivacy)
+		r.Get("/{userID}/profile", userHandler.GetProfile)
+		
+		// Follow routes for specific users
+		r.Get("/{userID}/followers", userHandler.GetFollowers)
+		r.Get("/{userID}/following", userHandler.GetFollowing)
+		r.Get("/{userID}/counts", userHandler.GetFollowCounts)
+		r.Get("/{userID}/follow-status", userHandler.GetFollowStatus)
+		r.Post("/{userID}/follow", userHandler.FollowUser)
+		r.Delete("/{userID}/follow", userHandler.UnfollowUser)
+		r.Delete("/{userID}/follow-request", userHandler.CancelFollowRequest)
+	})
+
+	// Activity routes
+	r.Route("/api/activity", func(r chi.Router) {
+		r.Use(authMiddleware)
+		r.Get("/", activityHandler.GetUserActivities)
+		r.Get("/posts", activityHandler.GetUserPosts)
+		r.Get("/settings", activityHandler.GetActivitySettings)
+		r.Put("/settings", activityHandler.UpdateActivitySettings)
+		r.Put("/{activityID}/hide", activityHandler.HideActivity)
+		r.Put("/{activityID}/unhide", activityHandler.UnhideActivity)
+		
+		// Other user's activities (with privacy filtering)
+		r.Get("/{userID}", activityHandler.GetUserActivities)
+		r.Get("/{userID}/posts", activityHandler.GetUserPosts)
+	})
+
+	// Notification routes
+	notificationHandler := handlers.NewNotificationHandler(db)
+	r.Route("/api/notifications", func(r chi.Router) {
+		r.Use(authMiddleware)
+		r.Get("/", notificationHandler.GetNotifications)
+		r.Put("/read", notificationHandler.MarkNotificationAsRead)
+		r.Put("/read-all", notificationHandler.MarkAllNotificationsAsRead)
+		r.Get("/unread-count", notificationHandler.GetUnreadCount)
 	})
 
 	// Upload route

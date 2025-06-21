@@ -5,11 +5,13 @@ import Link from "next/link";
 import { Menu, X, Bell, MessageSquare, User, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { notifications } from "@/lib/api";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [notificationCount, setNotificationCount] = useState(0);
 
   // Check if user is authenticated
   const isAuthenticated = !!user;
@@ -19,6 +21,25 @@ export default function Navbar() {
 
   // Ref for user dropdown
   const userMenuRef = useRef(null);
+
+  // Fetch notification count
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchNotificationCount();
+      // Set up interval to fetch count every 30 seconds
+      const interval = setInterval(fetchNotificationCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated]);
+
+  const fetchNotificationCount = async () => {
+    try {
+      const data = await notifications.getUnreadCount();
+      setNotificationCount(data.count || 0);
+    } catch (error) {
+      console.error('Failed to fetch notification count:', error);
+    }
+  };
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -143,25 +164,27 @@ export default function Navbar() {
           {isAuthenticated ? (
             <>
               {/* Notification Icon */}
-              <button style={{ position: 'relative', color: '#B8C1CF' }}>
+              <Link href="/notifications" style={{ position: 'relative', color: '#B8C1CF', textDecoration: 'none' }}>
                 <Bell style={{ height: '1.5rem', width: '1.5rem' }} />
-                <span style={{
-                  position: 'absolute',
-                  top: '-0.25rem',
-                  right: '-0.25rem',
-                  backgroundColor: '#FF006E',
-                  color: 'white',
-                  fontSize: '0.75rem',
-                  borderRadius: '9999px',
-                  height: '1.25rem',
-                  width: '1.25rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  3
-                </span>
-              </button>
+                {notificationCount > 0 && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-0.25rem',
+                    right: '-0.25rem',
+                    backgroundColor: '#FF006E',
+                    color: 'white',
+                    fontSize: '0.75rem',
+                    borderRadius: '9999px',
+                    height: '1.25rem',
+                    width: '1.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {notificationCount > 99 ? '99+' : notificationCount}
+                  </span>
+                )}
+              </Link>
 
               {/* Messages Icon */}
               <button style={{ position: 'relative', color: '#B8C1CF' }}>

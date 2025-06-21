@@ -36,12 +36,18 @@ const renderGroupNotification = (notification) => {
       <p>{notification.message}</p>
       {(notification.type === 'group_join_request' || notification.type === 'group_invitation') && (
         <div className="flex gap-2">
-          <Button size="sm" onClick={() => handleGroupAction('accept')}>
-            Accept
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => handleGroupAction('decline')}>
+          <button 
+          className="px-3 py-1 bg-primary hover:bg-primary-hover text-white rounded text-sm transition-colors"
+            onClick={() => handleGroupAction('accept')}
+          >
+          Accept
+          </button>
+          <button 
+            className="px-3 py-1 bg-background hover:bg-border text-text-primary border border-border rounded text-sm transition-colors"
+            onClick={() => handleGroupAction('decline')}
+          >
             Decline
-          </Button>
+          </button>
         </div>
       )}
     </div>

@@ -286,6 +286,127 @@ export const groups = {
 // Users API
 export const users = {
   getFollowers: () => fetchAPI("/api/users/followers"),
+  
+  // Profile API methods
+  getProfile: (userId = null) => {
+    const endpoint = userId ? `/api/users/${userId}/profile` : "/api/users/profile"
+    return fetchAPI(endpoint)
+  },
+  
+  updateProfile: (profileData) =>
+    fetchAPI("/api/users/profile", {
+      method: "PUT",
+      body: JSON.stringify(profileData),
+    }),
+    
+  updatePrivacy: (isPublic) =>
+  fetchAPI("/api/users/profile/privacy", {
+  method: "PUT", 
+  body: JSON.stringify({ is_public: isPublic }),
+  }),
+
+  // Follow functionality
+  getFollowers: (userID = null) => {
+    const endpoint = userID ? `/api/users/${userID}/followers` : "/api/users/followers"
+    return fetchAPI(endpoint)
+  },
+
+  getFollowing: (userID = null) => {
+    const endpoint = userID ? `/api/users/${userID}/following` : "/api/users/following"
+    return fetchAPI(endpoint)
+  },
+
+  getFollowCounts: (userID = null) => {
+    const endpoint = userID ? `/api/users/${userID}/counts` : "/api/users/counts"
+    return fetchAPI(endpoint)
+  },
+
+  getFollowStatus: (userID) =>
+    fetchAPI(`/api/users/${userID}/follow-status`),
+
+  followUser: (userID) =>
+    fetchAPI(`/api/users/${userID}/follow`, {
+      method: "POST",
+    }),
+
+  unfollowUser: (userID) =>
+    fetchAPI(`/api/users/${userID}/follow`, {
+      method: "DELETE",
+    }),
+
+  cancelFollowRequest: (userID) =>
+    fetchAPI(`/api/users/${userID}/follow-request`, {
+      method: "DELETE",
+    }),
+
+  getSuggestedUsers: () => fetchAPI("/api/users/suggested"),
+}
+
+// Notifications API
+export const notifications = {
+  getNotifications: (page = 1, limit = 20) => {
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+    return fetchAPI(`/api/notifications?${params}`);
+  },
+  
+  markAsRead: (notificationId) => 
+    fetchAPI(`/api/notifications/read?id=${notificationId}`, {
+      method: "PUT",
+    }),
+    
+  markAllAsRead: () =>
+    fetchAPI("/api/notifications/read-all", {
+      method: "PUT",
+    }),
+    
+  getUnreadCount: () => fetchAPI("/api/notifications/unread-count"),
+}
+
+// Activity API
+export const activity = {
+  getUserActivities: (userID = null, params = {}) => {
+    const endpoint = userID ? `/api/activity/${userID}` : "/api/activity/"
+    const searchParams = new URLSearchParams()
+    
+    if (params.page) searchParams.append("page", params.page)
+    if (params.limit) searchParams.append("limit", params.limit)
+    if (params.types && params.types.length > 0) {
+      searchParams.append("types", params.types.join(","))
+    }
+    if (params.showHidden) searchParams.append("show_hidden", "true")
+    
+    const queryString = searchParams.toString()
+    return fetchAPI(`${endpoint}${queryString ? `?${queryString}` : ""}`)
+  },
+
+  getUserPosts: (userID = null, params = {}) => {
+    const endpoint = userID ? `/api/activity/${userID}/posts` : "/api/activity/posts"
+    const searchParams = new URLSearchParams()
+    
+    if (params.page) searchParams.append("page", params.page)
+    if (params.limit) searchParams.append("limit", params.limit)
+    
+    const queryString = searchParams.toString()
+    return fetchAPI(`${endpoint}${queryString ? `?${queryString}` : ""}`)
+  },
+
+  hideActivity: (activityID) =>
+    fetchAPI(`/api/activity/${activityID}/hide`, {
+      method: "PUT",
+    }),
+
+  unhideActivity: (activityID) =>
+    fetchAPI(`/api/activity/${activityID}/unhide`, {
+      method: "PUT",
+    }),
+
+  getActivitySettings: () => fetchAPI("/api/activity/settings"),
+
+  updateActivitySettings: (settings) =>
+    fetchAPI("/api/activity/settings", {
+      method: "PUT",
+      body: JSON.stringify(settings),
+    }),
 }
 
 // Upload API
@@ -348,6 +469,7 @@ export default {
   comments,
   groups,
   users,
+  activity,
   upload,
   connectWebSocket,
 }

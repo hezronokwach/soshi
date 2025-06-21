@@ -148,6 +148,15 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get post owner for activity tracking
+	post, err := models.GetPostById(h.db, postId, user.ID)
+	if err == nil {
+		// Create activity record
+		if err := models.CreateCommentActivity(h.db, user.ID, commentId, postId, req.Content, post.UserID); err != nil {
+			// Log error but don't fail the request
+		}
+	}
+
 	// Get created comment
 	createdComment, err := models.GetCommentById(h.db, commentId)
 	if err != nil {
