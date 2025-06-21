@@ -260,6 +260,9 @@ sessions/
 
 # Sentry
 .sentryclirc
+docs
+backend/uploads
+*.db
 
 # Next.js specific
 .next/

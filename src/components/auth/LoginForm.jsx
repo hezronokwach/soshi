@@ -86,14 +86,14 @@ export default function LoginForm() {
 
       {/* Success message for new registrations */}
       {successMessage && (
-        <div className="bg-green-500 bg-opacity-20 border border-green-500 text-green-500 px-4 py-3 rounded mb-4">
+        <div className="bg-opacity-20 border border-green-500 text-green-500 px-4 py-3 rounded mb-4">
           {successMessage}
         </div>
       )}
 
       {/* Error message */}
       {submitError && (
-        <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-500 px-4 py-3 rounded mb-4">
+        <div className="bg-opacity-20 border border-red-500 text-red-500 px-4 py-3 rounded mb-4">
           {submitError}
         </div>
       )}

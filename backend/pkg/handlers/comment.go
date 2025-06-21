@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -54,7 +55,12 @@ func (h *CommentHandler) GetPostComments(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	if parentIdStr := r.URL.Query().Get("parentId"); parentIdStr != "" {
+	parentIdStr := r.URL.Query().Get("parentId")
+	if parentIdStr == "all" {
+		// Special case: get all replies (no pagination)
+		parentId = new(int) // Set to non-nil to indicate we want replies
+		*parentId = -1      // Use -1 as a marker to get all replies
+	} else if parentIdStr != "" {
 		if p, err := strconv.Atoi(parentIdStr); err == nil && p > 0 {
 			parentId = &p
 		}
@@ -71,6 +77,22 @@ func (h *CommentHandler) GetPostComments(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to retrieve comments")
 		return
+	}
+
+	// Log comment data for debugging and enhance with user data
+	for i := range comments {
+		if comments[i].ImageURL != "" {
+			log.Printf("Comment %d - Image URL: %s, ParentID: %v", comments[i].ID, comments[i].ImageURL, comments[i].ParentID)
+		}
+		// Get user data for each comment
+		user, err := models.GetUserById(h.db, comments[i].UserID)
+		if err == nil {
+			comments[i].User = user
+		}
+		// Ensure ParentID is properly set
+		if comments[i].ParentID != nil && *comments[i].ParentID == 0 {
+			comments[i].ParentID = nil
+		}
 	}
 
 	utils.RespondWithJSON(w, http.StatusOK, comments)
@@ -140,6 +162,16 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to retrieve created comment")
 		return
+	}
+
+	// Log the created comment data for debugging
+	log.Printf("Created comment: ID=%d, PostID=%d, UserID=%d, ImageURL=%s", 
+		createdComment.ID, createdComment.PostID, createdComment.UserID, createdComment.ImageURL)
+
+	// Get user data for the comment
+	commentUser, err := models.GetUserById(h.db, createdComment.UserID)
+	if err == nil {
+		createdComment.User = commentUser
 	}
 
 	utils.RespondWithJSON(w, http.StatusCreated, createdComment)

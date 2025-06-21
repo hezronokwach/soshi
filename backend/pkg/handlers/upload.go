@@ -77,7 +77,7 @@ func (h *UploadHandler) UploadFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Return file URL
+	// Return the full URL path for the uploaded file
 	fileURL := fmt.Sprintf("/uploads/%s", filename)
 	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"url": fileURL})
 }

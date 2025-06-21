@@ -10,6 +10,8 @@ type Group struct {
 	ID          int       `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
+	Category    string    `json:"category"`
+	Avatar      string    `json:"avatar"`
 	CreatorID   int       `json:"creator_id"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
@@ -17,6 +19,7 @@ type Group struct {
 	Members     []Member  `json:"members,omitempty"`
 	Posts       []Post    `json:"posts,omitempty"`
 	Events      []Event   `json:"events,omitempty"`
+	MemberCount int       `json:"member_count,omitempty"`
 }
 
 type Member struct {
@@ -31,16 +34,18 @@ type Member struct {
 }
 
 type Event struct {
-	ID          int        `json:"id"`
-	GroupID     int        `json:"group_id"`
-	CreatorID   int        `json:"creator_id"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	EventDate   time.Time  `json:"event_date"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
-	Creator     *User      `json:"creator,omitempty"`
-	Responses   []Response `json:"responses,omitempty"`
+	ID            int        `json:"id"`
+	GroupID       int        `json:"group_id"`
+	CreatorID     int        `json:"creator_id"`
+	Title         string     `json:"title"`
+	Description   string     `json:"description"`
+	EventDate     time.Time  `json:"event_date"`
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     time.Time  `json:"updated_at"`
+	Creator       *User      `json:"creator,omitempty"`
+	Responses     []Response `json:"responses,omitempty"`
+	GoingCount    int        `json:"going_count,omitempty"`
+	NotGoingCount int        `json:"not_going_count,omitempty"`
 }
 
 type Response struct {
@@ -54,7 +59,7 @@ type Response struct {
 }
 
 // CreateGroup creates a new group
-func CreateGroup(db *sql.DB, title string, description string, creatorId int) (int, error) {
+func CreateGroup(db *sql.DB, title string, description string, category string, avatar string, creatorId int) (int, error) {
 	// Begin transaction
 	tx, err := db.Begin()
 	if err != nil {
@@ -62,10 +67,15 @@ func CreateGroup(db *sql.DB, title string, description string, creatorId int) (i
 	}
 	defer tx.Rollback()
 
+	// Set default category if empty
+	if category == "" {
+		category = "General"
+	}
+
 	// Insert group
 	result, err := tx.Exec(
-		`INSERT INTO groups (title, description, creator_id) VALUES (?, ?, ?)`,
-		title, description, creatorId,
+		`INSERT INTO groups (title, description, category, avatar, creator_id) VALUES (?, ?, ?, ?, ?)`,
+		title, description, category, avatar, creatorId,
 	)
 	if err != nil {
 		return 0, err
@@ -99,10 +109,14 @@ func GetAllGroups(db *sql.DB) ([]Group, error) {
 	groups := []Group{}
 
 	rows, err := db.Query(`
-		SELECT g.id, g.title, g.description, g.creator_id, g.created_at, g.updated_at,
-		u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
+		SELECT g.id, g.title, g.description, g.category, g.avatar, g.creator_id, g.created_at, g.updated_at,
+			u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname,
+			COUNT(CASE WHEN gm.status = 'accepted' THEN 1 END) AS member_count
 		FROM groups g
 		JOIN users u ON g.creator_id = u.id
+		LEFT JOIN group_members gm ON g.id = gm.group_id
+		GROUP BY g.id, g.title, g.description, g.category, g.avatar, g.creator_id, g.created_at, g.updated_at,
+			u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
 		ORDER BY g.created_at DESC
 	`)
 	if err != nil {
@@ -113,19 +127,16 @@ func GetAllGroups(db *sql.DB) ([]Group, error) {
 	for rows.Next() {
 		var group Group
 		var creator User
-
 		err := rows.Scan(
-			&group.ID, &group.Title, &group.Description, &group.CreatorID, &group.CreatedAt, &group.UpdatedAt,
-			&creator.ID, &creator.Email, &creator.FirstName, &creator.LastName, &creator.Avatar, &creator.Nickname,
+			&group.ID, &group.Title, &group.Description, &group.Category, &group.Avatar, &group.CreatorID, &group.CreatedAt, &group.UpdatedAt,
+			&creator.ID, &creator.Email, &creator.FirstName, &creator.LastName, &creator.Avatar, &creator.Nickname, &group.MemberCount,
 		)
 		if err != nil {
 			return nil, err
 		}
-
 		group.Creator = &creator
 		groups = append(groups, group)
 	}
-
 	return groups, nil
 }
 
@@ -136,15 +147,19 @@ func GetGroupById(db *sql.DB, groupId int) (*Group, error) {
 
 	// Get group data
 	err := db.QueryRow(`
-		SELECT g.id, g.title, g.description, g.creator_id, g.created_at, g.updated_at,
-		u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
+		SELECT g.id, g.title, g.description, g.category, g.avatar, g.creator_id, g.created_at, g.updated_at,
+			u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname,
+			COUNT(CASE WHEN gm.status = 'accepted' THEN 1 END) AS member_count
 		FROM groups g
 		JOIN users u ON g.creator_id = u.id
+		LEFT JOIN group_members gm ON g.id = gm.group_id
 		WHERE g.id = ?
+		GROUP BY g.id, g.title, g.description, g.category, g.avatar, g.creator_id, g.created_at, g.updated_at,
+			u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
 	`, groupId).Scan(
-		&group.ID, &group.Title, &group.Description, &group.CreatorID, &group.CreatedAt, &group.UpdatedAt,
+		&group.ID, &group.Title, &group.Description, &group.Category, &group.Avatar, &group.CreatorID, &group.CreatedAt, &group.UpdatedAt,
 		&creator.ID, &creator.Email, &creator.FirstName, &creator.LastName,
-		&creator.Avatar, &creator.Nickname, // Scan into creator variable
+		&creator.Avatar, &creator.Nickname, &group.MemberCount,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -153,8 +168,7 @@ func GetGroupById(db *sql.DB, groupId int) (*Group, error) {
 		return nil, err
 	}
 
-	group.Creator = &creator // Assign the address of creator to group.Creator
-
+	group.Creator = &creator
 	return group, nil
 }
 
@@ -206,7 +220,7 @@ func JoinGroup(db *sql.DB, groupId int, userId int, invitedBy *int) error {
 		return err
 	}
 	if exists {
-		return errors.New("user is already a member or has a pending request")
+		return nil
 	}
 
 	// Determine status based on whether it's an invitation or request
@@ -483,11 +497,16 @@ func GetGroupEvents(db *sql.DB, groupId int, userId int) ([]Event, error) {
 	events := []Event{}
 
 	rows, err := db.Query(`
-		SELECT ge.id, ge.group_id, ge.creator_id, ge.title, ge.description, ge.event_date, ge.created_at, ge.updated_at,
-		u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
+		SELECT 
+			ge.id, ge.group_id, ge.creator_id, ge.title, ge.description, ge.event_date, ge.created_at, ge.updated_at,
+			u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname,
+			COUNT(CASE WHEN ger.response = 'going' THEN 1 END) AS going_count,
+			COUNT(CASE WHEN ger.response = 'not_going' THEN 1 END) AS not_going_count
 		FROM group_events ge
 		JOIN users u ON ge.creator_id = u.id
+		LEFT JOIN group_event_responses ger ON ger.event_id = ge.id
 		WHERE ge.group_id = ?
+		GROUP BY ge.id
 		ORDER BY ge.event_date ASC
 	`, groupId)
 	if err != nil {
@@ -503,6 +522,7 @@ func GetGroupEvents(db *sql.DB, groupId int, userId int) ([]Event, error) {
 			&event.ID, &event.GroupID, &event.CreatorID, &event.Title, &event.Description, &event.EventDate,
 			&event.CreatedAt, &event.UpdatedAt,
 			&creator.ID, &creator.Email, &creator.FirstName, &creator.LastName, &creator.Avatar, &creator.Nickname,
+			&event.GoingCount, &event.NotGoingCount,
 		)
 		if err != nil {
 			return nil, err

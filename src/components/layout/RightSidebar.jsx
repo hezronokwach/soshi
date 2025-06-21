@@ -3,17 +3,59 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { User, Users, Plus } from "lucide-react";
-import { users } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
+import { users, groups } from "@/lib/api";
 import FollowButton from "@/components/connections/FollowButton";
 
 export default function RightSidebar() {
+  const { user } = useAuth();
+  const [onlineUsers, setOnlineUsers] = useState([]);
   const [suggestedUsers, setSuggestedUsers] = useState([]);
+  const [userGroups, setUserGroups] = useState([]);
+  const [suggestedGroups, setSuggestedGroups] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchSuggestedUsers();
-  }, []);
+    if (user?.id) {
+      fetchAllData();
+    }
+  }, [user]);
 
+  const fetchAllData = async () => {
+    try {
+      setLoading(true);
+      await Promise.all([
+        fetchOnlineUsers(),
+        fetchSuggestedUsers(),
+        fetchGroupsData()
+      ]);
+    } catch (error) {
+      console.error('Error fetching sidebar data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch online users - using mock data until API is implemented
+  const fetchOnlineUsers = async () => {
+    try {
+      // Replace with your actual API call when ready
+      // const response = await users.getOnlineUsers();
+      // setOnlineUsers(response);
+
+      // Mock data for now - limit to 4 items for better presentation
+      setOnlineUsers([
+        { id: 1, name: "Alex Johnson", username: "alexj", status: "online" },
+        { id: 2, name: "Samantha Lee", username: "samlee", status: "online" },
+        { id: 3, name: "Marcus Chen", username: "mchen", status: "online" },
+        { id: 4, name: "Jessica Wong", username: "jwong", status: "online" },
+      ].slice(0, 4));
+    } catch (error) {
+      console.error('Error fetching online users:', error);
+    }
+  };
+
+  // Fetch suggested users using the API
   const fetchSuggestedUsers = async () => {
     try {
       setLoading(true);
@@ -24,35 +66,92 @@ export default function RightSidebar() {
     } catch (error) {
       console.error('❌ Failed to fetch suggested users:', error);
       setSuggestedUsers([]);
-    } finally {
-      setLoading(false);
     }
   };
 
+  // Fetch and categorize groups based on user membership
+  const fetchGroupsData = async () => {
+    try {
+      const data = await groups.getGroups();
+      const groupsArray = Array.isArray(data) ? data : data.groups || [];
+
+      const userMemberGroups = [];
+      const nonMemberGroups = [];
+
+      // Process all groups in a single loop
+      for (const group of groupsArray) {
+        try {
+          const groupDetail = await groups.getGroup(group.id);
+          if (groupDetail?.members && Array.isArray(groupDetail.members)) {
+            const userMembership = groupDetail.members.find(
+              member => parseInt(member.user_id) === parseInt(user.id)
+            );
+
+            const groupData = {
+              id: group.id,
+              name: group.title,
+              members: group.member_count || 0,
+              category: group.category || 'General'
+            };
+
+            if (userMembership && userMembership.status === 'accepted') {
+              // User is a member - add to user groups with unread count
+              const unreadCount = 0; // Replace with actual unread count from the API
+              userMemberGroups.push({
+                ...groupData,
+                unread: unreadCount
+              });
+            } else {
+              // User is not a member or not accepted - add to suggested groups
+              nonMemberGroups.push(groupData);
+            }
+          }
+        } catch (error) {
+          console.error(`Error fetching details for group ${group.id}:`, error);
+        }
+      }
+
+      // Limit both lists to 4 items for better presentation
+      setUserGroups(userMemberGroups.slice(0, 4));
+      setSuggestedGroups(nonMemberGroups.slice(0, 4));
+
+    } catch (error) {
+      console.error('Error fetching groups data:', error);
+    }
+  };
+
+  // Handle follow status change
   const handleFollowStatusChange = (userID, status) => {
     // Keep all users in the list but the follow button will update its state automatically
     // No need to remove users from the suggested list anymore
   };
 
+  // Get user initials for avatar display
   const getInitials = (firstName, lastName) => {
     return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
   };
 
-  // Mock data for user's groups
-  const userGroups = [
-    { id: 1, name: "Tech Enthusiasts", members: 1243, category: "Technology", unread: 5 },
-    { id: 2, name: "Digital Artists", members: 856, category: "Art", unread: 0 },
-    { id: 3, name: "Travel Adventures", members: 2105, category: "Travel", unread: 12 },
-  ];
+  // Handle follow user action (for online users section)
+  const handleFollowUser = async (userId) => {
+    try {
+      // This will be handled by the FollowButton component
+      console.log('Following user:', userId);
+    } catch (error) {
+      console.error('Error following user:', error);
+    }
+  };
 
-  // Mock data for suggested groups
-  const suggestedGroups = [
-    { id: 4, name: "Photography Club", members: 943, category: "Photography" },
-    { id: 5, name: "Book Lovers", members: 1256, category: "Books" },
-    { id: 6, name: "Fitness Motivation", members: 3105, category: "Health" },
-  ];
-
-
+  // Handle join group action
+  const handleJoinGroup = async (groupId) => {
+    try {
+      await groups.joinGroup(groupId);
+      // Refresh the groups data to update both lists
+      fetchGroupsData();
+    } catch (error) {
+      console.error('Error joining group:', error);
+      alert('Failed to send join request. Please try again.');
+    }
+  };
 
   const sidebarStyles = {
     display: 'none',
@@ -227,49 +326,89 @@ export default function RightSidebar() {
     transition: 'background-color 0.2s'
   };
 
-
-
   // Media query styles
   if (typeof window !== 'undefined' && window.innerWidth >= 1280) {
     sidebarStyles.display = 'block';
   }
 
+  if (loading) {
+    return (
+      <aside style={sidebarStyles}>
+        <div style={containerStyles}>
+          <div style={{ color: '#FFFFFF', textAlign: 'center', padding: '2rem' }}>
+            Loading...
+          </div>
+        </div>
+      </aside>
+    );
+  }
+
   return (
     <aside style={sidebarStyles}>
       <div style={containerStyles}>
+        {/* Online Users */}
+        {onlineUsers.length > 0 && (
+          <div style={sectionStyles}>
+            <div style={sectionHeaderStyles}>
+              <h3 style={sectionTitleStyles}>Online Users ({onlineUsers.length})</h3>
+              <Link href="/friends" style={seeAllLinkStyles}>
+                See All
+              </Link>
+            </div>
+
+            <div style={userListStyles}>
+              {onlineUsers.map(user => (
+                <div key={user.id} style={userItemStyles}>
+                  <div style={userAvatarStyles}>
+                    <User style={{ width: '1.25rem', height: '1.25rem' }} />
+                  </div>
+                  <div style={userInfoStyles}>
+                    <p style={userNameStyles}>{user.name}</p>
+                    <p style={userMetaStyles}>@{user.username}</p>
+                  </div>
+                  <div style={onlineIndicatorStyles}></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Your Groups */}
-        <div style={sectionStyles}>
-          <div style={sectionHeaderStyles}>
-            <h3 style={sectionTitleStyles}>Your Groups</h3>
-            <Link href="/groups" style={seeAllLinkStyles}>
-              See All
-            </Link>
-          </div>
+        {userGroups.length > 0 && (
+          <div style={sectionStyles}>
+            <div style={sectionHeaderStyles}>
+              <h3 style={sectionTitleStyles}>Your Groups</h3>
+              <Link href="/groups" style={seeAllLinkStyles}>
+                See All
+              </Link>
+            </div>
 
-          <div>
-            {userGroups.map(group => (
-              <div key={group.id} style={groupItemStyles}>
-                <div style={groupHeaderStyles}>
-                  <div style={groupAvatarStyles}>
-                    <Users style={{ width: '1.25rem', height: '1.25rem' }} />
-                  </div>
-                  <div style={groupInfoStyles}>
-                    <p style={groupNameStyles}>{group.name}</p>
-                    <p style={groupMetaStyles}>{group.category} • {group.members.toLocaleString()} members</p>
-                  </div>
-                  {group.unread > 0 && (
-                    <div style={unreadBadgeStyles}>
-                      {group.unread}
+            <div>
+              {userGroups.map(group => (
+                <Link key={group.id} href={`/groups/${group.id}`} style={{ textDecoration: 'none' }}>
+                  <div style={groupItemStyles}>
+                    <div style={groupHeaderStyles}>
+                      <div style={groupAvatarStyles}>
+                        <Users style={{ width: '1.25rem', height: '1.25rem' }} />
+                      </div>
+                      <div style={groupInfoStyles}>
+                        <p style={groupNameStyles}>{group.name}</p>
+                        <p style={groupMetaStyles}>{group.category} • {group.members.toLocaleString()} members</p>
+                      </div>
+                      {group.unread > 0 && (
+                        <div style={unreadBadgeStyles}>
+                          {group.unread}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </div>
-            ))}
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* All Users */}
+        {/* All Users (Suggested Users) */}
         <div style={sectionStyles}>
           <div style={sectionHeaderStyles}>
             <h3 style={sectionTitleStyles}>All Users</h3>
@@ -279,9 +418,10 @@ export default function RightSidebar() {
           </div>
 
           <div>
-            {/* Debug info */}
+            {/* Debug info for development */}
             {process.env.NODE_ENV === 'development' && (
               <div style={{fontSize: '0.75rem', color: '#B8C1CF', marginBottom: '0.5rem'}}>
+                {/* Debug info can be added here if needed */}
               </div>
             )}
             
@@ -337,35 +477,35 @@ export default function RightSidebar() {
         </div>
 
         {/* Suggested Groups */}
-        <div style={sectionStyles}>
-          <div style={sectionHeaderStyles}>
-            <h3 style={sectionTitleStyles}>Suggested Groups</h3>
-            <Link href="/discover/groups" style={seeAllLinkStyles}>
-              See All
-            </Link>
-          </div>
+        {suggestedGroups.length > 0 && (
+          <div style={sectionStyles}>
+            <div style={sectionHeaderStyles}>
+              <h3 style={sectionTitleStyles}>Suggested Groups</h3>
+              <Link href="/discover/groups" style={seeAllLinkStyles}>
+                See All
+              </Link>
+            </div>
 
-          <div>
-            {suggestedGroups.map(group => (
-              <div key={group.id} style={groupItemStyles}>
-                <div style={groupHeaderStyles}>
-                  <div style={groupAvatarStyles}>
-                    <Users style={{ width: '1.25rem', height: '1.25rem' }} />
+            <div>
+              {suggestedGroups.map(group => (
+                <div key={group.id} style={groupItemStyles}>
+                  <div style={groupHeaderStyles}>
+                    <div style={groupAvatarStyles}>
+                      <Users style={{ width: '1.25rem', height: '1.25rem' }} />
+                    </div>
+                    <div style={groupInfoStyles}>
+                      <p style={groupNameStyles}>{group.name}</p>
+                      <p style={groupMetaStyles}>{group.category} • {group.members.toLocaleString()} members</p>
+                    </div>
                   </div>
-                  <div style={groupInfoStyles}>
-                    <p style={groupNameStyles}>{group.name}</p>
-                    <p style={groupMetaStyles}>{group.category} • {group.members.toLocaleString()} members</p>
-                  </div>
+                  <button style={joinButtonStyles} onClick={() => handleJoinGroup(group.id)}>
+                    Join Group
+                  </button>
                 </div>
-                <button style={joinButtonStyles}>
-                  Join Group
-                </button>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-
-
+        )}
       </div>
     </aside>
   );
