@@ -3,16 +3,30 @@
 import { useState, useRef } from 'react';
 import { Send, Smile } from 'lucide-react';
 
-export default function MessageInput({ onSendMessage, disabled, placeholder = "Type a message..." }) {
+export default function MessageInput({ onSendMessage, onTypingChange, disabled, placeholder = "Type a message..." }) {
   const [message, setMessage] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const textareaRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (message.trim() && !disabled) {
       onSendMessage(message);
       setMessage('');
+
+      // Stop typing indicator
+      if (isTyping && onTypingChange) {
+        setIsTyping(false);
+        onTypingChange(false);
+      }
+
+      // Clear typing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
       // Reset textarea height
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
@@ -28,12 +42,37 @@ export default function MessageInput({ onSendMessage, disabled, placeholder = "T
   };
 
   const handleTextareaChange = (e) => {
-    setMessage(e.target.value);
-    
+    const newMessage = e.target.value;
+    setMessage(newMessage);
+
     // Auto-resize textarea
     const textarea = e.target;
     textarea.style.height = 'auto';
     textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+
+    // Handle typing indicator
+    if (onTypingChange) {
+      if (newMessage.trim() && !isTyping) {
+        setIsTyping(true);
+        onTypingChange(true);
+      } else if (!newMessage.trim() && isTyping) {
+        setIsTyping(false);
+        onTypingChange(false);
+      }
+
+      // Clear existing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Set new timeout to stop typing indicator
+      if (newMessage.trim()) {
+        typingTimeoutRef.current = setTimeout(() => {
+          setIsTyping(false);
+          onTypingChange(false);
+        }, 2000);
+      }
+    }
   };
 
   const insertEmoji = (emoji) => {

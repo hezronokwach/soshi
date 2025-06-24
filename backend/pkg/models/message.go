@@ -222,49 +222,72 @@ func GetGroupMessages(db *sql.DB, groupId int, userId int, page int, limit int) 
 	return messages, nil
 }
 
+// ConversationInfo represents a conversation with additional metadata
+type ConversationInfo struct {
+	User            User      `json:"user"`
+	UnreadCount     int       `json:"unread_count"`
+	LastMessage     string    `json:"last_message"`
+	LastMessageTime time.Time `json:"last_message_time"`
+	IsOnline        bool      `json:"is_online"`
+}
+
 // GetUserConversations retrieves a list of users the current user has conversations with
-func GetUserConversations(db *sql.DB, userId int) ([]User, error) {
-	conversations := []User{}
+func GetUserConversations(db *sql.DB, userId int) ([]ConversationInfo, error) {
+	conversations := []ConversationInfo{}
 
 	// Get users the current user has exchanged messages with
 	rows, err := db.Query(`
-		SELECT DISTINCT 
-			CASE 
+		SELECT DISTINCT
+			CASE
 				WHEN m.sender_id = ? THEN m.receiver_id
 				ELSE m.sender_id
 			END as other_user_id,
 			u.id, u.email, u.first_name, u.last_name, u.avatar, u.nickname,
-			(SELECT COUNT(*) FROM messages 
+			(SELECT COUNT(*) FROM messages
 			 WHERE receiver_id = ? AND sender_id = u.id AND is_read = 0) as unread_count,
-			(SELECT created_at FROM messages 
+			(SELECT content FROM messages
+			 WHERE (sender_id = ? AND receiver_id = u.id) OR (sender_id = u.id AND receiver_id = ?)
+			 ORDER BY created_at DESC LIMIT 1) as last_message,
+			(SELECT created_at FROM messages
 			 WHERE (sender_id = ? AND receiver_id = u.id) OR (sender_id = u.id AND receiver_id = ?)
 			 ORDER BY created_at DESC LIMIT 1) as last_message_time
 		FROM messages m
 		JOIN users u ON (m.sender_id = u.id OR m.receiver_id = u.id) AND u.id != ?
 		WHERE (m.sender_id = ? OR m.receiver_id = ?) AND m.group_id IS NULL
 		ORDER BY last_message_time DESC
-	`, userId, userId, userId, userId, userId, userId, userId)
+	`, userId, userId, userId, userId, userId, userId, userId, userId, userId)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var user User
+		var conversation ConversationInfo
 		var otherUserId int
-		var unreadCount int
-		var lastMessageTime time.Time
+		var lastMessage sql.NullString
+		var lastMessageTime sql.NullTime
 
 		err := rows.Scan(
 			&otherUserId,
-			&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.Avatar, &user.Nickname,
-			&unreadCount, &lastMessageTime,
+			&conversation.User.ID, &conversation.User.Email, &conversation.User.FirstName,
+			&conversation.User.LastName, &conversation.User.Avatar, &conversation.User.Nickname,
+			&conversation.UnreadCount, &lastMessage, &lastMessageTime,
 		)
 		if err != nil {
 			return nil, err
 		}
 
-		conversations = append(conversations, user)
+		if lastMessage.Valid {
+			conversation.LastMessage = lastMessage.String
+		}
+		if lastMessageTime.Valid {
+			conversation.LastMessageTime = lastMessageTime.Time
+		}
+
+		// TODO: Implement online status check
+		conversation.IsOnline = false
+
+		conversations = append(conversations, conversation)
 	}
 
 	return conversations, nil

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Check, CheckCheck } from 'lucide-react';
 
 export default function MessageBubble({ message, isOwn, showAvatar, user }) {
   const [showTime, setShowTime] = useState(false);
@@ -93,8 +94,40 @@ export default function MessageBubble({ message, isOwn, showAvatar, user }) {
     marginTop: '0.25rem',
     textAlign: 'right',
     opacity: showTime ? 1 : 0,
-    transition: 'opacity 0.2s ease'
+    transition: 'opacity 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: '0.25rem'
   };
+
+  const getMessageStatus = () => {
+    if (!isOwn) return null;
+
+    // For now, we'll use simple logic based on message properties
+    // In a real app, you'd have proper delivery/read status from the backend
+    if (message.is_read) {
+      return {
+        icon: <CheckCheck style={{ width: '0.875rem', height: '0.875rem' }} />,
+        text: 'Read',
+        color: '#06D6A0'
+      };
+    } else if (message.id) {
+      return {
+        icon: <Check style={{ width: '0.875rem', height: '0.875rem' }} />,
+        text: 'Delivered',
+        color: '#6C7A89'
+      };
+    } else {
+      return {
+        icon: <Check style={{ width: '0.875rem', height: '0.875rem' }} />,
+        text: 'Sent',
+        color: '#6C7A89'
+      };
+    }
+  };
+
+  const messageStatus = getMessageStatus();
 
   return (
     <div style={containerStyles}>
@@ -138,13 +171,10 @@ export default function MessageBubble({ message, isOwn, showAvatar, user }) {
         </div>
 
         {/* Message Status (for own messages) */}
-        {isOwn && (
-          <div style={statusStyles}>
-            {message.is_read ? (
-              <span style={{ color: '#06D6A0' }}>Read</span>
-            ) : (
-              <span style={{ color: '#B8C1CF' }}>Sent</span>
-            )}
+        {isOwn && messageStatus && (
+          <div style={{...statusStyles, color: messageStatus.color}}>
+            {messageStatus.icon}
+            <span>{messageStatus.text}</span>
           </div>
         )}
       </div>

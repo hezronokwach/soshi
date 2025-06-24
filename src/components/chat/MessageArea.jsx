@@ -11,6 +11,9 @@ export default function MessageArea({ conversation, currentUser }) {
   const [messageList, setMessageList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [isOnline, setIsOnline] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingTimeout, setTypingTimeout] = useState(null);
   const messagesEndRef = useRef(null);
   const { websocket } = useAuth();
 
@@ -22,12 +25,13 @@ export default function MessageArea({ conversation, currentUser }) {
     }
   }, [conversation]);
 
-  // Listen for new messages via WebSocket
+  // Listen for new messages and status updates via WebSocket
   useEffect(() => {
     if (websocket) {
       const handleMessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+
           if (data.type === 'private_message' && data.message) {
             const message = data.message;
             // Only add message if it's for this conversation
@@ -35,12 +39,55 @@ export default function MessageArea({ conversation, currentUser }) {
               (message.sender_id === conversation.id && message.recipient_id === currentUser.id) ||
               (message.sender_id === currentUser.id && message.recipient_id === conversation.id)
             ) {
-              setMessageList(prev => [...prev, message]);
+              // Handle message updates and avoid duplicates
+              setMessageList(prev => {
+                // Check if this is replacing an optimistic message
+                const optimisticIndex = prev.findIndex(existingMsg =>
+                  existingMsg.id.toString().startsWith('temp-') &&
+                  existingMsg.content === message.content &&
+                  existingMsg.sender_id === message.sender_id
+                );
+
+                if (optimisticIndex !== -1) {
+                  // Replace optimistic message with real one
+                  const newList = [...prev];
+                  newList[optimisticIndex] = message;
+                  return newList;
+                }
+
+                // Check if message already exists (by ID)
+                const messageExists = prev.some(existingMsg =>
+                  existingMsg.id === message.id
+                );
+
+                if (messageExists) {
+                  return prev;
+                }
+
+                return [...prev, message];
+              });
               scrollToBottom();
-              
+
               // Mark as read if it's from the other user
               if (message.sender_id === conversation.id) {
                 markMessagesAsRead();
+              }
+            }
+          } else if (data.type === 'user_online_status') {
+            // Handle online status updates
+            if (data.user_id === conversation.id) {
+              setIsOnline(data.is_online);
+            }
+          } else if (data.type === 'typing_indicator') {
+            // Handle typing indicators
+            if (data.user_id === conversation.id && data.recipient_id === currentUser.id) {
+              setIsTyping(data.is_typing);
+
+              // Clear typing indicator after 3 seconds
+              if (data.is_typing) {
+                if (typingTimeout) clearTimeout(typingTimeout);
+                const timeout = setTimeout(() => setIsTyping(false), 3000);
+                setTypingTimeout(timeout);
               }
             }
           }
@@ -50,9 +97,12 @@ export default function MessageArea({ conversation, currentUser }) {
       };
 
       websocket.addEventListener('message', handleMessage);
-      return () => websocket.removeEventListener('message', handleMessage);
+      return () => {
+        websocket.removeEventListener('message', handleMessage);
+        if (typingTimeout) clearTimeout(typingTimeout);
+      };
     }
-  }, [websocket, conversation, currentUser]);
+  }, [websocket, conversation, currentUser, typingTimeout]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -83,18 +133,54 @@ export default function MessageArea({ conversation, currentUser }) {
   const handleSendMessage = async (content) => {
     if (!content.trim()) return;
 
+    // Create optimistic message for immediate UI feedback
+    const optimisticMessage = {
+      id: `temp-${Date.now()}`, // Temporary ID
+      content: content.trim(),
+      sender_id: currentUser.id,
+      recipient_id: conversation.id,
+      created_at: new Date().toISOString(),
+      is_read: false,
+      sender: currentUser
+    };
+
     try {
       setSending(true);
-      const newMessage = await messages.sendMessage(conversation.id, content.trim());
-      // Message will be added via WebSocket, but add optimistically for better UX
-      setMessageList(prev => [...prev, newMessage]);
+      // Stop typing indicator when message is sent
+      sendTypingIndicator(false);
+
+      // Add optimistic message immediately
+      setMessageList(prev => [...prev, optimisticMessage]);
       scrollToBottom();
+
+      // Send message to backend
+      await messages.sendMessage(conversation.id, content.trim());
+
+      // The real message will come via WebSocket and replace the optimistic one
     } catch (error) {
       console.error('Failed to send message:', error);
+      // Remove optimistic message on error
+      setMessageList(prev => prev.filter(msg => msg.id !== optimisticMessage.id));
       // You could show an error toast here
     } finally {
       setSending(false);
     }
+  };
+
+  const sendTypingIndicator = (isTyping) => {
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
+      const typingData = {
+        type: 'typing_indicator',
+        user_id: currentUser.id,
+        recipient_id: conversation.id,
+        is_typing: isTyping
+      };
+      websocket.send(JSON.stringify(typingData));
+    }
+  };
+
+  const handleInputChange = (isTyping) => {
+    sendTypingIndicator(isTyping);
   };
 
   const scrollToBottom = () => {
@@ -198,7 +284,19 @@ export default function MessageArea({ conversation, currentUser }) {
             {conversation.first_name} {conversation.last_name}
           </div>
           <div style={statusStyles}>
-            {conversation.nickname ? `@${conversation.nickname}` : 'User'}
+            {isTyping ? (
+              <span style={{ color: '#06D6A0', fontStyle: 'italic' }}>
+                typing...
+              </span>
+            ) : isOnline ? (
+              <span style={{ color: '#06D6A0' }}>
+                • online
+              </span>
+            ) : (
+              <span>
+                {conversation.nickname ? `@${conversation.nickname}` : 'offline'}
+              </span>
+            )}
           </div>
         </div>
 
@@ -240,11 +338,11 @@ export default function MessageArea({ conversation, currentUser }) {
           <>
             {messageList.map((message, index) => (
               <MessageBubble
-                key={message.id || index}
+                key={`message-${message.id || `temp-${index}`}`}
                 message={message}
                 isOwn={message.sender_id === currentUser.id}
                 showAvatar={
-                  index === 0 || 
+                  index === 0 ||
                   messageList[index - 1].sender_id !== message.sender_id
                 }
                 user={message.sender_id === currentUser.id ? currentUser : conversation}
@@ -258,6 +356,7 @@ export default function MessageArea({ conversation, currentUser }) {
       {/* Message Input */}
       <MessageInput
         onSendMessage={handleSendMessage}
+        onTypingChange={handleInputChange}
         disabled={sending}
         placeholder={`Message ${conversation.first_name}...`}
       />

@@ -135,7 +135,35 @@ func (h *MessageHandler) GetConversations(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// Add online status to conversations
+	for i := range conversations {
+		conversations[i].IsOnline = h.hub.IsUserOnline(conversations[i].User.ID)
+	}
+
 	utils.RespondWithJSON(w, http.StatusOK, conversations)
+}
+
+// GetUnreadCount returns the count of unread messages for the current user
+func (h *MessageHandler) GetUnreadCount(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Get unread count from database
+	var count int
+	err := h.db.QueryRow(`
+		SELECT COUNT(*) FROM messages
+		WHERE receiver_id = ? AND is_read = 0
+	`, user.ID).Scan(&count)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to get unread count")
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, map[string]int{"count": count})
 }
 
 // MarkMessagesAsRead marks messages as read
@@ -215,7 +243,7 @@ func (h *MessageHandler) canSendMessage(senderID, recipientID int) (bool, error)
 func (h *MessageHandler) broadcastMessage(message *models.Message) {
 	// Create WebSocket message
 	wsMessage := map[string]interface{}{
-		"type":      "private",
+		"type":      "private_message",
 		"sender_id": float64(message.SenderID),
 		"message":   message,
 	}

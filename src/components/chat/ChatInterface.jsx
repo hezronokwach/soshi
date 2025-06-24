@@ -36,7 +36,9 @@ export default function ChatInterface() {
   };
 
   const handleConversationSelect = (conversation) => {
-    setSelectedConversation(conversation);
+    // Handle both old and new data structures
+    const actualConversation = conversation.user || conversation;
+    setSelectedConversation(actualConversation);
     setShowUserSelector(false);
   };
 
