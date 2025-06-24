@@ -109,6 +109,12 @@ export default function MessageArea({ conversation, currentUser }) {
     scrollToBottom();
   }, [messageList]);
 
+  // Clear typing indicator when conversation changes
+  useEffect(() => {
+    setIsTyping(false);
+    if (typingTimeout) clearTimeout(typingTimeout);
+  }, [conversation.id]);
+
   const fetchMessages = async () => {
     try {
       setLoading(true);
@@ -317,7 +323,7 @@ export default function MessageArea({ conversation, currentUser }) {
             )}
           </div>
           <div style={statusStyles}>
-            {isTyping ? (
+            {isTyping && conversation.id === conversation.id ? (
               <span style={{ color: '#06D6A0', fontStyle: 'italic' }}>
                 typing...
               </span>
