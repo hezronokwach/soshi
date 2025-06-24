@@ -354,6 +354,11 @@ export const users = {
   getOnlineUsers: () => fetchAPI("/api/users/online"),
 
   getAllUsers: () => fetchAPI("/api/users/all"),
+
+  acceptMessageRequest: (requesterId) =>
+    fetchAPI(`/api/users/accept-message-request?requester_id=${requesterId}`, {
+      method: "POST"
+    }),
 }
 
 export const messages = {

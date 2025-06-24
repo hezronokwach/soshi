@@ -20,33 +20,8 @@ type Message struct {
 
 // CreatePrivateMessage creates a new private message between users
 func CreatePrivateMessage(db *sql.DB, senderId int, receiverId int, content string) (*Message, error) {
-	// Check if users can message each other (one must follow the other)
-	var canMessage bool
-	err := db.QueryRow(`
-		SELECT EXISTS(
-			SELECT 1 FROM follows
-			WHERE (follower_id = ? AND following_id = ? AND status = 'accepted')
-			OR (follower_id = ? AND following_id = ? AND status = 'accepted')
-		)`,
-		senderId, receiverId, receiverId, senderId,
-	).Scan(&canMessage)
-	if err != nil {
-		return nil, err
-	}
-	if !canMessage {
-		// Check if receiver has a public profile
-		var isPublic bool
-		err = db.QueryRow(
-			"SELECT COALESCE(is_public, 1) FROM user_profiles WHERE user_id = ?",
-			receiverId,
-		).Scan(&isPublic)
-		if err != nil && err != sql.ErrNoRows {
-			return nil, err
-		}
-		if !isPublic {
-			return nil, errors.New("cannot message this user")
-		}
-	}
+	// Allow sending messages to any user; message requests are handled at the conversation level
+	// (Old restriction removed to support message requests)
 
 	// Create message
 	result, err := db.Exec(
@@ -229,6 +204,7 @@ type ConversationInfo struct {
 	LastMessage     string    `json:"last_message"`
 	LastMessageTime time.Time `json:"last_message_time"`
 	IsOnline        bool      `json:"is_online"`
+	IsRequest       bool      `json:"is_request"` // True if this is a message request
 }
 
 // GetUserConversations retrieves a list of users the current user has conversations with
@@ -286,6 +262,20 @@ func GetUserConversations(db *sql.DB, userId int) ([]ConversationInfo, error) {
 
 		// TODO: Implement online status check
 		conversation.IsOnline = false
+
+		// Determine if this conversation is a message request
+		// If the other user is private and the current user does NOT follow them, mark as request
+		isRequest := false
+		var isOtherUserPublic bool
+		err = db.QueryRow("SELECT COALESCE(is_public, 1) FROM user_profiles WHERE user_id = ?", conversation.User.ID).Scan(&isOtherUserPublic)
+		if err == nil && !isOtherUserPublic {
+			// Check if current user follows the other user
+			status, err := IsFollowing(db, userId, conversation.User.ID)
+			if err == nil && status != "accepted" {
+				isRequest = true
+			}
+		}
+		conversation.IsRequest = isRequest
 
 		conversations = append(conversations, conversation)
 	}

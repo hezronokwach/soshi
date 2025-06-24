@@ -52,18 +52,6 @@ func (h *MessageHandler) SendPrivateMessage(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// Check if user can send message to recipient
-	canSend, err := h.canSendMessage(user.ID, recipientID)
-	if err != nil {
-		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to check messaging permissions")
-		return
-	}
-
-	if !canSend {
-		utils.RespondWithError(w, http.StatusForbidden, "You cannot send messages to this user")
-		return
-	}
-
 	// Create message
 	message, err := models.CreatePrivateMessage(h.db, user.ID, recipientID, req.Content)
 	if err != nil {
@@ -210,33 +198,6 @@ func (h *MessageHandler) GetUnreadMessageCount(w http.ResponseWriter, r *http.Re
 	}
 
 	utils.RespondWithJSON(w, http.StatusOK, map[string]int{"count": count})
-}
-
-// canSendMessage checks if a user can send a message to another user
-func (h *MessageHandler) canSendMessage(senderID, recipientID int) (bool, error) {
-	// Get recipient user
-	recipient, err := models.GetUserById(h.db, recipientID)
-	if err != nil {
-		return false, err
-	}
-
-	// If recipient has public profile, anyone can message them
-	if recipient.IsPublic {
-		return true, nil
-	}
-
-	// Check if sender is following recipient or recipient is following sender
-	isFollowing, err := models.IsFollowing(h.db, senderID, recipientID)
-	if err != nil {
-		return false, err
-	}
-
-	isFollowedBy, err := models.IsFollowing(h.db, recipientID, senderID)
-	if err != nil {
-		return false, err
-	}
-
-	return isFollowing == "accepted" || isFollowedBy == "accepted", nil
 }
 
 // broadcastMessage sends a message via WebSocket to connected clients

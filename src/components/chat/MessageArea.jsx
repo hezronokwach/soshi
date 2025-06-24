@@ -263,6 +263,19 @@ export default function MessageArea({ conversation, currentUser }) {
     textAlign: 'center'
   };
 
+  // If this is a message request, block replying until accepted
+  const isRequest = conversation.is_request;
+
+  // Accept message request handler
+  const handleAcceptRequest = async () => {
+    try {
+      await messages.acceptMessageRequest(conversation.user.id);
+      window.location.reload(); // Reload to update conversation state
+    } catch (err) {
+      alert('Failed to accept message request.');
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
@@ -370,12 +383,40 @@ export default function MessageArea({ conversation, currentUser }) {
       </div>
 
       {/* Message Input */}
-      <MessageInput
-        onSendMessage={handleSendMessage}
-        onTypingChange={handleInputChange}
-        disabled={sending}
-        placeholder={`Message ${conversation.first_name}...`}
-      />
+      {isRequest ? (
+        <div style={{
+          padding: '1.5rem',
+          textAlign: 'center',
+          color: '#B8C1CF',
+          background: 'rgba(58,134,255,0.05)',
+          borderRadius: '0.75rem',
+          margin: '1rem 0'
+        }}>
+          <p style={{marginBottom: '1rem'}}>This is a message request. Accept to reply.</p>
+          <button
+            style={{
+              background: '#3A86FF',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '0.5rem',
+              padding: '0.75rem 1.5rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontSize: '1rem'
+            }}
+            onClick={handleAcceptRequest}
+          >
+            Accept Message Request
+          </button>
+        </div>
+      ) : (
+        <MessageInput
+          onSendMessage={handleSendMessage}
+          onTypingChange={handleInputChange}
+          disabled={sending}
+          placeholder={`Message ${conversation.first_name}...`}
+        />
+      )}
 
       <style jsx>{`
         @keyframes spin {

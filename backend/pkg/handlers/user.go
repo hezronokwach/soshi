@@ -464,3 +464,28 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	utils.RespondWithJSON(w, http.StatusOK, allUsers)
 }
+
+// AcceptMessageRequestHandler allows a user to accept a message request
+func (h *UserHandler) AcceptMessageRequestHandler(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+	// requester_id is the user who sent the message request
+	requesterIDStr := r.URL.Query().Get("requester_id")
+	if requesterIDStr == "" {
+		utils.RespondWithError(w, http.StatusBadRequest, "Missing requester_id")
+		return
+	}
+	requesterID, err := strconv.Atoi(requesterIDStr)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid requester_id")
+		return
+	}
+	if err := models.AcceptMessageRequest(h.db, user.ID, requesterID); err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to accept message request")
+		return
+	}
+	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{"success": true})
+}

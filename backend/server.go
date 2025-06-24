@@ -184,6 +184,9 @@ func main() {
 
 		// Get all users (including private)
 		r.Get("/all", userHandler.GetAllUsers)
+
+		// Message request routes
+		r.Post("/accept-message-request", userHandler.AcceptMessageRequestHandler)
 	})
 
 	// Activity routes
