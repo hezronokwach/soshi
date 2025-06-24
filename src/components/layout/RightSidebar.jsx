@@ -18,6 +18,7 @@ export default function RightSidebar() {
   useEffect(() => {
     if (user?.id) {
       fetchAllData();
+      fetchAllUsers(); // Fetch all users for the sidebar
     }
   }, [user]);
 
@@ -26,7 +27,6 @@ export default function RightSidebar() {
       setLoading(true);
       await Promise.all([
         fetchOnlineUsers(),
-        fetchSuggestedUsers(),
         fetchGroupsData()
       ]);
     } catch (error) {
@@ -47,17 +47,17 @@ export default function RightSidebar() {
     }
   };
 
-  // Fetch suggested users using the API
-  const fetchSuggestedUsers = async () => {
+  // Fetch all users for the sidebar (public and private)
+  const fetchAllUsers = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Fetching suggested users...');
-      const data = await users.getSuggestedUsers();
-      console.log('📊 Suggested users data:', data);
+      const data = await users.getAllUsers();
       setSuggestedUsers(data || []);
     } catch (error) {
-      console.error('❌ Failed to fetch suggested users:', error);
+      console.error('❌ Failed to fetch all users:', error);
       setSuggestedUsers([]);
+    } finally {
+      setLoading(false);
     }
   };
 

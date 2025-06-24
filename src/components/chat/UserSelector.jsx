@@ -36,27 +36,16 @@ export default function UserSelector({ onUserSelect, onClose }) {
     return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
   };
 
-  // Defensive filter: Only show public users or those the current user follows (if such info is present)
-  const privacyFilter = (user) => {
-    if (user.is_public === undefined || user.is_public) return true;
-    // If backend provides a 'follow_status' or similar, allow if 'accepted'
-    if (user.follow_status && user.follow_status === 'accepted') return true;
-    return false;
-  };
+  // Only filter by search term; backend enforces privacy
+  const filteredSuggestedUsers = suggestedUsers.filter(user =>
+    `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (user.nickname && user.nickname.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
-  const filteredSuggestedUsers = suggestedUsers
-    .filter(privacyFilter)
-    .filter(user =>
-      `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.nickname && user.nickname.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-
-  const filteredOnlineUsers = onlineUsers
-    .filter(privacyFilter)
-    .filter(user =>
-      `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.nickname && user.nickname.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+  const filteredOnlineUsers = onlineUsers.filter(user =>
+    `${user.first_name} ${user.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (user.nickname && user.nickname.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   const overlayStyles = {
     position: 'fixed',

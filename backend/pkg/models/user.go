@@ -199,18 +199,18 @@ func GetSuggestedUsers(db *sql.DB, userID int) ([]map[string]interface{}, error)
 		}
 
 		userMap := map[string]interface{}{
-			"id": user.ID,
-			"email": user.Email,
-			"first_name": user.FirstName,
-			"last_name": user.LastName,
-			"date_of_birth": user.DateOfBirth,
-			"avatar": user.Avatar,
-			"nickname": user.Nickname,
-			"about_me": user.AboutMe,
-			"created_at": user.CreatedAt,
-			"updated_at": user.UpdatedAt,
-			"is_public": user.IsPublic,
-			"is_following": isFollowing == "accepted",
+			"id":             user.ID,
+			"email":          user.Email,
+			"first_name":     user.FirstName,
+			"last_name":      user.LastName,
+			"date_of_birth":  user.DateOfBirth,
+			"avatar":         user.Avatar,
+			"nickname":       user.Nickname,
+			"about_me":       user.AboutMe,
+			"created_at":     user.CreatedAt,
+			"updated_at":     user.UpdatedAt,
+			"is_public":      user.IsPublic,
+			"is_following":   isFollowing == "accepted",
 			"is_followed_by": isFollowedBy == "accepted",
 		}
 		users = append(users, userMap)
@@ -307,4 +307,51 @@ func GetUserBySessionToken(db *sql.DB, sessionToken string) (*User, error) {
 	}
 
 	return &user, nil
+}
+
+// GetAllUsers returns all users, including private ones, for the sidebar
+func GetAllUsers(db *sql.DB, excludeUserID int) ([]map[string]interface{}, error) {
+	query := `
+		SELECT u.id, u.email, u.first_name, u.last_name, u.date_of_birth, 
+		       u.avatar, u.nickname, u.about_me, u.created_at, u.updated_at, COALESCE(p.is_public, 1) as is_public
+		FROM users u
+		LEFT JOIN user_profiles p ON u.id = p.user_id
+		WHERE u.id != ?
+		ORDER BY u.created_at DESC
+		LIMIT 100
+	`
+
+	rows, err := db.Query(query, excludeUserID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []map[string]interface{}
+	for rows.Next() {
+		var user User
+		err := rows.Scan(
+			&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.DateOfBirth,
+			&user.Avatar, &user.Nickname, &user.AboutMe, &user.CreatedAt, &user.UpdatedAt, &user.IsPublic,
+		)
+		if err != nil {
+			return nil, err
+		}
+		userMap := map[string]interface{}{
+			"id":            user.ID,
+			"email":         user.Email,
+			"first_name":    user.FirstName,
+			"last_name":     user.LastName,
+			"date_of_birth": user.DateOfBirth,
+			"avatar":        user.Avatar,
+			"nickname":      user.Nickname,
+			"about_me":      user.AboutMe,
+			"created_at":    user.CreatedAt,
+			"updated_at":    user.UpdatedAt,
+			"is_public":     user.IsPublic,
+		}
+		users = append(users, userMap)
+	}
+
+	return users, nil
 }

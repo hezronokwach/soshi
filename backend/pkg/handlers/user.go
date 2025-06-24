@@ -447,3 +447,20 @@ func (h *UserHandler) CancelFollowRequest(w http.ResponseWriter, r *http.Request
 		"message": "Follow request cancelled",
 	})
 }
+
+// GetAllUsers returns all users (public and private) for the sidebar
+func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	allUsers, err := models.GetAllUsers(h.db, user.ID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to retrieve all users")
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, allUsers)
+}

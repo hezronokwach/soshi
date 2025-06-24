@@ -352,6 +352,8 @@ export const users = {
   getSuggestedUsers: () => fetchAPI("/api/users/suggested"),
 
   getOnlineUsers: () => fetchAPI("/api/users/online"),
+
+  getAllUsers: () => fetchAPI("/api/users/all"),
 }
 
 export const messages = {
