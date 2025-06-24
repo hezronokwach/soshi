@@ -109,14 +109,26 @@ func (h *Hub) Run() {
 			welcomeJSON, _ := json.Marshal(welcomeMsg)
 			client.Send <- welcomeJSON
 
-			// Broadcast online status to other users
+			// Broadcast online status to other users (but not to the connecting user)
 			onlineMsg := map[string]interface{}{
 				"type":      "user_online_status",
 				"user_id":   client.UserID,
 				"is_online": true,
 			}
 			onlineJSON, _ := json.Marshal(onlineMsg)
-			h.broadcast <- onlineJSON
+
+			// Send to all clients except the one that just connected
+			for otherClient := range h.clients {
+				if otherClient.UserID != client.UserID {
+					select {
+					case otherClient.Send <- onlineJSON:
+					default:
+						close(otherClient.Send)
+						delete(h.clients, otherClient)
+						h.removeUserClient(otherClient.UserID, otherClient)
+					}
+				}
+			}
 
 		case client := <-h.Unregister:
 			if _, ok := h.clients[client]; ok {
@@ -133,7 +145,17 @@ func (h *Hub) Run() {
 						"is_online": false,
 					}
 					offlineJSON, _ := json.Marshal(offlineMsg)
-					h.broadcast <- offlineJSON
+
+					// Send to all remaining clients
+					for otherClient := range h.clients {
+						select {
+						case otherClient.Send <- offlineJSON:
+						default:
+							close(otherClient.Send)
+							delete(h.clients, otherClient)
+							h.removeUserClient(otherClient.UserID, otherClient)
+						}
+					}
 				}
 			}
 

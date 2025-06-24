@@ -22,8 +22,20 @@ export default function MessageArea({ conversation, currentUser }) {
     if (conversation) {
       fetchMessages();
       markMessagesAsRead();
+      // Check initial online status
+      checkOnlineStatus();
     }
   }, [conversation]);
+
+  const checkOnlineStatus = async () => {
+    try {
+      const onlineUsers = await fetch('/api/users/online').then(res => res.json());
+      const isUserOnline = onlineUsers.some(user => user.id === conversation.id);
+      setIsOnline(isUserOnline);
+    } catch (error) {
+      console.error('Failed to check online status:', error);
+    }
+  };
 
   // Listen for new messages and status updates via WebSocket
   useEffect(() => {

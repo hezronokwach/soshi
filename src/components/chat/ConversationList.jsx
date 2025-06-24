@@ -15,7 +15,8 @@ export default function ConversationList({
   const containerStyles = {
     flex: 1,
     overflowY: 'auto',
-    padding: '0.5rem'
+    padding: '0.5rem',
+    minHeight: 0 // Important for flex child to allow scrolling
   };
 
   const loadingStyles = {
@@ -165,13 +166,17 @@ export default function ConversationList({
     if (!timestamp) return '';
     const date = new Date(timestamp);
     const now = new Date();
-    const diffInHours = (now - date) / (1000 * 60 * 60);
+    const diffInMinutes = (now - date) / (1000 * 60);
+    const diffInHours = diffInMinutes / 60;
+    const diffInDays = diffInHours / 24;
 
-    if (diffInHours < 1) {
+    if (diffInMinutes < 1) {
       return 'now';
+    } else if (diffInMinutes < 60) {
+      return `${Math.floor(diffInMinutes)}m ago`;
     } else if (diffInHours < 24) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else if (diffInHours < 24 * 7) {
+    } else if (diffInDays < 7) {
       return date.toLocaleDateString([], { weekday: 'short' });
     } else {
       return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
