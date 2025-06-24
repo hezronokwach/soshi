@@ -26,8 +26,10 @@ type Hub struct {
 // GetOnlineUserIDs returns a slice of user IDs that are currently connected
 func (h *Hub) GetOnlineUserIDs() []int {
 	var userIDs []int
-	for client := range h.clients {
-		userIDs = append(userIDs, client.UserID)
+	for userID := range h.userClients {
+		if len(h.userClients[userID]) > 0 {
+			userIDs = append(userIDs, userID)
+		}
 	}
 	return userIDs
 }
