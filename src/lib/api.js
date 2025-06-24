@@ -344,6 +344,24 @@ export const users = {
   getOnlineUsers: () => fetchAPI("/api/users/online"),
 }
 
+export const messages = {
+  getConversations: () => fetchAPI("/api/messages/conversations"),
+
+  getMessages: (userId, page = 1, limit = 50) =>
+    fetchAPI(`/api/messages/${userId}?page=${page}&limit=${limit}`),
+
+  sendMessage: (userId, content) => fetchAPI(`/api/messages/${userId}`, {
+    method: "POST",
+    body: JSON.stringify({ content })
+  }),
+
+  markAsRead: (userId) => fetchAPI(`/api/messages/${userId}/read`, {
+    method: "PUT"
+  }),
+
+  getUnreadCount: () => fetchAPI("/api/messages/unread-count"),
+}
+
 // Notifications API
 export const notifications = {
   getNotifications: (page = 1, limit = 20) => {
@@ -471,6 +489,7 @@ export default {
   comments,
   groups,
   users,
+  messages,
   activity,
   upload,
   connectWebSocket,

@@ -64,6 +64,7 @@ func main() {
 	commentHandler := handlers.NewCommentHandler(db)
 	groupHandler := handlers.NewGroupHandler(db)
 	userHandler := handlers.NewUserHandler(db, hub)
+	messageHandler := handlers.NewMessageHandler(db, hub)
 	activityHandler := handlers.NewActivityHandler(db)
 	uploadHandler := handlers.NewUploadHandler()
 	wsHandler := handlers.NewWebSocketHandler(hub, db)
@@ -205,6 +206,16 @@ func main() {
 		r.Put("/read", notificationHandler.MarkNotificationAsRead)
 		r.Put("/read-all", notificationHandler.MarkAllNotificationsAsRead)
 		r.Get("/unread-count", notificationHandler.GetUnreadCount)
+	})
+
+	// Message routes
+	r.Route("/api/messages", func(r chi.Router) {
+		r.Use(authMiddleware)
+		r.Get("/conversations", messageHandler.GetConversations)
+		r.Get("/unread-count", messageHandler.GetUnreadMessageCount)
+		r.Get("/{userID}", messageHandler.GetPrivateMessages)
+		r.Post("/{userID}", messageHandler.SendPrivateMessage)
+		r.Put("/{userID}/read", messageHandler.MarkMessagesAsRead)
 	})
 
 	// Upload route

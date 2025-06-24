@@ -5,13 +5,14 @@ import Link from "next/link";
 import { Menu, X, Bell, MessageSquare, User, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { notifications } from "@/lib/api";
+import { notifications, messages } from "@/lib/api";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const router = useRouter();
   const [notificationCount, setNotificationCount] = useState(0);
+  const [messageCount, setMessageCount] = useState(0);
 
   // Check if user is authenticated
   const isAuthenticated = !!user;
@@ -22,22 +23,26 @@ export default function Navbar() {
   // Ref for user dropdown
   const userMenuRef = useRef(null);
 
-  // Fetch notification count
+  // Fetch notification and message counts
   useEffect(() => {
     if (isAuthenticated) {
-      fetchNotificationCount();
-      // Set up interval to fetch count every 30 seconds
-      const interval = setInterval(fetchNotificationCount, 30000);
+      fetchCounts();
+      // Set up interval to fetch counts every 30 seconds
+      const interval = setInterval(fetchCounts, 30000);
       return () => clearInterval(interval);
     }
   }, [isAuthenticated]);
 
-  const fetchNotificationCount = async () => {
+  const fetchCounts = async () => {
     try {
-      const data = await notifications.getUnreadCount();
-      setNotificationCount(data.count || 0);
+      const [notificationData, messageData] = await Promise.all([
+        notifications.getUnreadCount(),
+        messages.getUnreadCount()
+      ]);
+      setNotificationCount(notificationData.count || 0);
+      setMessageCount(messageData.count || 0);
     } catch (error) {
-      console.error('Failed to fetch notification count:', error);
+      console.error('Failed to fetch counts:', error);
     }
   };
 
@@ -187,25 +192,27 @@ export default function Navbar() {
               </Link>
 
               {/* Messages Icon */}
-              <button style={{ position: 'relative', color: '#B8C1CF' }}>
+              <Link href="/chat" style={{ position: 'relative', color: '#B8C1CF', textDecoration: 'none' }}>
                 <MessageSquare style={{ height: '1.5rem', width: '1.5rem' }} />
-                <span style={{
-                  position: 'absolute',
-                  top: '-0.25rem',
-                  right: '-0.25rem',
-                  backgroundColor: '#3A86FF',
-                  color: 'white',
-                  fontSize: '0.75rem',
-                  borderRadius: '9999px',
-                  height: '1.25rem',
-                  width: '1.25rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  5
-                </span>
-              </button>
+                {messageCount > 0 && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-0.25rem',
+                    right: '-0.25rem',
+                    backgroundColor: '#3A86FF',
+                    color: 'white',
+                    fontSize: '0.75rem',
+                    borderRadius: '9999px',
+                    height: '1.25rem',
+                    width: '1.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {messageCount > 99 ? '99+' : messageCount}
+                  </span>
+                )}
+              </Link>
 
               {/* User Profile */}
               <div style={{ position: 'relative' }} ref={userMenuRef}>

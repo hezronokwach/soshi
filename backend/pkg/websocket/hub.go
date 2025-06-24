@@ -29,6 +29,11 @@ func (h *Hub) GetOnlineUserIDs() []int {
 	return userIDs
 }
 
+// SendMessage sends a message to the broadcast channel
+func (h *Hub) SendMessage(message []byte) {
+	h.broadcast <- message
+}
+
 // NewHub creates a new hub
 func NewHub() *Hub {
 	return &Hub{

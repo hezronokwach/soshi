@@ -19,19 +19,19 @@ type Message struct {
 }
 
 // CreatePrivateMessage creates a new private message between users
-func CreatePrivateMessage(db *sql.DB, senderId int, receiverId int, content string) (int, error) {
+func CreatePrivateMessage(db *sql.DB, senderId int, receiverId int, content string) (*Message, error) {
 	// Check if users can message each other (one must follow the other)
 	var canMessage bool
 	err := db.QueryRow(`
 		SELECT EXISTS(
-			SELECT 1 FROM follows 
+			SELECT 1 FROM follows
 			WHERE (follower_id = ? AND following_id = ? AND status = 'accepted')
 			OR (follower_id = ? AND following_id = ? AND status = 'accepted')
 		)`,
 		senderId, receiverId, receiverId, senderId,
 	).Scan(&canMessage)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	if !canMessage {
 		// Check if receiver has a public profile
@@ -41,10 +41,10 @@ func CreatePrivateMessage(db *sql.DB, senderId int, receiverId int, content stri
 			receiverId,
 		).Scan(&isPublic)
 		if err != nil && err != sql.ErrNoRows {
-			return 0, err
+			return nil, err
 		}
 		if !isPublic {
-			return 0, errors.New("cannot message this user")
+			return nil, errors.New("cannot message this user")
 		}
 	}
 
@@ -54,15 +54,30 @@ func CreatePrivateMessage(db *sql.DB, senderId int, receiverId int, content stri
 		senderId, receiverId, content,
 	)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	messageId, err := result.LastInsertId()
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	return int(messageId), nil
+	// Retrieve the created message
+	var message Message
+	err = db.QueryRow(`
+		SELECT id, sender_id, receiver_id, content, is_read, created_at
+		FROM messages
+		WHERE id = ?
+	`, messageId).Scan(
+		&message.ID, &message.SenderID, &message.ReceiverID,
+		&message.Content, &message.IsRead, &message.CreatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &message, nil
 }
 
 // CreateGroupMessage creates a new message in a group chat
@@ -253,4 +268,33 @@ func GetUserConversations(db *sql.DB, userId int) ([]User, error) {
 	}
 
 	return conversations, nil
+}
+
+// MarkMessagesAsRead marks all messages from a specific user as read
+func MarkMessagesAsRead(db *sql.DB, recipientID, senderID int) error {
+	query := `
+		UPDATE messages
+		SET is_read = 1
+		WHERE receiver_id = ? AND sender_id = ? AND is_read = 0
+	`
+
+	_, err := db.Exec(query, recipientID, senderID)
+	return err
+}
+
+// GetUnreadMessageCount gets the total number of unread messages for a user
+func GetUnreadMessageCount(db *sql.DB, userID int) (int, error) {
+	var count int
+	query := `
+		SELECT COUNT(*)
+		FROM messages
+		WHERE receiver_id = ? AND is_read = 0
+	`
+
+	err := db.QueryRow(query, userID).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
