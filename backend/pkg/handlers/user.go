@@ -9,14 +9,16 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/hezronokwach/soshi/pkg/models"
 	"github.com/hezronokwach/soshi/pkg/utils"
+	"github.com/hezronokwach/soshi/pkg/websocket"
 )
 
 type UserHandler struct {
-	db *sql.DB
+	db  *sql.DB
+	hub *websocket.Hub
 }
 
-func NewUserHandler(db *sql.DB) *UserHandler {
-	return &UserHandler{db: db}
+func NewUserHandler(db *sql.DB, hub *websocket.Hub) *UserHandler {
+	return &UserHandler{db: db, hub: hub}
 }
 
 // GetFollowers retrieves users who are following the specified user
@@ -204,6 +206,53 @@ func (h *UserHandler) GetSuggestedUsers(w http.ResponseWriter, r *http.Request) 
 	utils.RespondWithJSON(w, http.StatusOK, suggestedUsers)
 }
 
+// GetOnlineUsers retrieves users that are currently online (connected via WebSocket)
+func (h *UserHandler) GetOnlineUsers(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Get online user IDs from WebSocket hub
+	onlineUserIDs := h.hub.GetOnlineUserIDs()
+
+	// If no users are online, return empty array
+	if len(onlineUserIDs) == 0 {
+		utils.RespondWithJSON(w, http.StatusOK, []models.User{})
+		return
+	}
+
+	// Filter out current user from online users
+	var filteredUserIDs []int
+	for _, userID := range onlineUserIDs {
+		if userID != user.ID {
+			filteredUserIDs = append(filteredUserIDs, userID)
+		}
+	}
+
+	// If no other users are online, return empty array
+	if len(filteredUserIDs) == 0 {
+		utils.RespondWithJSON(w, http.StatusOK, []models.User{})
+		return
+	}
+
+	// Get user details for online users
+	onlineUsers, err := models.GetUsersByIDs(h.db, filteredUserIDs)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to retrieve online users")
+		return
+	}
+
+	// Limit to 4 users for sidebar display
+	if len(onlineUsers) > 4 {
+		onlineUsers = onlineUsers[:4]
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, onlineUsers)
+}
+
 // GetFollowCounts retrieves follower and following counts for a user
 func (h *UserHandler) GetFollowCounts(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
@@ -336,7 +385,7 @@ func (h *UserHandler) GetFollowStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
-		"status": status,
+		"status":  status,
 		"is_self": user.ID == targetUserID,
 	})
 }

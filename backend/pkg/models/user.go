@@ -169,7 +169,7 @@ func GetSuggestedUsers(db *sql.DB, userID int) ([]User, error) {
 		ORDER BY u.created_at DESC
 		LIMIT 20
 	`
-	
+
 	rows, err := db.Query(query, userID)
 	if err != nil {
 		return nil, err
@@ -192,4 +192,94 @@ func GetSuggestedUsers(db *sql.DB, userID int) ([]User, error) {
 	}
 
 	return users, nil
+}
+
+// GetUsersByIDs retrieves multiple users by their IDs
+func GetUsersByIDs(db *sql.DB, userIDs []int) ([]User, error) {
+	if len(userIDs) == 0 {
+		return []User{}, nil
+	}
+
+	// Build placeholders for the IN clause
+	placeholders := make([]string, len(userIDs))
+	args := make([]interface{}, len(userIDs))
+	for i, id := range userIDs {
+		placeholders[i] = "?"
+		args[i] = id
+	}
+
+	query := `
+		SELECT u.id, u.email, u.first_name, u.last_name, u.date_of_birth,
+		       u.avatar, u.nickname, u.about_me, u.created_at, u.updated_at,
+		       COALESCE(p.is_public, 1) as is_public
+		FROM users u
+		LEFT JOIN user_profiles p ON u.id = p.user_id
+		WHERE u.id IN (` + joinPlaceholders(placeholders) + `)
+		ORDER BY u.first_name, u.last_name
+	`
+
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []User
+	for rows.Next() {
+		var user User
+		err := rows.Scan(
+			&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.DateOfBirth,
+			&user.Avatar, &user.Nickname, &user.AboutMe, &user.CreatedAt, &user.UpdatedAt, &user.IsPublic,
+		)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
+// Helper function to join placeholders with commas
+func joinPlaceholders(placeholders []string) string {
+	if len(placeholders) == 0 {
+		return ""
+	}
+	if len(placeholders) == 1 {
+		return placeholders[0]
+	}
+
+	result := placeholders[0]
+	for i := 1; i < len(placeholders); i++ {
+		result += ", " + placeholders[i]
+	}
+	return result
+}
+
+// GetUserBySessionToken retrieves a user by their session token
+func GetUserBySessionToken(db *sql.DB, sessionToken string) (*User, error) {
+	query := `
+		SELECT u.id, u.email, u.first_name, u.last_name, u.date_of_birth,
+		       u.avatar, u.nickname, u.about_me, u.created_at, u.updated_at,
+		       COALESCE(p.is_public, 1) as is_public
+		FROM users u
+		LEFT JOIN user_profiles p ON u.id = p.user_id
+		INNER JOIN sessions s ON u.id = s.user_id
+		WHERE s.token = ? AND s.expires_at > datetime('now')
+	`
+
+	var user User
+	err := db.QueryRow(query, sessionToken).Scan(
+		&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.DateOfBirth,
+		&user.Avatar, &user.Nickname, &user.AboutMe, &user.CreatedAt, &user.UpdatedAt, &user.IsPublic,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, err
+		}
+		return nil, err
+	}
+
+	return &user, nil
 }

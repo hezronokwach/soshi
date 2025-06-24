@@ -20,6 +20,15 @@ type Hub struct {
 	Unregister chan *Client
 }
 
+// GetOnlineUserIDs returns a slice of user IDs that are currently connected
+func (h *Hub) GetOnlineUserIDs() []int {
+	var userIDs []int
+	for client := range h.clients {
+		userIDs = append(userIDs, client.UserID)
+	}
+	return userIDs
+}
+
 // NewHub creates a new hub
 func NewHub() *Hub {
 	return &Hub{

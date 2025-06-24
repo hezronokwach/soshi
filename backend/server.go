@@ -63,10 +63,10 @@ func main() {
 	postHandler := handlers.NewPostHandler(db)
 	commentHandler := handlers.NewCommentHandler(db)
 	groupHandler := handlers.NewGroupHandler(db)
-	userHandler := handlers.NewUserHandler(db)
+	userHandler := handlers.NewUserHandler(db, hub)
 	activityHandler := handlers.NewActivityHandler(db)
 	uploadHandler := handlers.NewUploadHandler()
-	wsHandler := handlers.NewWebSocketHandler(hub)
+	wsHandler := handlers.NewWebSocketHandler(hub, db)
 	authMiddleware := middleware1.Auth(db)
 
 	// Routes
@@ -164,13 +164,14 @@ func main() {
 		r.Get("/following", userHandler.GetFollowing)
 		r.Get("/counts", userHandler.GetFollowCounts)
 		r.Get("/suggested", userHandler.GetSuggestedUsers)
-		
+		r.Get("/online", userHandler.GetOnlineUsers)
+
 		// Profile routes
 		r.Get("/profile", userHandler.GetProfile)
 		r.Put("/profile", userHandler.UpdateProfile)
 		r.Put("/profile/privacy", userHandler.UpdateProfilePrivacy)
 		r.Get("/{userID}/profile", userHandler.GetProfile)
-		
+
 		// Follow routes for specific users
 		r.Get("/{userID}/followers", userHandler.GetFollowers)
 		r.Get("/{userID}/following", userHandler.GetFollowing)
@@ -190,7 +191,7 @@ func main() {
 		r.Put("/settings", activityHandler.UpdateActivitySettings)
 		r.Put("/{activityID}/hide", activityHandler.HideActivity)
 		r.Put("/{activityID}/unhide", activityHandler.UnhideActivity)
-		
+
 		// Other user's activities (with privacy filtering)
 		r.Get("/{userID}", activityHandler.GetUserActivities)
 		r.Get("/{userID}/posts", activityHandler.GetUserPosts)
@@ -212,7 +213,7 @@ func main() {
 		r.Post("/", uploadHandler.UploadFile)
 	})
 
-	// WebSocket route
+	// WebSocket route (authentication handled in WebSocket handler)
 	r.Get("/ws", wsHandler.ServeWS)
 
 	// Serve static files for uploads

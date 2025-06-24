@@ -340,6 +340,8 @@ export const users = {
     }),
 
   getSuggestedUsers: () => fetchAPI("/api/users/suggested"),
+
+  getOnlineUsers: () => fetchAPI("/api/users/online"),
 }
 
 // Notifications API
