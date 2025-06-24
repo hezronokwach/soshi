@@ -308,13 +308,9 @@ export default function MessageArea({ conversation, currentUser }) {
               <span style={{ color: '#06D6A0', fontStyle: 'italic' }}>
                 typing...
               </span>
-            ) : isOnline ? (
-              <span style={{ color: '#06D6A0' }}>
-                • online
-              </span>
             ) : (
               <span>
-                {conversation.nickname ? `@${conversation.nickname}` : 'offline'}
+                {conversation.nickname ? `@${conversation.nickname}` : ''}
               </span>
             )}
           </div>
