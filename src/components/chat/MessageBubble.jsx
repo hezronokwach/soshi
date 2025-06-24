@@ -85,11 +85,12 @@ export default function MessageBubble({ message, isOwn, showAvatar, user }) {
       : '0 2px 8px rgba(0, 0, 0, 0.1)'
   };
 
+  // Always show timestamp below the message
   const timeStyles = {
     fontSize: '0.75rem',
     color: '#6C7A89',
     marginTop: '0.25rem',
-    opacity: showTime ? 1 : 0,
+    opacity: 1, // Always visible
     transition: 'opacity 0.2s ease',
     textAlign: isOwn ? 'right' : 'left'
   };
@@ -170,8 +171,7 @@ export default function MessageBubble({ message, isOwn, showAvatar, user }) {
         >
           {message.content}
         </div>
-        
-        {/* Timestamp */}
+        {/* Timestamp - always visible */}
         <div style={timeStyles}>
           {formatTime(message.created_at)}
         </div>

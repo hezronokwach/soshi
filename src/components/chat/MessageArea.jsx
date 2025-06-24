@@ -282,6 +282,26 @@ export default function MessageArea({ conversation, currentUser }) {
         <div style={userInfoStyles}>
           <div style={nameStyles}>
             {conversation.first_name} {conversation.last_name}
+            {isOnline && (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                marginLeft: '0.5rem',
+                fontSize: '0.95em',
+                color: '#06D6A0',
+                fontWeight: 500
+              }}>
+                <span style={{
+                  display: 'inline-block',
+                  width: '0.7em',
+                  height: '0.7em',
+                  borderRadius: '50%',
+                  background: '#06D6A0',
+                  marginRight: '0.35em',
+                }}></span>
+                online
+              </span>
+            )}
           </div>
           <div style={statusStyles}>
             {isTyping ? (
