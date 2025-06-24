@@ -55,7 +55,7 @@ func main() {
 	}))
 
 	// Initialize websocket hub
-	hub := websocket.NewHub()
+	hub := websocket.NewHub(db)
 	go hub.Run()
 
 	// Initialize handlers

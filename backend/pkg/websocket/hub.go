@@ -1,8 +1,11 @@
 package websocket
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log"
+
+	"github.com/hezronokwach/soshi/pkg/models"
 )
 
 // Hub maintains the set of active clients and broadcasts messages to them
@@ -21,6 +24,9 @@ type Hub struct {
 
 	// User ID to clients mapping for targeted messaging
 	userClients map[int][]*Client
+
+	// Database connection for permission validation
+	db *sql.DB
 }
 
 // GetOnlineUserIDs returns a slice of user IDs that are currently connected
@@ -60,6 +66,33 @@ func (h *Hub) IsUserOnline(userID int) bool {
 	return exists && len(clients) > 0
 }
 
+// canSendMessage checks if a user can send a message to another user
+func (h *Hub) canSendMessage(senderID, recipientID int) (bool, error) {
+	// Get recipient user
+	recipient, err := models.GetUserById(h.db, recipientID)
+	if err != nil {
+		return false, err
+	}
+
+	// If recipient has public profile, anyone can message them
+	if recipient.IsPublic {
+		return true, nil
+	}
+
+	// Check if sender is following recipient or recipient is following sender
+	isFollowing, err := models.IsFollowing(h.db, senderID, recipientID)
+	if err != nil {
+		return false, err
+	}
+
+	isFollowedBy, err := models.IsFollowing(h.db, recipientID, senderID)
+	if err != nil {
+		return false, err
+	}
+
+	return isFollowing == "accepted" || isFollowedBy == "accepted", nil
+}
+
 // addUserClient adds a client to the user mapping
 func (h *Hub) addUserClient(userID int, client *Client) {
 	if h.userClients == nil {
@@ -84,13 +117,14 @@ func (h *Hub) removeUserClient(userID int, client *Client) {
 }
 
 // NewHub creates a new hub
-func NewHub() *Hub {
+func NewHub(db *sql.DB) *Hub {
 	return &Hub{
 		broadcast:   make(chan []byte),
 		Register:    make(chan *Client),
 		Unregister:  make(chan *Client),
 		clients:     make(map[*Client]bool),
 		userClients: make(map[int][]*Client),
+		db:          db,
 	}
 }
 
@@ -185,9 +219,27 @@ func (h *Hub) Run() {
 					continue
 				}
 
-				// Find recipient and send message
+				senderID, ok := msg["sender_id"].(float64)
+				if !ok {
+					log.Printf("Private message has no sender_id")
+					continue
+				}
+
+				// Validate messaging permissions
+				canSend, err := h.canSendMessage(int(senderID), int(recipientID))
+				if err != nil {
+					log.Printf("Error checking message permissions: %v", err)
+					continue
+				}
+
+				if !canSend {
+					log.Printf("User %d cannot send message to user %d - permission denied", int(senderID), int(recipientID))
+					continue
+				}
+
+				// Find recipient and sender clients and send message
 				for client := range h.clients {
-					if client.UserID == int(recipientID) || client.UserID == int(msg["sender_id"].(float64)) {
+					if client.UserID == int(recipientID) || client.UserID == int(senderID) {
 						select {
 						case client.Send <- message:
 						default:
