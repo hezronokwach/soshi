@@ -203,7 +203,18 @@ func (h *UserHandler) GetSuggestedUsers(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	utils.RespondWithJSON(w, http.StatusOK, suggestedUsers)
+	// Filter out private users unless the current user can message them (matches canSendMessage logic)
+	var visibleSuggestedUsers []map[string]interface{}
+	for _, u := range suggestedUsers {
+		isPublic, _ := u["is_public"].(bool)
+		isFollowing, _ := u["is_following"].(bool)
+		isFollowedBy, _ := u["is_followed_by"].(bool)
+		if isPublic || isFollowing || isFollowedBy {
+			visibleSuggestedUsers = append(visibleSuggestedUsers, u)
+		}
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, visibleSuggestedUsers)
 }
 
 // GetOnlineUsers retrieves users that are currently online (connected via WebSocket)
@@ -245,12 +256,28 @@ func (h *UserHandler) GetOnlineUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Limit to 4 users for sidebar display
-	if len(onlineUsers) > 4 {
-		onlineUsers = onlineUsers[:4]
+	// Filter out private users unless the current user follows them
+	var visibleOnlineUsers []models.User
+	for _, u := range onlineUsers {
+		if u.IsPublic {
+			visibleOnlineUsers = append(visibleOnlineUsers, u)
+		} else {
+			status, err := models.IsFollowing(h.db, user.ID, u.ID)
+			if err != nil {
+				continue // skip on error
+			}
+			if status == "accepted" {
+				visibleOnlineUsers = append(visibleOnlineUsers, u)
+			}
+		}
 	}
 
-	utils.RespondWithJSON(w, http.StatusOK, onlineUsers)
+	// Limit to 4 users for sidebar display
+	if len(visibleOnlineUsers) > 4 {
+		visibleOnlineUsers = visibleOnlineUsers[:4]
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, visibleOnlineUsers)
 }
 
 // GetFollowCounts retrieves follower and following counts for a user
