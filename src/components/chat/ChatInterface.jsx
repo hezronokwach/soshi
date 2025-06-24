@@ -62,6 +62,7 @@ export default function ChatInterface() {
     }
   };
 
+  // Responsive container
   const containerStyles = {
     height: '100%',
     backgroundColor: '#1A2333',
@@ -69,15 +70,24 @@ export default function ChatInterface() {
     border: '1px solid #2A3343',
     display: 'flex',
     overflow: 'hidden',
-    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+    width: '100%',
+    maxWidth: '100%',
+    margin: '0 auto',
+    flexDirection: 'row',
+    minHeight: 0,
   };
 
+  // Responsive sidebar
   const sidebarStyles = {
-    width: '320px',
+    width: '100%',
+    maxWidth: 340,
+    minWidth: 0,
     borderRight: '1px solid #2A3343',
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: '#1A2333'
+    backgroundColor: '#1A2333',
+    flexShrink: 0,
   };
 
   const sidebarHeaderStyles = {
@@ -113,11 +123,17 @@ export default function ChatInterface() {
     }
   };
 
+  // Responsive main area
   const mainAreaStyles = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: '#0F1624'
+    backgroundColor: '#0F1624',
+    minWidth: 0,
+    width: '100%',
+    maxWidth: '900px', // wider chat area on desktop
+    margin: '0 auto',
+    borderRadius: '0 1rem 1rem 0',
   };
 
   const emptyStateStyles = {
@@ -165,6 +181,19 @@ export default function ChatInterface() {
     alignItems: 'center',
     gap: '0.5rem'
   };
+
+  // Mobile responsiveness
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 600;
+  if (isMobile) {
+    containerStyles.flexDirection = 'column';
+    containerStyles.borderRadius = 0;
+    sidebarStyles.maxWidth = '100vw';
+    sidebarStyles.borderRight = 'none';
+    sidebarStyles.borderBottom = '1px solid #2A3343';
+    mainAreaStyles.maxWidth = '100vw';
+    mainAreaStyles.borderRadius = 0;
+    mainAreaStyles.margin = 0;
+  }
 
   if (!user) {
     return (
