@@ -1,15 +1,11 @@
 'use client';
 
+import Layout from '@/components/layout/Layout';
 import ChatInterface from '@/components/chat/ChatInterface';
 
 export default function ChatPage() {
   return (
-    <div style={{
-      height: '100vh',
-      backgroundColor: '#0F1624',
-      paddingTop: '64px',
-      overflow: 'hidden' // Prevent page scrolling
-    }}>
+    <Layout>
       <div style={{
         maxWidth: '1200px',
         margin: '0 auto',
@@ -25,20 +21,19 @@ export default function ChatPage() {
           padding: '1.5rem 2rem 1rem 2rem',
           fontFamily: "'Outfit', sans-serif",
           margin: 0,
-          flexShrink: 0 // Prevent header from shrinking
+          flexShrink: 0
         }}>
           Messages
         </h1>
-
         <div style={{
           flex: 1,
           padding: '0 2rem 1.5rem 2rem',
-          overflow: 'hidden', // Let ChatInterface handle its own scrolling
-          minHeight: 0 // Important for flex child to shrink
+          overflow: 'hidden',
+          minHeight: 0
         }}>
           <ChatInterface />
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }
