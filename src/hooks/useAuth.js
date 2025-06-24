@@ -18,13 +18,16 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     async function loadUserFromSession() {
       try {
-        // const response = await fetch('/api/auth/session');
-        // const data = await response.json();
         const data = await auth.getSession();
-        if (data.user) {
-          setUser(data.user);
-        } else if (data.id) {
-          setUser(data);
+        if (data) {
+          if (data.user) {
+            setUser(data.user);
+          } else if (data.id) {
+            setUser(data);
+          }
+        } else {
+          // No session data (user not logged in)
+          setUser(null);
         }
       } catch (error) {
         console.error('Error loading user session:', error);

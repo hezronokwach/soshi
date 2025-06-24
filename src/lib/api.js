@@ -82,7 +82,17 @@ export const auth = {
       method: "POST",
     }),
 
-  getSession: () => fetchAPI("/api/auth/session"),
+  getSession: async () => {
+    try {
+      return await fetchAPI("/api/auth/session")
+    } catch (error) {
+      // If it's a "No session token provided" error, return null instead of throwing
+      if (error.message.includes('No session token provided')) {
+        return null
+      }
+      throw error
+    }
+  },
 
   // New method to check if user is authenticated
   checkAuth: async () => {
