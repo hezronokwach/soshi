@@ -296,252 +296,289 @@ export default function PostCard({ post, onDelete, onUpdate }) {
   };
 
   return (
-    <div className="p-4 bg-background-lighter rounded-lg shadow">
-      {/* Post Header */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center">
-          <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white mr-3">
-            {post.user?.first_name?.[0] || "U"}
-          </div>
-          <div>
-            <h3 className="font-medium">
-              {post.user?.first_name || 'Unknown'} {post.user?.last_name || ''}
-            </h3>
-            <p className="text-sm text-text-secondary">
-              {new Date(post.created_at).toLocaleString()}
-              {post.privacy !== "public" && (
-                <span className="ml-2 text-xs">
-                  ({post.privacy === "followers" ? "Followers" : "Private"})
-                </span>
-              )}
-            </p>
-          </div>
+   <div 
+    className="p-6 rounded-xl border border-border/20 shadow-xl backdrop-blur-glass mb-6"
+    style={{
+      background: 'rgba(26, 35, 51, 0.7)',
+      backdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255, 255, 255, 0.1)'
+    }}
+  >
+    {/* Post Header */}
+    <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start space-x-3">
+        <div className="h-12 w-12 rounded-full bg-primary/90 flex items-center justify-center text-white text-lg font-medium shadow-md">
+          {post.user?.first_name?.[0] || "U"}
         </div>
-        {/* Post Actions for Owner */}
-        {isOwner && (
-          <div className="flex gap-2">
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="flex items-center gap-1 text-text-secondary hover:text-primary p-1 rounded-full hover:bg-accent/50"
-              title="Edit post"
-            >
-              <Edit size={18} />
-              <span className="sr-only">Edit</span>
-            </button>
-            <button
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="flex items-center gap-1 text-text-secondary hover:text-red-500 disabled:opacity-50 p-1 rounded-full hover:bg-accent/50"
-              title="Delete post"
-            >
-              <Trash2 size={18} />
-              <span className="sr-only">{isDeleting ? "Deleting..." : "Delete"}</span>
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Post Content */}
-      {isEditing ? (
-        <div className="mb-3 space-y-3">
-          <textarea
-            value={editedContent}
-            onChange={(e) => setEditedContent(e.target.value)}
-            className="w-full p-3 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            rows="3"
-            placeholder="What's on your mind?"
-          />
-
-          {/* Image upload */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-text-secondary mb-1">
-              Image (optional)
-            </label>
-            {imagePreview ? (
-              <div className="relative">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-full max-h-64 object-cover rounded-md border border-border"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setImage(null);
-                    setImagePreview(null);
-                  }}
-                  className="absolute top-2 right-2 bg-background-lighter p-2 rounded-full hover:bg-background-darker"
-                >
-                  ✕
-                </button>
-              </div>
-            ) : (
-              <label className="flex items-center justify-center w-full h-24 border-2 border-dashed border-border rounded-md cursor-pointer hover:border-primary transition-colors">
-                <span className="text-text-secondary">Click to upload an image</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-              </label>
+        <div>
+          <h3 className="font-medium text-text-primary">
+            {post.user?.first_name || 'Unknown'} {post.user?.last_name || ''}
+          </h3>
+          <div className="flex items-center text-sm text-text-secondary">
+            <span>{new Date(post.created_at).toLocaleString()}</span>
+            {post.privacy !== "public" && (
+              <span className="ml-2 text-xs px-2 py-0.5 bg-surface/50 rounded-full border border-border/30">
+                {post.privacy === "followers" ? "👥 Followers" : "🔒 Private"}
+              </span>
             )}
           </div>
-
-          {/* Privacy settings */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-text-secondary">
-              Privacy
-            </label>
-            <div className="relative">
-              <select
-                value={editedPrivacy}
-                onChange={handlePrivacyChange}
-                className="w-full p-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-text-primary appearance-none"
-              >
-                <option value="public" className="bg-background text-text-primary">Public</option>
-                <option value="followers" className="bg-background text-text-primary">Almost Private</option>
-                <option value="private" className="bg-background text-text-primary">Private</option>
-              </select>
-              {editedPrivacy === 'private' && selectedUsers.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {selectedUsers.length}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <SelectFollowersModal
-            isOpen={showFollowersModal}
-            onClose={() => setShowFollowersModal(false)}
-            onSave={handleFollowersSelect}
-            initialSelected={selectedUsers}
-          />
-
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={() => {
-                setIsEditing(false);
-                setImagePreview(post.image_url || null);
-                setImage(null);
-              }}
-              className="px-4 py-2 text-text-secondary hover:text-primary"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleUpdate}
-              className="px-4 py-2 bg-primary-gradient rounded-md text-white hover:opacity-90"
-            >
-              Save Changes
-            </button>
-          </div>
         </div>
-      ) : (
-        <p className="mb-3">{post.content}</p>
-      )}
-
-      {/* Post Image */}
-      {post.image_url && (
-        <div className="relative">
-          <img
-            key={`post-image-${post.id}-${post.updated_at || ''}`}
-            src={getImageUrl(post.image_url)}
-            alt="Post"
-            className="w-full h-auto rounded-md mb-3"
-            onError={(e) => {
-              console.error('Error loading image:', post.image_url);
-              e.target.style.display = 'none';
-            }}
-          />
-        </div>
-      )}
-
-      {/* Post Actions */}
-      <div className="flex gap-6 text-text-secondary px-1">
-        <button 
-          disabled={isReacting}
-          onClick={() => handleReaction('like')}
-          className={`flex items-center gap-1.5 p-1.5 rounded-full transition-colors ${
-            reactions.userReaction === 'like' 
-              ? 'text-primary' 
-              : 'hover:text-primary hover:bg-accent/50'
-          }`}
-          title="Like"
-        >
-          <ThumbsUp
-            size={20} 
-            strokeWidth={2}
-            fill={reactions.userReaction === 'like' ? 'currentColor' : 'none'}
-          />
-          <span className="text-sm">
-            {reactions.likeCount > 0 ? reactions.likeCount : ''} Like
-          </span>
-        </button>
-        
-        <button 
-          disabled={isReacting}
-          onClick={() => handleReaction('dislike')}
-          className={`flex items-center gap-1.5 p-1.5 rounded-full transition-colors ${
-            reactions.userReaction === 'dislike'
-             ? 'text-primary' 
-             : 'hover:text-primary hover:bg-accent/50'
-          }`}
-          title="Dislike"
-        >
-          <ThumbsDown
-            size={20}
-            strokeWidth={2}  
-            fill={reactions.userReaction === 'dislike' ? 'currentColor' : 'none'}
-          />
-          <span className="text-sm">
-            {reactions.dislikeCount > 0 ? reactions.dislikeCount : ''} Dislike
-          </span>
-        </button>
-
-        <button 
-          onClick={() => setShowComments(!showComments)}
-          className="flex items-center gap-1.5 hover:text-primary p-1.5 rounded-full hover:bg-accent/50 transition-colors"
-          title="Comment"
-        >
-          <MessageSquare size={20} strokeWidth={2} />
-          <span className="text-sm" data-comment-count={commentCount} data-post-id={post.id}>
-            {commentCount > 0 ? `${commentCount} Comment${commentCount !== 1 ? 's' : ''}` : 'Comment'}
-            <span className="sr-only">(current count: {commentCount})</span>
-            <span style={{ display: 'none' }} data-debug-comment-count={commentCount}></span>
-          </span>
-        </button>
-        <button 
-          className="flex items-center gap-1.5 hover:text-primary p-1.5 rounded-full hover:bg-accent/50 transition-colors"
-          title="Share"
-        >
-          <Share2 size={20} strokeWidth={2} />
-          <span className="text-sm">Share</span>
-        </button>
-
-        <button 
-          onClick={handleSavePost}
-          disabled={isSaving}
-          className={`flex items-center gap-1.5 p-1.5 rounded-full transition-colors ${
-            isSaved 
-              ? 'text-yellow-500 hover:text-yellow-600' 
-              : 'text-text-secondary hover:text-primary hover:bg-accent/50'
-          }`}
-          title={isSaved ? 'Remove from saved' : 'Save post'}
-        >
-          {isSaved ? (
-            <BookmarkCheck size={20} strokeWidth={2} fill="currentColor" />
-          ) : (
-            <Bookmark size={20} strokeWidth={2} />
-          )}
-          <span className="text-sm">{isSaved ? 'Saved' : 'Save'}</span>
-        </button>
       </div>
+      
+      {/* Post Actions for Owner */}
+      {isOwner && (
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className="p-2 text-text-secondary hover:text-primary hover:bg-surface/50 rounded-full transition-normal"
+            title="Edit post"
+          >
+            <Edit size={18} />
+            <span className="sr-only">Edit</span>
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="p-2 text-text-secondary hover:text-error disabled:opacity-50 rounded-full hover:bg-surface/50 transition-normal"
+            title="Delete post"
+          >
+            {isDeleting ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <Trash2 size={18} />
+            )}
+            <span className="sr-only">{isDeleting ? "Deleting..." : "Delete"}</span>
+          </button>
+        </div>
+      )}
+    </div>
 
-      {/* Comments Section */}
-      {showComments && (
+    {/* Post Content */}
+    {isEditing ? (
+      <div className="space-y-4 mb-4">
+        <textarea
+          value={editedContent}
+          onChange={(e) => setEditedContent(e.target.value)}
+          className="w-full p-4 bg-background/80 border border-border/30 rounded-xl text-text-primary placeholder-text-secondary/70 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-normal resize-none"
+          rows="3"
+          placeholder="What's on your mind?"
+        />
+
+        {/* Image upload */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-text-secondary">
+            Image (optional)
+          </label>
+          {imagePreview ? (
+            <div className="relative rounded-xl overflow-hidden border border-border/30">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-full max-h-96 object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setImage(null);
+                  setImagePreview(null);
+                }}
+                className="absolute top-3 right-3 bg-surface/90 hover:bg-surface text-text-primary p-2 rounded-full hover:scale-105 transition-normal"
+                aria-label="Remove image"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border/30 rounded-xl cursor-pointer hover:border-primary/50 transition-colors">
+              <ImagePlus className="w-6 h-6 text-text-secondary mb-2" />
+              <span className="text-sm text-text-secondary">Click to upload an image</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </label>
+          )}
+        </div>
+
+        {/* Privacy settings */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-text-secondary">
+            Privacy
+          </label>
+          <div className="relative">
+            <select
+              value={editedPrivacy}
+              onChange={handlePrivacyChange}
+              className="w-full p-3 bg-background/80 border border-border/30 rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-normal appearance-none pr-10"
+              style={{
+                backgroundImage: "url(" + encodeURI("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23B8C1CF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") + "" + ")",
+                backgroundPosition: "right 0.75rem center",
+                backgroundRepeat: "no-repeat",
+                backgroundSize: "1.25em 1.25em"
+              }}
+            >
+              <option value="public" className="bg-surface text-text-primary">🌍 Public</option>
+              <option value="followers" className="bg-surface text-text-primary">👥 Followers Only</option>
+              <option value="private" className="bg-surface text-text-primary">🔒 Private</option>
+            </select>
+            {editedPrivacy === 'private' && selectedUsers.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-medium rounded-full h-5 min-w-5 flex items-center justify-center px-1">
+                {selectedUsers.length}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <SelectFollowersModal
+          isOpen={showFollowersModal}
+          onClose={() => setShowFollowersModal(false)}
+          onSave={handleFollowersSelect}
+          initialSelected={selectedUsers}
+        />
+
+        <div className="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => {
+              setIsEditing(false);
+              setImagePreview(post.image_url || null);
+              setImage(null);
+            }}
+            className="px-5 py-2 text-text-secondary hover:text-primary rounded-lg transition-normal"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleUpdate}
+            className="px-5 py-2 bg-primary hover:bg-primary-hover text-white font-medium rounded-lg transition-normal hover:shadow-glow disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!editedContent.trim()}
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+    ) : (
+      <p className="mb-4 text-text-primary whitespace-pre-line">{post.content}</p>
+    )}
+
+    {/* Post Image */}
+    {post.image_url && (
+      <div className="relative rounded-xl overflow-hidden mb-4 border border-border/30">
+        <img
+          key={`post-image-${post.id}-${post.updated_at || ''}`}
+          src={getImageUrl(post.image_url)}
+          alt="Post"
+          className="w-full h-auto max-h-[600px] object-contain bg-black/5"
+          onError={(e) => {
+            console.error('Error loading image:', post.image_url);
+            e.target.style.display = 'none';
+          }}
+        />
+      </div>
+    )}
+
+    {/* Post Actions */}
+    <div className="flex flex-wrap gap-1 sm:gap-4 text-text-secondary px-1 pt-2 border-t border-border/20">
+      <button 
+        disabled={isReacting}
+        onClick={() => handleReaction('like')}
+        className={`flex items-center gap-1.5 p-2 rounded-xl transition-normal ${
+          reactions.userReaction === 'like' 
+            ? 'text-primary bg-primary/10' 
+            : 'hover:text-primary hover:bg-surface/50'
+        }`}
+        title="Like"
+      >
+        <ThumbsUp
+          size={20} 
+          strokeWidth={2}
+          className="transition-transform hover:scale-110"
+          fill={reactions.userReaction === 'like' ? 'currentColor' : 'none'}
+        />
+        <span className="text-sm font-medium">
+          {reactions.likeCount > 0 ? reactions.likeCount : 'Like'}
+        </span>
+      </button>
+      
+      <button 
+        disabled={isReacting}
+        onClick={() => handleReaction('dislike')}
+        className={`flex items-center gap-1.5 p-2 rounded-xl transition-normal ${
+          reactions.userReaction === 'dislike'
+            ? 'text-primary bg-primary/10' 
+            : 'hover:text-primary hover:bg-surface/50'
+        }`}
+        title="Dislike"
+      >
+        <ThumbsDown
+          size={20}
+          strokeWidth={2}
+          className="transition-transform hover:scale-110"
+          fill={reactions.userReaction === 'dislike' ? 'currentColor' : 'none'}
+        />
+        <span className="text-sm font-medium">
+          {reactions.dislikeCount > 0 ? reactions.dislikeCount : 'Dislike'}
+        </span>
+      </button>
+
+      <button 
+        onClick={() => setShowComments(!showComments)}
+        className={`flex items-center gap-1.5 p-2 rounded-xl transition-normal ${
+          showComments 
+            ? 'text-primary bg-primary/10' 
+            : 'hover:text-primary hover:bg-surface/50'
+        }`}
+        title="Comment"
+      >
+        <MessageSquare 
+          size={20} 
+          strokeWidth={2}
+          className="transition-transform hover:scale-110"
+        />
+        <span className="text-sm font-medium">
+          {commentCount > 0 ? `${commentCount} Comment${commentCount !== 1 ? 's' : ''}` : 'Comment'}
+        </span>
+      </button>
+      
+      <button 
+        className="flex items-center gap-1.5 p-2 rounded-xl hover:text-primary hover:bg-surface/50 transition-normal"
+        title="Share"
+      >
+        <Share2 
+          size={20} 
+          strokeWidth={2}
+          className="transition-transform hover:scale-110"
+        />
+        <span className="text-sm font-medium">Share</span>
+      </button>
+
+      <button 
+        onClick={handleSavePost}
+        disabled={isSaving}
+        className={`flex items-center gap-1.5 p-2 rounded-xl transition-normal ${
+          isSaved 
+            ? 'text-yellow-500 bg-yellow-500/10' 
+            : 'text-text-secondary hover:text-primary hover:bg-surface/50'
+        }`}
+        title={isSaved ? 'Remove from saved' : 'Save post'}
+      >
+        {isSaving ? (
+          <Loader2 size={20} className="animate-spin" />
+        ) : isSaved ? (
+          <BookmarkCheck size={20} strokeWidth={2} className="transition-transform hover:scale-110" fill="currentColor" />
+        ) : (
+          <Bookmark size={20} strokeWidth={2} className="transition-transform hover:scale-110" />
+        )}
+        <span className="text-sm font-medium">{isSaved ? 'Saved' : 'Save'}</span>
+      </button>
+    </div>
+
+    {/* Comments Section */}
+    {showComments && (
+      <div className="mt-4 pt-4 border-t border-border/20">
         <CommentSection
           postId={post.id}
           postOwnerId={post.user_id}
@@ -558,7 +595,8 @@ export default function PostCard({ post, onDelete, onUpdate }) {
             }
           }}
         />
-      )}
+      </div>
+    )}
     </div>
   );
 }
