@@ -244,10 +244,10 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
           {/* Like Button */}
           <button
             onClick={() => handleReaction('like')}
-            className={`flex items-center gap-1.5 p-1 rounded-full transition-colors ${
+            className={`flex items-center gap-1 p-1 rounded-full transition-colors ${
               reactions.userReaction === 'like'
-                ? 'text-primary'
-                : 'text-text-secondary hover:text-primary hover:bg-accent/50'
+                ? 'text-red-500'
+                : 'text-text-secondary hover:text-red-500 hover:bg-accent/50'
             }`}
             title="Like"
           >
@@ -256,18 +256,18 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
               strokeWidth={2}
               fill={reactions.userReaction === 'like' ? 'currentColor' : 'none'}
             />
-            <span className="text-sm">
-              {reactions.likeCount > 0 ? reactions.likeCount : ''} Like
-            </span>
+            {reactions.likeCount > 0 && (
+              <span className="text-sm">{reactions.likeCount}</span>
+            )}
           </button>
 
           {/* Dislike Button */}
           <button
             onClick={() => handleReaction('dislike')}
-            className={`flex items-center gap-1.5 p-1 rounded-full transition-colors ${
+            className={`flex items-center gap-1 p-1 rounded-full transition-colors ${
               reactions.userReaction === 'dislike'
-                ? 'text-primary'
-                : 'text-text-secondary hover:text-primary hover:bg-accent/50'
+                ? 'text-blue-500'
+                : 'text-text-secondary hover:text-blue-500 hover:bg-accent/50'
             }`}
             title="Dislike"
           >
@@ -276,9 +276,9 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
               strokeWidth={2}
               fill={reactions.userReaction === 'dislike' ? 'currentColor' : 'none'}
             />
-            <span className="text-sm">
-              {reactions.dislikeCount > 0 ? reactions.dislikeCount : ''} Dislike
-            </span>
+            {reactions.dislikeCount > 0 && (
+              <span className="text-sm">{reactions.dislikeCount}</span>
+            )}
           </button>
 
 
