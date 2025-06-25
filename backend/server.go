@@ -118,9 +118,13 @@ func main() {
 		})
 	})
 
-	// Group comment routes (for reactions)
+	// Group comment routes
 	r.Route("/api/groups/comments/{commentID}", func(r chi.Router) {
 		r.Use(authMiddleware)
+		r.Get("/", groupCommentHandler.GetGroupPostComment)
+		r.Put("/", groupCommentHandler.UpdateGroupPostComment)
+		r.Delete("/", groupCommentHandler.DeleteGroupPostComment)
+
 		r.Route("/reactions", func(r chi.Router) {
 			r.Use(authMiddleware)
 			r.Get("/", groupCommentHandler.GetGroupPostCommentReactions)

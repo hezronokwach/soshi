@@ -86,9 +86,10 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
 
   const handleEdit = async (data) => {
     try {
-      const res = await fetch(`/api/groups/comments/${comment.id}`, {
+      const res = await fetch(`http://localhost:8080/api/groups/comments/${comment.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           userId: user.id,
           ...data
@@ -110,19 +111,20 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
 
     try {
       setIsDeleting(true);
-      const res = await fetch(`/api/groups/comments/${comment.id}`, {
+      const res = await fetch(`http://localhost:8080/api/groups/comments/${comment.id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        credentials: 'include'
       });
 
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.error || 'Failed to delete group comment');
       }
-      
+
       onDelete(comment.id);
     } catch (error) {
       console.error('Error deleting group comment:', error);
@@ -145,9 +147,10 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
 
       console.log('Sending group reply data:', requestBody);
       
-      const res = await fetch(`/api/groups/${groupId}/posts/${groupPostId}/comments`, {
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/posts/${groupPostId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(requestBody)
       });
 
@@ -184,7 +187,9 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
     try {
       console.log(`Fetching replies for group comment ${comment.id}`);
       setIsLoadingReplies(true);
-      const res = await fetch(`/api/groups/${groupId}/posts/${groupPostId}/comments?parentId=${comment.id}`);
+      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/posts/${groupPostId}/comments?parent_id=${comment.id}`, {
+        credentials: 'include'
+      });
       if (!res.ok) throw new Error('Failed to fetch group comment replies');
       const data = await res.json();
       console.log(`Fetched replies for group comment ${comment.id}:`, data);
@@ -308,40 +313,55 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
 
       {/* Comment Actions */}
       {!isEditing && (
-        <div className="flex items-center gap-4 text-xs">
+        <div className="flex gap-4 mt-1 px-2">
           {/* Like Button */}
           <button
             onClick={() => handleReaction('like')}
-            className={`flex items-center gap-1 px-2 py-1 rounded transition-all duration-150 ${
+            className={`flex items-center gap-1.5 p-1 rounded-full transition-colors ${
               reactions.userReaction === 'like'
-                ? 'bg-primary/10 text-primary'
-                : 'text-text-secondary hover:text-primary hover:bg-primary/5'
+                ? 'text-primary'
+                : 'text-text-secondary hover:text-primary hover:bg-accent/50'
             }`}
+            title="Like"
           >
-            <ThumbsUp size={14} />
-            <span>{reactions.likeCount}</span>
+            <ThumbsUp
+              size={16}
+              strokeWidth={2}
+              fill={reactions.userReaction === 'like' ? 'currentColor' : 'none'}
+            />
+            <span className="text-sm">
+              {reactions.likeCount > 0 ? reactions.likeCount : ''} Like
+            </span>
           </button>
 
           {/* Dislike Button */}
           <button
             onClick={() => handleReaction('dislike')}
-            className={`flex items-center gap-1 px-2 py-1 rounded transition-all duration-150 ${
+            className={`flex items-center gap-1.5 p-1 rounded-full transition-colors ${
               reactions.userReaction === 'dislike'
-                ? 'bg-error/10 text-error'
-                : 'text-text-secondary hover:text-error hover:bg-error/5'
+                ? 'text-primary'
+                : 'text-text-secondary hover:text-primary hover:bg-accent/50'
             }`}
+            title="Dislike"
           >
-            <ThumbsDown size={14} />
-            <span>{reactions.dislikeCount}</span>
+            <ThumbsDown
+              size={16}
+              strokeWidth={2}
+              fill={reactions.userReaction === 'dislike' ? 'currentColor' : 'none'}
+            />
+            <span className="text-sm">
+              {reactions.dislikeCount > 0 ? reactions.dislikeCount : ''} Dislike
+            </span>
           </button>
 
           {/* Reply Button */}
           <button
             onClick={() => setIsReplying(!isReplying)}
-            className="flex items-center gap-1 px-2 py-1 rounded text-text-secondary hover:text-primary hover:bg-primary/5 transition-all duration-150"
+            className="flex items-center gap-1.5 p-1 rounded-full text-text-secondary hover:text-primary hover:bg-accent/50 transition-colors"
+            title="Reply"
           >
-            <MessageSquare size={14} />
-            <span>Reply</span>
+            <MessageSquare size={16} strokeWidth={2} />
+            <span className="text-sm">Reply</span>
           </button>
 
           {/* Show Replies Button */}

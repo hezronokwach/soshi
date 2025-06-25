@@ -124,15 +124,15 @@ export default function GroupPosts({ params, group, fetchGroup }) {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
             {/* Create Post Form */}
-            <Card className="p-4">
+            <Card className="p-3 sm:p-4">
                 <form onSubmit={handleCreatePost}>
                     <textarea
                         value={newPost}
                         onChange={(e) => setNewPost(e.target.value)}
                         placeholder="What's on your mind?"
-                        className="w-full p-3 border rounded-md mb-3 bg-background text-white resize-none"
+                        className="w-full p-2 sm:p-3 border rounded-md mb-3 bg-background text-white resize-none text-sm sm:text-base"
                         rows="3"
                         disabled={isSubmitting}
                     />
@@ -143,15 +143,15 @@ export default function GroupPosts({ params, group, fetchGroup }) {
                             <img
                                 src={imagePreview}
                                 alt="Preview"
-                                className="max-w-full max-h-64 rounded-md border border-border object-cover"
+                                className="max-w-full max-h-48 sm:max-h-64 rounded-md border border-border object-cover"
                             />
                             <button
                                 type="button"
                                 onClick={removeImage}
-                                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                                className="absolute top-1 right-1 sm:top-2 sm:right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                                 disabled={isSubmitting}
                             >
-                                <X size={16} />
+                                <X size={14} className="sm:w-4 sm:h-4" />
                             </button>
                         </div>
                     )}
@@ -159,8 +159,8 @@ export default function GroupPosts({ params, group, fetchGroup }) {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             {/* Image Upload */}
-                            <label className="cursor-pointer p-2 text-text-secondary hover:text-primary transition-colors duration-150">
-                                <ImagePlus size={18} />
+                            <label className="cursor-pointer p-1.5 sm:p-2 text-text-secondary hover:text-primary transition-colors duration-150">
+                                <ImagePlus size={16} className="sm:w-[18px] sm:h-[18px]" />
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -174,6 +174,7 @@ export default function GroupPosts({ params, group, fetchGroup }) {
                         <Button
                             type="submit"
                             disabled={(!newPost.trim() && !image) || isSubmitting}
+                            className="text-sm sm:text-base px-3 py-1.5 sm:px-4 sm:py-2"
                         >
                             {isSubmitting ? 'Posting...' : 'Post'}
                         </Button>
@@ -191,26 +192,26 @@ export default function GroupPosts({ params, group, fetchGroup }) {
                 const reactions = postReactions[post.id] || { likeCount: 0, dislikeCount: 0, userReaction: null };
 
                 return (
-                <Card key={post.id} className="p-4">
+                <Card key={post.id} className="p-3 sm:p-4">
                     {/* Post Header */}
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-3">
                         {post.avatar ? (
-                            <img src={post.avatar} alt={post.first_name} className="w-8 h-8 rounded-full" />
+                            <img src={post.avatar} alt={post.first_name} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full" />
                         ) : (
-                            <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                                <span className="text-white text-sm font-medium">
+                            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                                <span className="text-white text-xs sm:text-sm font-medium">
                                     {post.first_name?.[0]}{post.last_name?.[0]}
                                 </span>
                             </div>
                         )}
-                        <div>
-                            <p className="font-medium text-white">{post.first_name} {post.last_name}</p>
-                            <p className="text-sm text-gray-400">{new Date(post.created_at).toLocaleDateString()}</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="font-medium text-white text-sm sm:text-base truncate">{post.first_name} {post.last_name}</p>
+                            <p className="text-xs sm:text-sm text-gray-400">{new Date(post.created_at).toLocaleDateString()}</p>
                         </div>
                     </div>
 
                     {/* Post Content */}
-                    <p className="mb-3 text-white whitespace-pre-wrap">{post.content}</p>
+                    <p className="mb-2 sm:mb-3 text-white whitespace-pre-wrap text-sm sm:text-base leading-relaxed">{post.content}</p>
 
                     {/* Post Image */}
                     {(post.image_path || post.image_url) && (
@@ -218,50 +219,50 @@ export default function GroupPosts({ params, group, fetchGroup }) {
                             <img
                                 src={getImageUrl(post.image_path || post.image_url)}
                                 alt="Post image"
-                                className="max-w-full max-h-96 rounded-md border border-border object-cover"
+                                className="max-w-full max-h-64 sm:max-h-96 rounded-md border border-border object-cover"
                             />
                         </div>
                     )}
 
                     {/* Post Actions */}
-                    <div className="flex items-center gap-4 py-2 border-t border-border">
+                    <div className="flex items-center gap-2 sm:gap-4 py-2 border-t border-border">
                         <button
                             onClick={() => handlePostReaction(post.id, 'like')}
-                            className={`flex items-center gap-2 transition-colors ${
+                            className={`flex items-center gap-1 sm:gap-2 p-1 sm:p-1.5 rounded-full transition-colors ${
                                 reactions.userReaction === 'like'
                                     ? 'text-blue-500'
-                                    : 'text-text-secondary hover:text-primary'
+                                    : 'text-text-secondary hover:text-primary hover:bg-accent/50'
                             }`}
                             title="Like"
                         >
-                            <ThumbsUp size={16} />
-                            <span className="text-sm">
+                            <ThumbsUp size={14} className="sm:w-4 sm:h-4" />
+                            <span className="text-xs sm:text-sm">
                                 Like {reactions.likeCount > 0 && `(${reactions.likeCount})`}
                             </span>
                         </button>
 
                         <button
                             onClick={() => handlePostReaction(post.id, 'dislike')}
-                            className={`flex items-center gap-2 transition-colors ${
+                            className={`flex items-center gap-1 sm:gap-2 p-1 sm:p-1.5 rounded-full transition-colors ${
                                 reactions.userReaction === 'dislike'
                                     ? 'text-red-500'
-                                    : 'text-text-secondary hover:text-primary'
+                                    : 'text-text-secondary hover:text-primary hover:bg-accent/50'
                             }`}
                             title="Dislike"
                         >
-                            <ThumbsDown size={16} />
-                            <span className="text-sm">
+                            <ThumbsDown size={14} className="sm:w-4 sm:h-4" />
+                            <span className="text-xs sm:text-sm">
                                 Dislike {reactions.dislikeCount > 0 && `(${reactions.dislikeCount})`}
                             </span>
                         </button>
 
                         <button
                             onClick={() => toggleComments(post.id)}
-                            className="flex items-center gap-2 text-text-secondary hover:text-primary transition-colors"
+                            className="flex items-center gap-1 sm:gap-2 p-1 sm:p-1.5 rounded-full text-text-secondary hover:text-primary hover:bg-accent/50 transition-colors"
                             title="Comments"
                         >
-                            <MessageSquare size={16} />
-                            <span className="text-sm">
+                            <MessageSquare size={14} className="sm:w-4 sm:h-4" />
+                            <span className="text-xs sm:text-sm">
                                 {expandedComments[post.id] ? 'Hide Comments' : 'Comments'}
                             </span>
                         </button>
