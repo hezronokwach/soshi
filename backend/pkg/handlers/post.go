@@ -272,7 +272,131 @@ func (h *PostHandler) GetCommentedPosts(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-// GetLikedPosts retrieves posts that the current user has liked
+// SavePost saves a post for the current user
+func (h *PostHandler) SavePost(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Get post ID from URL
+	postID, err := strconv.Atoi(chi.URLParam(r, "postID"))
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")
+		return
+	}
+
+	// Save the post
+	err = models.SavePost(h.db, user.ID, postID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to save post")
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, map[string]bool{
+		"isSaved": true,
+	})
+}
+
+// UnsavePost removes a saved post for the current user
+func (h *PostHandler) UnsavePost(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Get post ID from URL
+	postID, err := strconv.Atoi(chi.URLParam(r, "postID"))
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")
+		return
+	}
+
+	// Unsave the post
+	err = models.UnsavePost(h.db, user.ID, postID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to unsave post")
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, map[string]bool{
+		"isSaved": false,
+	})
+}
+
+// CheckPostSaved checks if a post is saved by the current user
+func (h *PostHandler) CheckPostSaved(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Get post ID from URL
+	postID, err := strconv.Atoi(chi.URLParam(r, "postID"))
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")
+		return
+	}
+
+	// Check if post is saved
+	isSaved, err := models.IsPostSaved(h.db, user.ID, postID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to check save status")
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, map[string]bool{
+		"isSaved": isSaved,
+	})
+}
+
+// GetSavedPosts retrieves posts saved by the current user
+func (h *PostHandler) GetSavedPosts(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Parse query parameters
+	page := 1
+	limit := 10
+
+	if pageStr := r.URL.Query().Get("page"); pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			page = p
+		}
+	}
+
+	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	// Get saved posts
+	posts, err := models.GetSavedPosts(h.db, user.ID, page, limit)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to retrieve saved posts")
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+		"posts":   posts,
+		"page":    page,
+		"limit":   limit,
+		"hasMore": len(posts) == limit,
+	})
+}
+
+// GetLikedPosts retrieves posts liked by the current user
 func (h *PostHandler) GetLikedPosts(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
 	user, ok := r.Context().Value("user").(*models.User)

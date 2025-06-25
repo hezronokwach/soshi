@@ -83,9 +83,17 @@ func main() {
 		r.Get("/", postHandler.GetPosts)
 		r.Get("/liked", postHandler.GetLikedPosts) // Endpoint for liked posts
 		r.Get("/commented", postHandler.GetCommentedPosts) // Endpoint for commented posts
+		r.Get("/saved", postHandler.GetSavedPosts) // Endpoint for saved posts
 		r.Post("/", postHandler.CreatePost)
 		r.Put("/", postHandler.UpdatePost)
 		r.Delete("/", postHandler.DeletePost)
+
+		// Post-specific routes
+		r.Route("/{postID}", func(r chi.Router) {
+			r.Get("/saved", postHandler.CheckPostSaved) // Check if post is saved
+			r.Post("/save", postHandler.SavePost)     // Save a post
+			r.Delete("/save", postHandler.UnsavePost) // Unsave a post
+		})
 
 		// Post comments
 		r.Route("/{postID}/comments", func(r chi.Router) {

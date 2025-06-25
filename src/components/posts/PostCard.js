@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { upload } from "@/lib/api";
 import { getImageUrl } from "@/utils/image";
-import { Edit, Trash2, ThumbsUp, ThumbsDown, MessageSquare, Share2 } from "lucide-react";
+import { Edit, Trash2, ThumbsUp, ThumbsDown, MessageSquare, Share2, Bookmark, BookmarkCheck } from "lucide-react";
 import CommentSection from "@/components/comments/CommentSection";
 import SelectFollowersModal from "./SelectFollowersModal";
 
@@ -24,6 +24,8 @@ export default function PostCard({ post, onDelete, onUpdate }) {
   });
   const [isReacting, setIsReacting] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   // Use refs to track state that shouldn't trigger re-renders
   const commentCountRef = useRef(0);
   
@@ -66,12 +68,19 @@ export default function PostCard({ post, onDelete, onUpdate }) {
   }, [post.id, post.comment_count, post.comments_count]);
   const { user } = useAuth();
 
-  // Fetch initial reaction status
+  // Fetch initial reaction status and saved status
   useEffect(() => {
     if (user?.id) {
+      // Fetch reactions
       fetch(`/api/posts/${post.id}/reactions?userId=${user.id}`)
         .then(res => res.json())
         .then(data => setReactions(data))
+        .catch(console.error);
+      
+      // Check if post is saved
+      fetch(`/api/posts/${post.id}/saved`)
+        .then(res => res.json())
+        .then(data => setIsSaved(data.isSaved))
         .catch(console.error);
     }
   }, [post.id, user?.id]);
@@ -242,6 +251,37 @@ export default function PostCard({ post, onDelete, onUpdate }) {
       setReactions(prevReactions);
     } finally {
       setIsReacting(false);
+    }
+  };
+
+  const handleSavePost = async () => {
+    if (!user || isSaving) return;
+    
+    setIsSaving(true);
+    const prevSaved = isSaved;
+    
+    // Optimistic update
+    setIsSaved(!prevSaved);
+    
+    try {
+      const url = `/api/posts/${post.id}/saved`;
+      const method = prevSaved ? 'DELETE' : 'POST';
+      
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (!res.ok) throw new Error('Failed to update save status');
+      
+      const data = await res.json();
+      setIsSaved(data.isSaved);
+    } catch (error) {
+      console.error('Error updating save status:', error);
+      // Rollback on error
+      setIsSaved(prevSaved);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -469,6 +509,24 @@ export default function PostCard({ post, onDelete, onUpdate }) {
         >
           <Share2 size={20} strokeWidth={2} />
           <span className="text-sm">Share</span>
+        </button>
+
+        <button 
+          onClick={handleSavePost}
+          disabled={isSaving}
+          className={`flex items-center gap-1.5 p-1.5 rounded-full transition-colors ${
+            isSaved 
+              ? 'text-yellow-500 hover:text-yellow-600' 
+              : 'text-text-secondary hover:text-primary hover:bg-accent/50'
+          }`}
+          title={isSaved ? 'Remove from saved' : 'Save post'}
+        >
+          {isSaved ? (
+            <BookmarkCheck size={20} strokeWidth={2} fill="currentColor" />
+          ) : (
+            <Bookmark size={20} strokeWidth={2} />
+          )}
+          <span className="text-sm">{isSaved ? 'Saved' : 'Save'}</span>
         </button>
       </div>
 
