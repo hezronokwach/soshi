@@ -87,12 +87,12 @@ export default function ProfileEditForm({
   };
 
   return (
-    <div className="bg-surface border border-border rounded-lg p-6">
+    <div className="bg-[#1A2333] border border-[#2A3343] rounded-lg p-6 shadow-xl">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-text-primary">Edit Profile</h2>
+        <h2 className="text-2xl font-bold text-[#FFFFFF] font-outfit">Edit Profile</h2>
         <button
           onClick={onCancel}
-          className="text-text-secondary hover:text-text-primary p-2 hover:bg-background rounded-lg transition-colors"
+          className="text-[#B8C1CF] hover:text-[#FFFFFF] p-2 hover:bg-[#0F1624] rounded-lg transition-all duration-250 hover:scale-110"
         >
           <X size={20} />
         </button>
@@ -100,9 +100,9 @@ export default function ProfileEditForm({
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Avatar section */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 bg-[#0F1624] p-4 rounded-lg border border-[#2A3343]">
           <div className="relative">
-            <div className="w-20 h-20 bg-background rounded-full flex items-center justify-center overflow-hidden">
+            <div className="w-20 h-20 bg-[#1A2333] rounded-full flex items-center justify-center overflow-hidden border-2 border-[#2A3343] hover:border-[#3A86FF] transition-all duration-250">
               {avatarPreview ? (
                 <img 
                   src={avatarPreview} 
@@ -110,15 +110,15 @@ export default function ProfileEditForm({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span className="text-xl font-semibold text-text-secondary">
+                <span className="text-xl font-semibold text-[#B8C1CF] font-outfit">
                   {getInitials(watch('first_name'), watch('last_name'))}
                 </span>
               )}
             </div>
             <label 
               htmlFor="avatar-upload"
-              className="absolute -bottom-2 -right-2 bg-primary hover:bg-primary-hover 
-                       text-white p-2 rounded-full cursor-pointer transition-colors"
+              className="absolute -bottom-2 -right-2 bg-gradient-to-r from-[#3A86FF] to-[#8338EC] hover:shadow-[0_0_15px_rgba(58,134,255,0.5)] 
+                       text-white p-2 rounded-full cursor-pointer transition-all duration-250 hover:scale-110"
             >
               <Upload size={14} />
             </label>
@@ -131,19 +131,19 @@ export default function ProfileEditForm({
             />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-text-primary">Profile Picture</h3>
-            <p className="text-text-secondary text-sm">Click the upload button to change your avatar</p>
+            <h3 className="text-lg font-semibold text-[#FFFFFF] font-outfit">Profile Picture</h3>
+            <p className="text-[#B8C1CF] text-sm font-inter">Click the upload button to change your avatar</p>
           </div>
         </div>
 
         {/* Privacy toggle */}
-        <div className="bg-background p-4 rounded-lg">
+        <div className="bg-[#0F1624] p-4 rounded-lg border border-[#2A3343] hover:border-[#3A86FF] transition-all duration-250">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {isPublic ? <Globe size={20} className="text-success" /> : <Lock size={20} className="text-warning" />}
+              {isPublic ? <Globe size={20} className="text-[#06D6A0]" /> : <Lock size={20} className="text-[#FFD166]" />}
               <div>
-                <h4 className="font-semibold text-text-primary">Profile Visibility</h4>
-                <p className="text-text-secondary text-sm">
+                <h4 className="font-semibold text-[#FFFFFF] font-outfit">Profile Visibility</h4>
+                <p className="text-[#B8C1CF] text-sm font-inter">
                   {isPublic ? 'Your profile is visible to everyone' : 'Your profile is private'}
                 </p>
               </div>
@@ -154,11 +154,11 @@ export default function ProfileEditForm({
                 {...register('is_public')}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer 
+              <div className="w-11 h-6 bg-[#2A3343] peer-focus:outline-none rounded-full peer 
                            peer-checked:after:translate-x-full peer-checked:after:border-white 
                            after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
-                           after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all 
-                           peer-checked:bg-success"></div>
+                           after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all duration-250 
+                           peer-checked:bg-[#06D6A0] hover:shadow-[0_0_10px_rgba(6,214,160,0.5)]"></div>
             </label>
           </div>
         </div>
@@ -167,103 +167,104 @@ export default function ProfileEditForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* First Name */}
           <div>
-            <label className="block text-text-primary font-medium mb-2">
-              <User size={16} className="inline mr-2" />
+            <label className="block text-[#FFFFFF] font-medium mb-2 font-inter">
+              <User size={16} className="inline mr-2 text-[#3A86FF]" />
               First Name *
             </label>
             <input
               {...register('first_name')}
-              className="w-full px-4 py-3 bg-background border border-border rounded-lg 
-                       text-text-primary placeholder-text-disabled focus:border-primary 
-                       focus:outline-none transition-colors"
+              className="w-full px-4 py-3 bg-[#0F1624] border border-[#2A3343] rounded-lg 
+                       text-[#FFFFFF] placeholder-[#6C7A89] focus:border-[#3A86FF] 
+                       focus:outline-none focus:shadow-[0_0_0_3px_rgba(58,134,255,0.25)] transition-all duration-250 font-inter"
               placeholder="Enter your first name"
             />
             {errors.first_name && (
-              <p className="text-error text-sm mt-1">{errors.first_name.message}</p>
+              <p className="text-[#EF476F] text-sm mt-1 font-inter">{errors.first_name.message}</p>
             )}
           </div>
 
           {/* Last Name */}
           <div>
-            <label className="block text-text-primary font-medium mb-2">
-              <User size={16} className="inline mr-2" />
+            <label className="block text-[#FFFFFF] font-medium mb-2 font-inter">
+              <User size={16} className="inline mr-2 text-[#3A86FF]" />
               Last Name *
             </label>
             <input
               {...register('last_name')}
-              className="w-full px-4 py-3 bg-background border border-border rounded-lg 
-                       text-text-primary placeholder-text-disabled focus:border-primary 
-                       focus:outline-none transition-colors"
+              className="w-full px-4 py-3 bg-[#0F1624] border border-[#2A3343] rounded-lg 
+                       text-[#FFFFFF] placeholder-[#6C7A89] focus:border-[#3A86FF] 
+                       focus:outline-none focus:shadow-[0_0_0_3px_rgba(58,134,255,0.25)] transition-all duration-250 font-inter"
               placeholder="Enter your last name"
             />
             {errors.last_name && (
-              <p className="text-error text-sm mt-1">{errors.last_name.message}</p>
+              <p className="text-[#EF476F] text-sm mt-1 font-inter">{errors.last_name.message}</p>
             )}
           </div>
         </div>
 
         {/* Nickname */}
         <div>
-          <label className="block text-text-primary font-medium mb-2">
-            <AtSign size={16} className="inline mr-2" />
+          <label className="block text-[#FFFFFF] font-medium mb-2 font-inter">
+            <AtSign size={16} className="inline mr-2 text-[#8338EC]" />
             Nickname
           </label>
           <input
             {...register('nickname')}
-            className="w-full px-4 py-3 bg-background border border-border rounded-lg 
-                     text-text-primary placeholder-text-disabled focus:border-primary 
-                     focus:outline-none transition-colors"
+            className="w-full px-4 py-3 bg-[#0F1624] border border-[#2A3343] rounded-lg 
+                     text-[#FFFFFF] placeholder-[#6C7A89] focus:border-[#8338EC] 
+                     focus:outline-none focus:shadow-[0_0_0_3px_rgba(131,56,236,0.25)] transition-all duration-250 font-inter"
             placeholder="Enter a nickname (optional)"
           />
           {errors.nickname && (
-            <p className="text-error text-sm mt-1">{errors.nickname.message}</p>
+            <p className="text-[#EF476F] text-sm mt-1 font-inter">{errors.nickname.message}</p>
           )}
         </div>
 
         {/* Date of Birth */}
         <div>
-          <label className="block text-text-primary font-medium mb-2">
-            <Calendar size={16} className="inline mr-2" />
+          <label className="block text-[#FFFFFF] font-medium mb-2 font-inter">
+            <Calendar size={16} className="inline mr-2 text-[#FF006E]" />
             Date of Birth *
           </label>
           <input
             type="date"
             {...register('date_of_birth')}
-            className="w-full px-4 py-3 bg-background border border-border rounded-lg 
-                     text-text-primary focus:border-primary focus:outline-none transition-colors"
+            className="w-full px-4 py-3 bg-[#0F1624] border border-[#2A3343] rounded-lg 
+                     text-[#FFFFFF] focus:border-[#FF006E] focus:outline-none 
+                     focus:shadow-[0_0_0_3px_rgba(255,0,110,0.25)] transition-all duration-250 font-inter"
           />
           {errors.date_of_birth && (
-            <p className="text-error text-sm mt-1">{errors.date_of_birth.message}</p>
+            <p className="text-[#EF476F] text-sm mt-1 font-inter">{errors.date_of_birth.message}</p>
           )}
         </div>
 
         {/* About Me */}
         <div>
-          <label className="block text-text-primary font-medium mb-2">
-            <FileText size={16} className="inline mr-2" />
+          <label className="block text-[#FFFFFF] font-medium mb-2 font-inter">
+            <FileText size={16} className="inline mr-2 text-[#118AB2]" />
             About Me
           </label>
           <textarea
             {...register('about_me')}
             rows={4}
-            className="w-full px-4 py-3 bg-background border border-border rounded-lg 
-                     text-text-primary placeholder-text-disabled focus:border-primary 
-                     focus:outline-none transition-colors resize-vertical"
+            className="w-full px-4 py-3 bg-[#0F1624] border border-[#2A3343] rounded-lg 
+                     text-[#FFFFFF] placeholder-[#6C7A89] focus:border-[#118AB2] 
+                     focus:outline-none focus:shadow-[0_0_0_3px_rgba(17,138,178,0.25)] transition-all duration-250 resize-vertical font-inter"
             placeholder="Tell us about yourself..."
           />
           {errors.about_me && (
-            <p className="text-error text-sm mt-1">{errors.about_me.message}</p>
+            <p className="text-[#EF476F] text-sm mt-1 font-inter">{errors.about_me.message}</p>
           )}
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-4 pt-6 border-t border-border">
+        <div className="flex gap-4 pt-6 border-t border-[#2A3343]">
           <button
             type="submit"
             disabled={loading || !isDirty}
-            className="bg-primary hover:bg-primary-hover disabled:bg-border 
+            className="bg-gradient-to-r from-[#3A86FF] to-[#8338EC] hover:shadow-[0_0_15px_rgba(58,134,255,0.5)] disabled:bg-[#2A3343] 
                      text-white px-6 py-3 rounded-lg flex items-center gap-2 
-                     transition-colors disabled:cursor-not-allowed"
+                     transition-all duration-250 disabled:cursor-not-allowed hover:scale-105 font-medium"
           >
             <Save size={16} />
             {loading ? 'Saving...' : 'Save Changes'}
@@ -271,8 +272,8 @@ export default function ProfileEditForm({
           <button
             type="button"
             onClick={onCancel}
-            className="bg-background hover:bg-border text-text-primary px-6 py-3 
-                     rounded-lg border border-border transition-colors"
+            className="bg-[#0F1624] hover:bg-[#2A3343] text-[#FFFFFF] px-6 py-3 
+                     rounded-lg border border-[#2A3343] hover:border-[#3A86FF] transition-all duration-250 hover:scale-105 font-medium"
           >
             Cancel
           </button>
