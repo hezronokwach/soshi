@@ -2,22 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { MessageSquare, ThumbsUp, ThumbsDown, Edit, Trash2 } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Edit, Trash2 } from 'lucide-react';
 import { getImageUrl } from '@/utils/image';
 import GroupCommentForm from './GroupCommentForm';
-import GroupCommentList from './GroupCommentList';
 
 export default function GroupCommentItem({ comment, groupId, groupPostId, onUpdate, onDelete }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [isReplying, setIsReplying] = useState(false);
   const [reactions, setReactions] = useState({
     likeCount: comment.like_count || 0,
     dislikeCount: comment.dislike_count || 0,
     userReaction: null
   });
-  const [showReplies, setShowReplies] = useState(false);
-  const [replies, setReplies] = useState(comment.replies || []);
-  const [isLoadingReplies, setIsLoadingReplies] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const { user } = useAuth();
 
@@ -134,75 +129,7 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
     }
   };
 
-  const handleNewReply = async (replyData) => {
-    try {
-      const { imageUrl, ...restData } = replyData;
-      const requestBody = {
-        user_id: user.id,
-        group_post_id: groupPostId,
-        parent_id: comment.id,
-        ...restData,
-        image_url: imageUrl
-      };
 
-      console.log('Sending group reply data:', requestBody);
-      
-      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/posts/${groupPostId}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(requestBody)
-      });
-
-      if (!res.ok) throw new Error('Failed to create group reply');
-      
-      const newReply = await res.json();
-      console.log('Created new group reply:', newReply);
-      
-      // Update local state with the new reply
-      setReplies(prev => [newReply, ...prev]);
-      setShowReplies(true);
-      
-      // Update the parent comment's reply count
-      if (onUpdate) {
-        onUpdate(comment.id, { 
-          reply_count: (comment.reply_count || 0) + 1 
-        });
-      }
-      
-      setIsReplying(false);
-      return newReply;
-    } catch (error) {
-      console.error('Error creating group reply:', error);
-      throw error;
-    }
-  };
-
-  const loadReplies = async () => {
-    if (replies.length > 0) {
-      setShowReplies(!showReplies);
-      return;
-    }
-
-    try {
-      console.log(`Fetching replies for group comment ${comment.id}`);
-      setIsLoadingReplies(true);
-      const res = await fetch(`http://localhost:8080/api/groups/${groupId}/posts/${groupPostId}/comments?parent_id=${comment.id}`, {
-        credentials: 'include'
-      });
-      if (!res.ok) throw new Error('Failed to fetch group comment replies');
-      const data = await res.json();
-      console.log(`Fetched replies for group comment ${comment.id}:`, data);
-      // Ensure replies are sorted by date (newest first)
-      const sortedReplies = [...data].sort((b, a) => new Date(a.created_at) - new Date(b.created_at));
-      setReplies(sortedReplies);
-      setShowReplies(true);
-    } catch (error) {
-      console.error('Error loading group comment replies:', error);
-    } finally {
-      setIsLoadingReplies(false);
-    }
-  };
 
   // Load user reactions on mount
   useEffect(() => {
@@ -354,57 +281,11 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
             </span>
           </button>
 
-          {/* Reply Button */}
-          <button
-            onClick={() => setIsReplying(!isReplying)}
-            className="flex items-center gap-1.5 p-1 rounded-full text-text-secondary hover:text-primary hover:bg-accent/50 transition-colors"
-            title="Reply"
-          >
-            <MessageSquare size={16} strokeWidth={2} />
-            <span className="text-sm">Reply</span>
-          </button>
 
-          {/* Show Replies Button */}
-          {(replies.length > 0 || comment.replies?.length > 0) && (
-            <button
-              onClick={loadReplies}
-              disabled={isLoadingReplies}
-              className="text-text-secondary hover:text-primary transition-colors duration-150 disabled:opacity-50"
-            >
-              {isLoadingReplies ? 'Loading...' : 
-                showReplies ? 'Hide replies' : 
-                `Show ${replies.length || comment.replies?.length || 0} replies`
-              }
-            </button>
-          )}
         </div>
       )}
 
-      {/* Reply Form */}
-      {isReplying && (
-        <div className="mt-3 pl-11">
-          <GroupCommentForm
-            onSubmit={handleNewReply}
-            onCancel={() => setIsReplying(false)}
-            parentId={comment.id}
-            groupId={groupId}
-            groupPostId={groupPostId}
-          />
-        </div>
-      )}
 
-      {/* Replies */}
-      {showReplies && replies.length > 0 && (
-        <div className="mt-3 pl-11 space-y-3">
-          <GroupCommentList
-            comments={replies}
-            groupId={groupId}
-            groupPostId={groupPostId}
-            onUpdate={onUpdate}
-            onDelete={onDelete}
-          />
-        </div>
-      )}
     </div>
   );
 }
