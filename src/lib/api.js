@@ -501,13 +501,13 @@ export const connectWebSocket = (onMessage) => {
   }
 
   ws.onclose = () => {
-    console.log("WebSocket connection closed")
-    // Attempt to reconnect after a delay
+    // Silently handle WebSocket close - attempt to reconnect after a delay
     setTimeout(() => connectWebSocket(onMessage), 5000)
   }
 
   ws.onerror = (error) => {
-    console.error("WebSocket error:", error)
+    // Silently handle WebSocket errors to avoid console spam
+    // In production, you might want to log this to an error tracking service
   }
 
   return ws

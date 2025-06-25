@@ -204,15 +204,16 @@ const GroupChatInterface = ({ group }) => {
                 message={message}
                 isOwn={message.sender_id === user.id}
                 showAvatar={
-                  index === 0 || 
+                  index === 0 ||
                   messageList[index - 1].sender_id !== message.sender_id
                 }
                 showTimestamp={
                   index === messageList.length - 1 ||
                   messageList[index + 1].sender_id !== message.sender_id ||
-                  new Date(messageList[index + 1].created_at).getTime() - 
+                  new Date(messageList[index + 1].created_at).getTime() -
                   new Date(message.created_at).getTime() > 300000 // 5 minutes
                 }
+                isGroupChat={true}
               />
             ))}
           </>
@@ -292,9 +293,7 @@ const messagesContainerStyles = {
   padding: '1rem 0',
   display: 'flex',
   flexDirection: 'column',
-  backgroundColor: '#1A2333', // Chat background
-  backgroundImage: 'linear-gradient(45deg, rgba(58, 134, 255, 0.05) 25%, transparent 25%), linear-gradient(-45deg, rgba(58, 134, 255, 0.05) 25%, transparent 25%)',
-  backgroundSize: '20px 20px'
+  backgroundColor: '#1A2333' // Plain chat background
 };
 
 const inputContainerStyles = {

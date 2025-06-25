@@ -198,12 +198,12 @@ export default function MessageArea({ conversation, currentUser }) {
   };
 
   const headerStyles = {
-    padding: '1rem 1.5rem',
+    padding: '1rem',
     borderBottom: '1px solid #2A3343',
     display: 'flex',
     alignItems: 'center',
     gap: '0.75rem',
-    backgroundColor: '#1A2333'
+    backgroundColor: '#2A3343' // Header background from style guide
   };
 
   const avatarStyles = {
@@ -245,10 +245,10 @@ export default function MessageArea({ conversation, currentUser }) {
   const messagesContainerStyles = {
     flex: 1,
     overflowY: 'auto',
-    padding: '1rem',
+    padding: '1rem 0',
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.75rem'
+    backgroundColor: '#1A2333' // Plain chat background - no pattern
   };
 
   const loadingStyles = {
@@ -380,7 +380,12 @@ export default function MessageArea({ conversation, currentUser }) {
                   index === 0 ||
                   messageList[index - 1].sender_id !== message.sender_id
                 }
-                user={message.sender_id === currentUser.id ? currentUser : conversation}
+                showTimestamp={
+                  index === messageList.length - 1 ||
+                  messageList[index + 1].sender_id !== message.sender_id ||
+                  new Date(messageList[index + 1].created_at).getTime() -
+                  new Date(message.created_at).getTime() > 300000 // 5 minutes
+                }
               />
             ))}
             <div ref={messagesEndRef} />

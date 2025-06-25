@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Check, CheckCheck } from 'lucide-react';
 
-export default function MessageBubble({ message, isOwn, showAvatar, showTimestamp }) {
+export default function MessageBubble({ message, isOwn, showAvatar, showTimestamp, isGroupChat = false }) {
   const [showTime, setShowTime] = useState(false);
 
   const formatTime = (timestamp) => {
@@ -163,8 +163,8 @@ export default function MessageBubble({ message, isOwn, showAvatar, showTimestam
 
       {/* Message Content */}
       <div style={messageContainerStyles}>
-        {/* Sender name for group messages (not own messages) */}
-        {!isOwn && showAvatar && (
+        {/* Sender name for group messages only (not own messages) */}
+        {!isOwn && showAvatar && isGroupChat && (
           <div style={senderNameStyles}>
             {senderName || 'Unknown User'}
           </div>

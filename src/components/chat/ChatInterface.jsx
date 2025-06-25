@@ -62,12 +62,12 @@ export default function ChatInterface() {
     }
   };
 
-  // Responsive container
+  // Responsive container - matching group chat styling
   const containerStyles = {
     height: '100%',
-    backgroundColor: '#1A2333',
-    borderRadius: '1rem',
-    border: '1px solid #2A3343',
+    backgroundColor: '#1A2333', // Background color from style guide
+    borderRadius: '0.75rem',
+    border: '1px solid #2A3343', // Border color from style guide
     display: 'flex',
     overflow: 'hidden',
     boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
