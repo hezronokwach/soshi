@@ -417,6 +417,63 @@ func AddPostReaction(db *sql.DB, postId int, userId int, reactionType string) (m
 	}, nil
 }
 
+// GetCommentedPosts retrieves posts that a user has commented on
+func GetCommentedPosts(db *sql.DB, userId int, page, limit int) ([]Post, error) {
+	offset := (page - 1) * limit
+	posts := []Post{}
+
+	query := `
+		SELECT DISTINCT p.id, p.user_id, p.content, p.image_url, p.privacy, 
+		COALESCE(p.like_count, 0) as like_count, COALESCE(p.dislike_count, 0) as dislike_count, 
+		p.created_at, p.updated_at,
+		u.id as user_id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
+		FROM posts p
+		JOIN users u ON p.user_id = u.id
+		JOIN comments c ON p.id = c.post_id
+		WHERE c.user_id = ?
+		AND (
+			(p.privacy = 'public') OR
+			(p.privacy = 'almost_private' AND p.user_id = ?) OR
+			(p.privacy = 'almost_private' AND EXISTS (
+				SELECT 1 FROM follows 
+				WHERE follower_id = ? AND following_id = p.user_id AND status = 'accepted'
+			)) OR
+			(p.privacy = 'private' AND p.user_id = ?) OR
+			(p.privacy = 'private' AND EXISTS (
+				SELECT 1 FROM post_privacy_users 
+				WHERE post_id = p.id AND user_id = ?
+			))
+		)
+		ORDER BY c.created_at DESC
+		LIMIT ? OFFSET ?
+	`
+
+	rows, err := db.Query(query, userId, userId, userId, userId, userId, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var post Post
+		var user User
+		
+		err := rows.Scan(
+			&post.ID, &post.UserID, &post.Content, &post.ImageURL, &post.Privacy,
+			&post.LikeCount, &post.DislikeCount, &post.CreatedAt, &post.UpdatedAt,
+			&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.Avatar, &user.Nickname,
+		)
+		if err != nil {
+			return nil, err
+		}
+		
+		post.User = &user
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
+
 // GetLikedPosts retrieves posts that a user has liked
 func GetLikedPosts(db *sql.DB, userId int, page, limit int) ([]Post, error) {
 	offset := (page - 1) * limit

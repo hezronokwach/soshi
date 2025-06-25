@@ -130,6 +130,23 @@ export const posts = {
 
     return data;
   },
+  
+  getCommentedPosts: async (page = 1, limit = 10) => {
+    const data = await fetchAPI(`/api/posts/commented?page=${page}&limit=${limit}`);
+
+    // Normalize response: if backend returns array directly, wrap it in an object
+    if (Array.isArray(data)) {
+      return {
+        posts: data,
+        page: page,
+        limit: limit,
+        total: data.length,
+        hasMore: data.length === limit // Assume more posts if we got full page
+      };
+    }
+
+    return data;
+  },
 
   createPost: (postData) =>
     fetchAPI("/api/posts", {

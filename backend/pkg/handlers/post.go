@@ -232,6 +232,46 @@ func (h *PostHandler) GetReactions(w http.ResponseWriter, r *http.Request) {
 	utils.RespondWithJSON(w, http.StatusOK, reactions)
 }
 
+// GetCommentedPosts retrieves posts that the current user has commented on
+func (h *PostHandler) GetCommentedPosts(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Parse query parameters
+	page := 1
+	limit := 10
+
+	if pageStr := r.URL.Query().Get("page"); pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			page = p
+		}
+	}
+
+	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	// Get commented posts
+	posts, err := models.GetCommentedPosts(h.db, user.ID, page, limit)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to retrieve commented posts")
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+		"posts":   posts,
+		"page":    page,
+		"limit":   limit,
+		"hasMore": len(posts) == limit,
+	})
+}
+
 // GetLikedPosts retrieves posts that the current user has liked
 func (h *PostHandler) GetLikedPosts(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
