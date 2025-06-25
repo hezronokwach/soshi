@@ -28,6 +28,9 @@ async function fetchAPI(endpoint, options = {}) {
     if (endpoint.includes('/read')) {
       console.log('Mark as read response status:', response.status);
       console.log('Mark as read response headers:', Object.fromEntries(response.headers.entries()));
+      console.log('Browser:', navigator.userAgent.includes('Chrome') ? 'Chrome' : 'Other');
+      console.log('Request URL:', url);
+      console.log('Request options:', fetchOptions);
     }
 
     // Handle non-JSON responses
