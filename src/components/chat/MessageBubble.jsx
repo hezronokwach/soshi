@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Check, CheckCheck } from 'lucide-react';
 
-export default function MessageBubble({ message, isOwn, showAvatar, user }) {
+export default function MessageBubble({ message, isOwn, showAvatar, showTimestamp }) {
   const [showTime, setShowTime] = useState(false);
 
   const formatTime = (timestamp) => {
@@ -30,19 +30,24 @@ export default function MessageBubble({ message, isOwn, showAvatar, user }) {
     return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
   };
 
+  // Get sender info from message
+  const sender = message.sender || {};
+  const senderName = `${sender.first_name || ''} ${sender.last_name || ''}`.trim();
+
   const containerStyles = {
     display: 'flex',
     flexDirection: isOwn ? 'row-reverse' : 'row',
     alignItems: 'flex-end',
-    gap: '0.5rem',
-    marginBottom: '0.5rem'
+    gap: '0.75rem',
+    marginBottom: showTimestamp ? '1rem' : '0.25rem',
+    padding: '0 1rem'
   };
 
   const avatarStyles = {
     width: '2rem',
     height: '2rem',
     borderRadius: '50%',
-    backgroundColor: isOwn ? '#8338EC' : '#3A86FF',
+    backgroundColor: '#3A86FF', // Primary color from style guide
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -50,7 +55,8 @@ export default function MessageBubble({ message, isOwn, showAvatar, user }) {
     fontSize: '0.75rem',
     fontWeight: '600',
     flexShrink: 0,
-    visibility: showAvatar ? 'visible' : 'hidden'
+    visibility: showAvatar ? 'visible' : 'hidden',
+    border: '2px solid #2A3343' // Border color from style guide
   };
 
   const avatarImageStyles = {
@@ -69,39 +75,43 @@ export default function MessageBubble({ message, isOwn, showAvatar, user }) {
 
   const bubbleStyles = {
     padding: '0.75rem 1rem',
-    borderRadius: isOwn 
-      ? '1.125rem 1.125rem 0.25rem 1.125rem'
-      : '1.125rem 1.125rem 1.125rem 0.25rem',
-    backgroundColor: isOwn ? '#3A86FF' : '#1A2333',
+    borderRadius: isOwn
+      ? '1.25rem 1.25rem 0.25rem 1.25rem'
+      : '1.25rem 1.25rem 1.25rem 0.25rem',
+    backgroundColor: isOwn ? '#3A86FF' : '#2A3343', // Style guide colors
     color: '#FFFFFF',
-    fontSize: '0.875rem',
+    fontSize: '0.95rem',
     lineHeight: '1.4',
     wordWrap: 'break-word',
-    cursor: 'pointer',
     transition: 'all 0.2s ease',
-    border: isOwn ? 'none' : '1px solid #2A3343',
-    boxShadow: isOwn 
-      ? '0 2px 8px rgba(58, 134, 255, 0.2)'
-      : '0 2px 8px rgba(0, 0, 0, 0.1)'
+    border: isOwn ? 'none' : '1px solid #374151',
+    boxShadow: isOwn
+      ? '0 2px 8px rgba(58, 134, 255, 0.3)'
+      : '0 2px 8px rgba(0, 0, 0, 0.2)',
+    position: 'relative'
   };
 
-  // Always show timestamp below the message
   const timeStyles = {
-    fontSize: '0.75rem',
-    color: '#6C7A89',
+    fontSize: '0.7rem',
+    color: isOwn ? 'rgba(255, 255, 255, 0.7)' : '#9CA3AF',
     marginTop: '0.25rem',
-    opacity: 1, // Always visible
-    transition: 'opacity 0.2s ease',
-    textAlign: isOwn ? 'right' : 'left'
+    textAlign: isOwn ? 'right' : 'left',
+    fontWeight: '400'
+  };
+
+  const senderNameStyles = {
+    fontSize: '0.75rem',
+    color: '#3A86FF',
+    fontWeight: '600',
+    marginBottom: '0.25rem',
+    display: isOwn ? 'none' : 'block'
   };
 
   const statusStyles = {
-    fontSize: '0.75rem',
+    fontSize: '0.7rem',
     color: '#6C7A89',
     marginTop: '0.25rem',
     textAlign: 'right',
-    opacity: showTime ? 1 : 0,
-    transition: 'opacity 0.2s ease',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-end',
@@ -140,44 +150,39 @@ export default function MessageBubble({ message, isOwn, showAvatar, user }) {
     <div style={containerStyles}>
       {/* Avatar */}
       <div style={avatarStyles}>
-        {showAvatar && user?.avatar ? (
+        {showAvatar && sender?.avatar ? (
           <img
-            src={user.avatar}
-            alt={`${user.first_name} ${user.last_name}`}
+            src={sender.avatar}
+            alt={senderName}
             style={avatarImageStyles}
           />
         ) : showAvatar ? (
-          getInitials(user?.first_name, user?.last_name)
+          getInitials(sender?.first_name, sender?.last_name)
         ) : null}
       </div>
 
       {/* Message Content */}
       <div style={messageContainerStyles}>
-        <div
-          style={bubbleStyles}
-          onClick={() => setShowTime(!showTime)}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'scale(1.02)';
-            e.target.style.boxShadow = isOwn 
-              ? '0 4px 12px rgba(58, 134, 255, 0.3)'
-              : '0 4px 12px rgba(0, 0, 0, 0.15)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'scale(1)';
-            e.target.style.boxShadow = isOwn 
-              ? '0 2px 8px rgba(58, 134, 255, 0.2)'
-              : '0 2px 8px rgba(0, 0, 0, 0.1)';
-          }}
-        >
+        {/* Sender name for group messages (not own messages) */}
+        {!isOwn && showAvatar && (
+          <div style={senderNameStyles}>
+            {senderName || 'Unknown User'}
+          </div>
+        )}
+
+        <div style={bubbleStyles}>
           {message.content}
         </div>
-        {/* Timestamp - always visible */}
-        <div style={timeStyles}>
-          {formatTime(message.created_at)}
-        </div>
+
+        {/* Timestamp */}
+        {showTimestamp && (
+          <div style={timeStyles}>
+            {formatTime(message.created_at)}
+          </div>
+        )}
 
         {/* Message Status (for own messages) */}
-        {isOwn && messageStatus && (
+        {isOwn && messageStatus && showTimestamp && (
           <div style={{...statusStyles, color: messageStatus.color}}>
             {messageStatus.icon}
             <span>{messageStatus.text}</span>

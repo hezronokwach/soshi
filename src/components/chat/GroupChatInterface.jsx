@@ -57,11 +57,14 @@ const GroupChatInterface = ({ group }) => {
       if (data.type === 'group_message' && data.group_id === group.id) {
         const newMessage = data.message;
         setMessageList(prev => {
-          // Check if message already exists (avoid duplicates)
-          const exists = prev.some(msg => msg.id === newMessage.id);
+          // Remove any optimistic message with temp ID and replace with real message
+          const filteredMessages = prev.filter(msg => !msg.id.toString().startsWith('temp-'));
+
+          // Check if real message already exists (avoid duplicates)
+          const exists = filteredMessages.some(msg => msg.id === newMessage.id);
           if (exists) return prev;
-          
-          return [...prev, newMessage];
+
+          return [...filteredMessages, newMessage];
         });
         setTimeout(scrollToBottom, 100);
       }
@@ -229,21 +232,21 @@ const GroupChatInterface = ({ group }) => {
   );
 };
 
-// Styles
+// Styles - Following style-guide.md
 const containerStyles = {
   display: 'flex',
   flexDirection: 'column',
   height: '100%',
-  backgroundColor: '#ffffff',
-  borderRadius: '0.5rem',
+  backgroundColor: '#1A2333', // Background color from style guide
+  borderRadius: '0.75rem',
   overflow: 'hidden',
-  border: '1px solid #e5e7eb'
+  border: '1px solid #2A3343' // Border color from style guide
 };
 
 const headerStyles = {
   padding: '1rem',
-  borderBottom: '1px solid #e5e7eb',
-  backgroundColor: '#f9fafb'
+  borderBottom: '1px solid #2A3343',
+  backgroundColor: '#2A3343' // Header background from style guide
 };
 
 const groupInfoStyles = {
@@ -263,58 +266,60 @@ const defaultAvatarStyles = {
   width: '2.5rem',
   height: '2.5rem',
   borderRadius: '50%',
-  backgroundColor: '#e5e7eb',
+  backgroundColor: '#3A86FF', // Primary color from style guide
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  color: '#6b7280'
+  color: '#FFFFFF'
 };
 
 const groupNameStyles = {
   margin: 0,
   fontSize: '1.125rem',
   fontWeight: '600',
-  color: '#111827'
+  color: '#FFFFFF' // Text color from style guide
 };
 
 const memberCountStyles = {
   margin: 0,
   fontSize: '0.875rem',
-  color: '#6b7280'
+  color: '#9CA3AF' // Secondary text color
 };
 
 const messagesContainerStyles = {
   flex: 1,
   overflowY: 'auto',
-  padding: '1rem',
+  padding: '1rem 0',
   display: 'flex',
   flexDirection: 'column',
-  gap: '0.5rem'
+  backgroundColor: '#1A2333', // Chat background
+  backgroundImage: 'linear-gradient(45deg, rgba(58, 134, 255, 0.05) 25%, transparent 25%), linear-gradient(-45deg, rgba(58, 134, 255, 0.05) 25%, transparent 25%)',
+  backgroundSize: '20px 20px'
 };
 
 const inputContainerStyles = {
   padding: '1rem',
-  borderTop: '1px solid #e5e7eb',
-  backgroundColor: '#f9fafb'
+  borderTop: '1px solid #2A3343',
+  backgroundColor: '#2A3343' // Input area background
 };
 
 const loadingStyles = {
   textAlign: 'center',
   padding: '2rem',
-  color: '#6b7280'
+  color: '#9CA3AF'
 };
 
 const loadingMoreStyles = {
   textAlign: 'center',
   padding: '0.5rem',
-  color: '#6b7280',
+  color: '#9CA3AF',
   fontSize: '0.875rem'
 };
 
 const emptyMessagesStyles = {
   textAlign: 'center',
   padding: '2rem',
-  color: '#6b7280'
+  color: '#9CA3AF'
 };
 
 const emptyStateStyles = {
