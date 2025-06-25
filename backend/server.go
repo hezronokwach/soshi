@@ -156,6 +156,13 @@ func main() {
 				r.Get("/", groupHandler.GetPosts)
 				r.Post("/", groupHandler.CreatePost)
 
+				// Group post reactions
+				r.Route("/{postID}/reactions", func(r chi.Router) {
+					r.Use(authMiddleware)
+					r.Get("/", groupHandler.GetGroupPostReactions)
+					r.Post("/", groupHandler.AddGroupPostReaction)
+				})
+
 				// Group post comments
 				r.Route("/{groupPostID}/comments", func(r chi.Router) {
 					r.Use(authMiddleware)
