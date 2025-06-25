@@ -61,7 +61,8 @@ async function fetchAPI(endpoint, options = {}) {
     // Only log errors that aren't session-related to avoid console spam
     if (!error.message.includes('No session token provided') &&
         !error.message.includes('Unauthorized')) {
-      console.error('API Error:', error)
+      console.error('API Error for', endpoint, ':', error)
+      console.error('Request options:', fetchOptions)
     }
     throw error
   }
