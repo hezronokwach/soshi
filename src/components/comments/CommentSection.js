@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { MessageSquare } from 'lucide-react';
 import CommentForm from './CommentForm';
 import CommentList from './CommentList';
 
@@ -246,25 +247,66 @@ export default function CommentSection({ postId, postOwnerId, onCommentAdded }) 
   };
 
   return (
-    <div className="mt-4 space-y-4">
-      <CommentForm onSubmit={handleNewComment} />
+    <div className="mt-6 space-y-6">
+      {/* Comment Form Section */}
+      <div className="bg-background-lighter/50 backdrop-blur-sm rounded-2xl p-4 border border-border/20">
+        <h3 className="text-lg font-semibold text-text mb-3">Leave a comment</h3>
+        <CommentForm onSubmit={handleNewComment} />
+      </div>
       
-      <CommentList 
-        comments={comments}
-        postOwnerId={postOwnerId}
-        onUpdate={handleCommentUpdate}
-        onDelete={handleCommentDelete}
-      />
-      
-      {hasMore && (
-        <button
-          onClick={loadMore}
-          disabled={loading}
-          className="w-full py-2 text-sm text-text-secondary hover:text-primary disabled:opacity-50"
-        >
-          {loading ? 'Loading...' : 'Load more comments'}
-        </button>
-      )}
+      {/* Comments List */}
+      <div className="space-y-6">
+        <h3 className="text-lg font-semibold text-text flex items-center gap-2">
+          <span>Comments</span>
+          {comments.length > 0 && (
+            <span className="text-sm font-medium bg-accent/20 text-text-secondary rounded-full px-2.5 py-0.5">
+              {comments.length} {comments.length === 1 ? 'comment' : 'comments'}
+            </span>
+          )}
+        </h3>
+        
+        <CommentList 
+          comments={comments}
+          postOwnerId={postOwnerId}
+          onUpdate={handleCommentUpdate}
+          onDelete={handleCommentDelete}
+        />
+        
+        {/* Load More Button */}
+        {hasMore && (
+          <div className="flex justify-center pt-2">
+            <button
+              onClick={loadMore}
+              disabled={loading}
+              className={`px-4 py-2 text-sm font-medium rounded-lg border border-border/30 transition-colors flex items-center gap-2 ${
+                loading 
+                  ? 'text-text-secondary/70 bg-background-lighter/50' 
+                  : 'text-text-secondary hover:text-primary hover:bg-accent/20 hover:border-border/50'
+              }`}
+            >
+              {loading ? (
+                <>
+                  <span className="inline-block w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></span>
+                  Loading...
+                </>
+              ) : (
+                'Load more comments'
+              )}
+            </button>
+          </div>
+        )}
+        
+        {/* Empty State */}
+        {!loading && comments.length === 0 && (
+          <div className="text-center py-8">
+            <div className="mx-auto w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mb-3">
+              <MessageSquare size={28} className="text-text-secondary/60" />
+            </div>
+            <h4 className="text-text font-medium mb-1">No comments yet</h4>
+            <p className="text-text-secondary text-sm">Be the first to share your thoughts!</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

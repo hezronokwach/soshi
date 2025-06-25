@@ -16,7 +16,7 @@ const CommentList = React.memo(({ comments, postOwnerId, onUpdate, onDelete }) =
 
   return (
     <div className="space-y-4">
-      {comments.map(comment => {
+      {comments.map((comment, index) => {
         // Skip comments that are actually replies (they should be rendered by their parent)
         if (comment.parent_id) {
           console.log('Skipping reply in top level:', comment.id);
@@ -24,13 +24,18 @@ const CommentList = React.memo(({ comments, postOwnerId, onUpdate, onDelete }) =
         }
         
         return (
-          <CommentItem
-            key={comment.id}
-            comment={comment}
-            postOwnerId={postOwnerId}
-            onUpdate={onUpdate}
-            onDelete={onDelete}
-          />
+          <div 
+            key={comment.id} 
+            className={`animate-fadeIn ${index > 0 ? 'pt-4 border-t border-border/10' : ''}`}
+            style={{ animationDelay: `${Math.min(index * 50, 200)}ms` }}
+          >
+            <CommentItem
+              comment={comment}
+              postOwnerId={postOwnerId}
+              onUpdate={onUpdate}
+              onDelete={onDelete}
+            />
+          </div>
         );
       })}
     </div>

@@ -217,30 +217,52 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
   }, [comment]);
 
   return (
-    <div className="flex gap-3">
-      <div className="h-8 w-8 rounded-full bg-primary flex-shrink-0 flex items-center justify-center text-white">
-        {comment.user?.first_name?.[0] || 'U'}
+    <div className="flex gap-3 group">
+      {/* User Avatar with Gradient */}
+      <div 
+        className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-secondary flex-shrink-0 flex items-center justify-center text-white font-medium text-sm shadow-sm"
+        style={{
+          background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+        }}
+      >
+        {comment.user?.first_name?.[0]?.toUpperCase() || 'U'}
       </div>
 
-      <div className="flex-1">
-        <div className="bg-background-lighter rounded-lg p-3">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <h4 className="font-medium">
-                {comment.user?.first_name || 'Unknown'} {comment.user?.last_name || ''}
-              </h4>
-              <p className="text-xs text-text-secondary">
+      <div className="flex-1 min-w-0">
+        {/* Comment Card with Glass Effect */}
+        <div 
+          className="bg-background-lighter/70 backdrop-blur-sm rounded-2xl p-4 border border-border/30 shadow-sm transition-all duration-200 hover:shadow-md"
+          style={{
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+          }}
+        >
+          {/* Comment Header */}
+          <div className="flex justify-between items-start gap-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-baseline gap-2">
+                <h4 className="font-medium text-text truncate">
+                  {comment.user?.first_name || 'Unknown'} {comment.user?.last_name || ''}
+                </h4>
+                {isOwner && (
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
+                    You
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-text-secondary/80">
                 {formatTimestamp(comment.created_at)}
               </p>
             </div>
             
+            {/* Comment Actions */}
             {(isOwner || canDelete) && (
               <div className="flex gap-1">
                 {isOwner && (
                   <button
                     onClick={() => setIsEditing(!isEditing)}
-                    className="p-1 text-text-secondary hover:text-primary rounded-full hover:bg-accent/50"
+                    className="p-1.5 text-text-secondary hover:text-primary rounded-lg hover:bg-accent/30 transition-colors"
                     title="Edit comment"
+                    aria-label="Edit comment"
                   >
                     <Edit size={16} />
                   </button>
@@ -249,87 +271,121 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
                   <button
                     onClick={handleDelete}
                     disabled={isDeleting}
-                    className="p-1 text-text-secondary hover:text-red-500 rounded-full hover:bg-accent/50 disabled:opacity-50"
+                    className="p-1.5 text-text-secondary hover:text-red-500 rounded-lg hover:bg-accent/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Delete comment"
+                    aria-label="Delete comment"
                   >
-                    <Trash2 size={16} />
+                    {isDeleting ? (
+                      <span className="inline-block w-4 h-4 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin"></span>
+                    ) : (
+                      <Trash2 size={16} />
+                    )}
                   </button>
                 )}
               </div>
             )}
           </div>
 
-          {isEditing ? (
-            <CommentForm
-              onSubmit={handleEdit}
-              initialContent={comment.content}
-              onCancel={() => setIsEditing(false)}
-            />
-          ) : (
-            <>
-              <p className="mb-2">{comment.content}</p>
-              {comment.image_url && (
-                <div className="mt-2">
-                  <img
-                    src={getImageUrl(comment.image_url)}
-                    alt="Comment attachment"
-                    className="max-h-60 rounded-md"
-                    onError={(e) => {
-                      console.error('Error loading comment image:', {
-                        originalUrl: comment.image_url,
-                        processedUrl: getImageUrl(comment.image_url),
-                        commentId: comment.id,
-                        timestamp: new Date().toISOString()
-                      });
-                      e.target.style.display = 'none';
-                    }}
-                    onLoad={() => console.log('Successfully loaded comment image:', getImageUrl(comment.image_url))}
-                  />
-                </div>
-              )}
-            </>
-          )}
+          {/* Comment Content */}
+          <div className="mt-2">
+            {isEditing ? (
+              <CommentForm
+                onSubmit={handleEdit}
+                initialContent={comment.content}
+                onCancel={() => setIsEditing(false)}
+              />
+            ) : (
+              <>
+                <p className="text-text leading-relaxed break-words">
+                  {comment.content}
+                </p>
+                {comment.image_url && (
+                  <div className="mt-3 overflow-hidden rounded-xl border border-border/30 bg-background-lighter/50">
+                    <div className="relative">
+                      <img
+                        src={getImageUrl(comment.image_url)}
+                        alt="Comment attachment"
+                        className="w-full max-h-80 object-contain mx-auto"
+                        onError={(e) => {
+                          console.error('Error loading comment image:', {
+                            originalUrl: comment.image_url,
+                            processedUrl: getImageUrl(comment.image_url),
+                            commentId: comment.id,
+                            timestamp: new Date().toISOString()
+                          });
+                          e.target.style.display = 'none';
+                          // Show error placeholder
+                          const container = e.target.parentElement;
+                          container.innerHTML = `
+                            <div class="p-4 text-center text-text-secondary/70">
+                              <div class="mx-auto w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center mb-2">
+                                <ImageOff size={20} className="text-text-secondary/70" />
+                              </div>
+                              <p class="text-sm">Image failed to load</p>
+                            </div>
+                          `;
+                        }}
+                        onLoad={() => console.log('Successfully loaded comment image:', getImageUrl(comment.image_url))}
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
-        <div className="flex gap-4 mt-1 px-2">
+        {/* Comment Actions */}
+        <div className="flex items-center gap-3 mt-3 pt-2 border-t border-border/20">
+          {/* Like Button */}
           <button
             onClick={() => handleReaction('like')}
-            className={`flex items-center gap-1.5 p-1 rounded-full transition-colors ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all ${
               reactions.userReaction === 'like'
-                ? 'text-primary'
-                : 'text-text-secondary hover:text-primary hover:bg-accent/50'
+                ? 'text-primary bg-primary/10'
+                : 'text-text-secondary hover:text-primary hover:bg-accent/20'
             }`}
             title="Like"
+            aria-label={reactions.userReaction === 'like' ? 'Remove like' : 'Like'}
           >
             <ThumbsUp 
               size={16} 
               strokeWidth={2}
               fill={reactions.userReaction === 'like' ? 'currentColor' : 'none'}
+              className="flex-shrink-0"
             />
-            <span className="text-sm">
-              {reactions.likeCount > 0 ? reactions.likeCount : ''} Like
-            </span>
+            {reactions.likeCount > 0 && (
+              <span className="text-sm font-medium">
+                {reactions.likeCount}
+              </span>
+            )}
           </button>
           
+          {/* Dislike Button */}
           <button
             onClick={() => handleReaction('dislike')}
-            className={`flex items-center gap-1.5 p-1 rounded-full transition-colors ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all ${
               reactions.userReaction === 'dislike'
-                ? 'text-primary'
-                : 'text-text-secondary hover:text-primary hover:bg-accent/50'
+                ? 'text-primary bg-primary/10'
+                : 'text-text-secondary hover:text-primary hover:bg-accent/20'
             }`}
             title="Dislike"
+            aria-label={reactions.userReaction === 'dislike' ? 'Remove dislike' : 'Dislike'}
           >
             <ThumbsDown
               size={16}
-              strokeWidth={2}  
+              strokeWidth={2}
               fill={reactions.userReaction === 'dislike' ? 'currentColor' : 'none'}
+              className="flex-shrink-0"
             />
-            <span className="text-sm">
-              {reactions.dislikeCount > 0 ? reactions.dislikeCount : ''} Dislike
-            </span>
+            {reactions.dislikeCount > 0 && (
+              <span className="text-sm font-medium">
+                {reactions.dislikeCount}
+              </span>
+            )}
           </button>
 
+          {/* Reply Button */}
           <button
             onClick={() => {
               setIsReplying(!isReplying);
@@ -337,18 +393,20 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
                 loadReplies();
               }
             }}
-            className="flex items-center gap-1.5 p-1 rounded-full text-text-secondary hover:text-primary hover:bg-accent/50 transition-colors"
-            title="Reply"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-text-secondary hover:text-primary hover:bg-accent/20 transition-colors"
+            title="Reply to this comment"
+            aria-expanded={isReplying}
           >
-            <MessageSquare size={16} strokeWidth={2} />
-            <span className="text-sm">Reply</span>
+            <MessageSquare size={16} strokeWidth={2} className="flex-shrink-0" />
+            <span className="text-sm font-medium">Reply</span>
           </button>
         </div>
 
-        {/* Replies section */}
-        <div className="mt-2 pl-6 border-l-2 border-border">
+        {/* Replies Section */}
+        <div className="mt-3 pl-4 border-l-2 border-border/30">
+          {/* Reply Form */}
           {isReplying && (
-            <div className="mt-2">
+            <div className="mb-3">
               <CommentForm 
                 postId={comment.post_id}
                 parentId={comment.id}
@@ -358,35 +416,48 @@ export default function CommentItem({ comment, postOwnerId, onUpdate, onDelete }
             </div>
           )}
 
+          {/* Replies Toggle */}
           {(comment.reply_count > 0 || replies.length > 0) && (
             <div className="mt-2">
               <button 
                 onClick={loadReplies}
                 disabled={isLoadingReplies}
-                className="text-xs text-text-secondary hover:text-primary flex items-center gap-1"
+                className={`flex items-center gap-1.5 text-sm font-medium px-2 py-1.5 rounded-lg transition-colors ${
+                  isLoadingReplies 
+                    ? 'text-text-secondary/70' 
+                    : 'text-text-secondary hover:text-primary hover:bg-accent/20'
+                }`}
+                aria-expanded={showReplies}
               >
                 {isLoadingReplies ? (
-                  'Loading...'
+                  <span className="flex items-center gap-2">
+                    <span className="inline-block w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></span>
+                    Loading...
+                  </span>
                 ) : (
                   <>
-                    <MessageSquare className="w-3 h-3" />
-                    {showReplies 
-                      ? `Hide ${replies.length} ${replies.length === 1 ? 'reply' : 'replies'}`
-                      : `View ${comment.reply_count || replies.length} ${(comment.reply_count || replies.length) === 1 ? 'reply' : 'replies'}`}
+                    <MessageSquare size={14} className="flex-shrink-0" />
+                    <span>
+                      {showReplies 
+                        ? `Hide ${replies.length} ${replies.length === 1 ? 'reply' : 'replies'}`
+                        : `View ${comment.reply_count || replies.length} ${(comment.reply_count || replies.length) === 1 ? 'reply' : 'replies'}`}
+                    </span>
                   </>
                 )}
               </button>
               
+              {/* Replies List */}
               {showReplies && replies.length > 0 && (
-                <div className="mt-3 space-y-3">
+                <div className="mt-3 space-y-3 pl-1">
                   {replies.map(reply => (
-                    <CommentItem
-                      key={reply.id}
-                      comment={reply}
-                      postOwnerId={postOwnerId}
-                      onUpdate={onUpdate}
-                      onDelete={onDelete}
-                    />
+                    <div key={reply.id} className="animate-fadeIn">
+                      <CommentItem
+                        comment={reply}
+                        postOwnerId={postOwnerId}
+                        onUpdate={onUpdate}
+                        onDelete={onDelete}
+                      />
+                    </div>
                   ))}
                 </div>
               )}
