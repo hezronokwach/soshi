@@ -543,6 +543,110 @@ func GetGroupEvents(db *sql.DB, groupId int, userId int) ([]Event, error) {
 	return events, nil
 }
 
+// AddGroupPostReaction adds or updates a reaction to a group post
+func AddGroupPostReaction(db *sql.DB, postId int, userId int, reactionType string) (map[string]interface{}, error) {
+	// Begin transaction
+	tx, err := db.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	// Check if user already has a reaction on this post
+	var existingReaction string
+	err = tx.QueryRow(
+		"SELECT reaction_type FROM group_post_reactions WHERE group_post_id = ? AND user_id = ?",
+		postId, userId,
+	).Scan(&existingReaction)
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+
+	if err == sql.ErrNoRows {
+		// No existing reaction, insert new one
+		_, err = tx.Exec(
+			"INSERT INTO group_post_reactions (group_post_id, user_id, reaction_type) VALUES (?, ?, ?)",
+			postId, userId, reactionType,
+		)
+		if err != nil {
+			return nil, err
+		}
+	} else if existingReaction == reactionType {
+		// Same reaction, remove it (toggle off)
+		_, err = tx.Exec(
+			"DELETE FROM group_post_reactions WHERE group_post_id = ? AND user_id = ?",
+			postId, userId,
+		)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// Different reaction, update it
+		_, err = tx.Exec(
+			"UPDATE group_post_reactions SET reaction_type = ? WHERE group_post_id = ? AND user_id = ?",
+			reactionType, postId, userId,
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Commit transaction
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	// Get the updated reaction state
+	reactions, err := GetGroupPostReactions(db, postId, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return reactions, nil
+}
+
+// GetGroupPostReactions retrieves reactions for a group post
+func GetGroupPostReactions(db *sql.DB, postId int, userId int) (map[string]interface{}, error) {
+	// Get reaction counts
+	var likeCount, dislikeCount int
+	err := db.QueryRow(`
+		SELECT
+			COALESCE(SUM(CASE WHEN reaction_type = 'like' THEN 1 ELSE 0 END), 0) as like_count,
+			COALESCE(SUM(CASE WHEN reaction_type = 'dislike' THEN 1 ELSE 0 END), 0) as dislike_count
+		FROM group_post_reactions
+		WHERE group_post_id = ?
+	`, postId).Scan(&likeCount, &dislikeCount)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Get user's reaction
+	var userReaction sql.NullString
+	err = db.QueryRow(
+		"SELECT reaction_type FROM group_post_reactions WHERE group_post_id = ? AND user_id = ?",
+		postId, userId,
+	).Scan(&userReaction)
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+
+	result := map[string]interface{}{
+		"likeCount":    likeCount,
+		"dislikeCount": dislikeCount,
+	}
+
+	if userReaction.Valid {
+		result["userReaction"] = userReaction.String
+	} else {
+		result["userReaction"] = nil
+	}
+
+	return result, nil
+}
+
 // GetEventResponses retrieves responses for an event
 func GetEventResponses(db *sql.DB, eventId int) ([]Response, error) {
 	responses := []Response{}

@@ -393,10 +393,18 @@ func AddGroupPostCommentReaction(db *sql.DB, commentId int, userId int, reaction
 
 			if reactionType == "like" {
 				_, err = tx.Exec("UPDATE group_post_comments SET like_count = like_count + 1 WHERE id = ?", commentId)
-				changes["like_count"] = (changes["like_count"].(int)) + 1
+				if prevCount, ok := changes["like_count"].(int); ok {
+					changes["like_count"] = prevCount + 1
+				} else {
+					changes["like_count"] = 1
+				}
 			} else if reactionType == "dislike" {
 				_, err = tx.Exec("UPDATE group_post_comments SET dislike_count = dislike_count + 1 WHERE id = ?", commentId)
-				changes["dislike_count"] = (changes["dislike_count"].(int)) + 1
+				if prevCount, ok := changes["dislike_count"].(int); ok {
+					changes["dislike_count"] = prevCount + 1
+				} else {
+					changes["dislike_count"] = 1
+				}
 			}
 			changes["action"] = "changed"
 			changes["reaction_type"] = reactionType

@@ -717,3 +717,73 @@ func (h *GroupHandler) RespondToEvent(w http.ResponseWriter, r *http.Request) {
 
 	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Response recorded successfully"})
 }
+
+// AddGroupPostReaction handles adding/updating reactions to group posts
+func (h *GroupHandler) AddGroupPostReaction(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "User not authenticated")
+		return
+	}
+
+	// Get post ID from URL
+	postIDStr := chi.URLParam(r, "postID")
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")
+		return
+	}
+
+	// Parse request body
+	var req struct {
+		ReactionType string `json:"reaction_type"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Validate reaction type
+	if req.ReactionType != "like" && req.ReactionType != "dislike" {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid reaction type")
+		return
+	}
+
+	// Add/update reaction
+	reactions, err := models.AddGroupPostReaction(h.db, postID, user.ID, req.ReactionType)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to update reaction")
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, reactions)
+}
+
+// GetGroupPostReactions handles getting reactions for a group post
+func (h *GroupHandler) GetGroupPostReactions(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "User not authenticated")
+		return
+	}
+
+	// Get post ID from URL
+	postIDStr := chi.URLParam(r, "postID")
+	postID, err := strconv.Atoi(postIDStr)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")
+		return
+	}
+
+	// Get reactions
+	reactions, err := models.GetGroupPostReactions(h.db, postID, user.ID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to get reactions")
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, reactions)
+}
