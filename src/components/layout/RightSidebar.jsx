@@ -18,6 +18,7 @@ export default function RightSidebar() {
   useEffect(() => {
     if (user?.id) {
       fetchAllData();
+      fetchAllUsers(); // Fetch all users for the sidebar
     }
   }, [user]);
 
@@ -26,7 +27,6 @@ export default function RightSidebar() {
       setLoading(true);
       await Promise.all([
         fetchOnlineUsers(),
-        fetchSuggestedUsers(),
         fetchGroupsData()
       ]);
     } catch (error) {
@@ -36,36 +36,28 @@ export default function RightSidebar() {
     }
   };
 
-  // Fetch online users - using mock data until API is implemented
+  // Fetch online users from WebSocket connections
   const fetchOnlineUsers = async () => {
     try {
-      // Replace with your actual API call when ready
-      // const response = await users.getOnlineUsers();
-      // setOnlineUsers(response);
-
-      // Mock data for now - limit to 4 items for better presentation
-      setOnlineUsers([
-        { id: 1, name: "Alex Johnson", username: "alexj", status: "online" },
-        { id: 2, name: "Samantha Lee", username: "samlee", status: "online" },
-        { id: 3, name: "Marcus Chen", username: "mchen", status: "online" },
-        { id: 4, name: "Jessica Wong", username: "jwong", status: "online" },
-      ].slice(0, 4));
+      const response = await users.getOnlineUsers();
+      setOnlineUsers(response || []);
     } catch (error) {
       console.error('Error fetching online users:', error);
+      setOnlineUsers([]);
     }
   };
 
-  // Fetch suggested users using the API
-  const fetchSuggestedUsers = async () => {
+  // Fetch all users for the sidebar (public and private)
+  const fetchAllUsers = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Fetching suggested users...');
-      const data = await users.getSuggestedUsers();
-      console.log('📊 Suggested users data:', data);
+      const data = await users.getAllUsers();
       setSuggestedUsers(data || []);
     } catch (error) {
-      console.error('❌ Failed to fetch suggested users:', error);
+      console.error('❌ Failed to fetch all users:', error);
       setSuggestedUsers([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -357,17 +349,29 @@ export default function RightSidebar() {
             </div>
 
             <div style={userListStyles}>
-              {onlineUsers.map(user => (
-                <div key={user.id} style={userItemStyles}>
-                  <div style={userAvatarStyles}>
-                    <User style={{ width: '1.25rem', height: '1.25rem' }} />
+              {onlineUsers.map(onlineUser => (
+                <Link key={onlineUser.id} href={`/profile/${onlineUser.id}`} style={{ textDecoration: 'none' }}>
+                  <div style={userItemStyles}>
+                    {onlineUser.avatar ? (
+                      <img
+                        src={onlineUser.avatar}
+                        alt={`${onlineUser.first_name} ${onlineUser.last_name}`}
+                        style={{...userAvatarStyles, objectFit: 'cover'}}
+                      />
+                    ) : (
+                      <div style={userAvatarStyles}>
+                        {getInitials(onlineUser.first_name, onlineUser.last_name)}
+                      </div>
+                    )}
+                    <div style={userInfoStyles}>
+                      <p style={userNameStyles}>{onlineUser.first_name} {onlineUser.last_name}</p>
+                      <p style={userMetaStyles}>
+                        {onlineUser.nickname ? `@${onlineUser.nickname}` : 'Online now'}
+                      </p>
+                    </div>
+                    <div style={onlineIndicatorStyles}></div>
                   </div>
-                  <div style={userInfoStyles}>
-                    <p style={userNameStyles}>{user.name}</p>
-                    <p style={userMetaStyles}>@{user.username}</p>
-                  </div>
-                  <div style={onlineIndicatorStyles}></div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

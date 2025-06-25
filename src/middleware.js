@@ -16,7 +16,7 @@ async function validateSession(sessionToken) {
 
     return response.ok
   } catch (error) {
-    console.error("Session validation error:", error)
+    // Don't log errors for session validation - this is expected when not logged in
     return false
   }
 }

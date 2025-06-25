@@ -2,7 +2,7 @@
 
 import { useState, useEffect, createContext, useContext } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/api';
+import { auth, connectWebSocket } from '@/lib/api';
 
 // Create auth context
 const AuthContext = createContext(null);
@@ -11,19 +11,23 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [websocket, setWebsocket] = useState(null);
   const router = useRouter();
 
   // Fetch current user on mount
   useEffect(() => {
     async function loadUserFromSession() {
       try {
-        // const response = await fetch('/api/auth/session');
-        // const data = await response.json();
         const data = await auth.getSession();
-        if (data.user) {
-          setUser(data.user);
-        } else if (data.id) {
-          setUser(data);
+        if (data) {
+          if (data.user) {
+            setUser(data.user);
+          } else if (data.id) {
+            setUser(data);
+          }
+        } else {
+          // No session data (user not logged in)
+          setUser(null);
         }
       } catch (error) {
         console.error('Error loading user session:', error);
@@ -35,6 +39,34 @@ export function AuthProvider({ children }) {
 
     loadUserFromSession();
   }, []);
+
+  // Establish WebSocket connection when user is authenticated
+  useEffect(() => {
+    if (user && !websocket) {
+      console.log('Establishing WebSocket connection for user:', user.id);
+      try {
+        const ws = connectWebSocket((message) => {
+          console.log('WebSocket message received:', message);
+          // Handle incoming messages here if needed
+        });
+        setWebsocket(ws);
+      } catch (error) {
+        console.error('Failed to establish WebSocket connection:', error);
+      }
+    } else if (!user && websocket) {
+      // Close WebSocket when user logs out
+      console.log('Closing WebSocket connection');
+      websocket.close();
+      setWebsocket(null);
+    }
+
+    // Cleanup function
+    return () => {
+      if (websocket) {
+        websocket.close();
+      }
+    };
+  }, [user]); // Only depend on user, not websocket to avoid infinite loops
 
   // Login function
   const login = async (email, password) => {
@@ -113,6 +145,12 @@ export function AuthProvider({ children }) {
   // Logout function
   const logout = async () => {
     try {
+      // Close WebSocket connection before logout
+      if (websocket) {
+        websocket.close();
+        setWebsocket(null);
+      }
+
       // await fetch('/api/auth/logout', {
       //   method: 'POST',
       // });
@@ -127,7 +165,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, websocket, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

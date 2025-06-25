@@ -1,8 +1,20 @@
+'use client';
+
+import Layout from '@/components/layout/Layout';
+import ChatInterface from '@/components/chat/ChatInterface';
+import './chat.module.css';
+
 export default function ChatPage() {
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Chat Page</h1>
-      <p>This is a placeholder for the chat page where users will be able to chat with their friends.</p>
-    </div>
+    <Layout>
+      <div className="chat-page-container">
+        <h1 className="chat-page-title">Messages</h1>
+        <div className="chat-page-content">
+          <div className="chat-page-inner">
+            <ChatInterface />
+          </div>
+        </div>
+      </div>
+    </Layout>
   );
 }

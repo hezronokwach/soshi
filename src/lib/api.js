@@ -82,7 +82,17 @@ export const auth = {
       method: "POST",
     }),
 
-  getSession: () => fetchAPI("/api/auth/session"),
+  getSession: async () => {
+    try {
+      return await fetchAPI("/api/auth/session")
+    } catch (error) {
+      // If it's a "No session token provided" error, return null instead of throwing
+      if (error.message.includes('No session token provided')) {
+        return null
+      }
+      throw error
+    }
+  },
 
   // New method to check if user is authenticated
   checkAuth: async () => {
@@ -340,6 +350,33 @@ export const users = {
     }),
 
   getSuggestedUsers: () => fetchAPI("/api/users/suggested"),
+
+  getOnlineUsers: () => fetchAPI("/api/users/online"),
+
+  getAllUsers: () => fetchAPI("/api/users/all"),
+
+  acceptMessageRequest: (requesterId) =>
+    fetchAPI(`/api/users/accept-message-request?requester_id=${requesterId}`, {
+      method: "POST"
+    }),
+}
+
+export const messages = {
+  getConversations: () => fetchAPI("/api/messages/conversations"),
+
+  getMessages: (userId, page = 1, limit = 50) =>
+    fetchAPI(`/api/messages/${userId}?page=${page}&limit=${limit}`),
+
+  sendMessage: (userId, content) => fetchAPI(`/api/messages/${userId}`, {
+    method: "POST",
+    body: JSON.stringify({ content })
+  }),
+
+  markAsRead: (userId) => fetchAPI(`/api/messages/${userId}/read`, {
+    method: "PUT"
+  }),
+
+  getUnreadCount: () => fetchAPI("/api/messages/unread-count"),
 }
 
 // Notifications API
@@ -469,6 +506,7 @@ export default {
   comments,
   groups,
   users,
+  messages,
   activity,
   upload,
   connectWebSocket,

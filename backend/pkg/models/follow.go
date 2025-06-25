@@ -344,3 +344,15 @@ func CancelFollowRequest(db *sql.DB, followerId int, followingId int) error {
 	)
 	return err
 }
+
+// AcceptMessageRequest sets the follow status to accepted (accepts a message request)
+func AcceptMessageRequest(db *sql.DB, userID, requesterID int) error {
+	// userID is the recipient, requesterID is the sender of the message request
+	// If a follow row exists, update it; otherwise, insert a new one
+	_, err := db.Exec(`
+		INSERT INTO follows (follower_id, following_id, status)
+		VALUES (?, ?, 'accepted')
+		ON CONFLICT(follower_id, following_id) DO UPDATE SET status = 'accepted'
+	`, userID, requesterID)
+	return err
+}

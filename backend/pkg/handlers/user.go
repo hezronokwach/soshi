@@ -9,14 +9,16 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/hezronokwach/soshi/pkg/models"
 	"github.com/hezronokwach/soshi/pkg/utils"
+	"github.com/hezronokwach/soshi/pkg/websocket"
 )
 
 type UserHandler struct {
-	db *sql.DB
+	db  *sql.DB
+	hub *websocket.Hub
 }
 
-func NewUserHandler(db *sql.DB) *UserHandler {
-	return &UserHandler{db: db}
+func NewUserHandler(db *sql.DB, hub *websocket.Hub) *UserHandler {
+	return &UserHandler{db: db, hub: hub}
 }
 
 // GetFollowers retrieves users who are following the specified user
@@ -201,7 +203,81 @@ func (h *UserHandler) GetSuggestedUsers(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	utils.RespondWithJSON(w, http.StatusOK, suggestedUsers)
+	// Filter out private users unless the current user can message them (matches canSendMessage logic)
+	var visibleSuggestedUsers []map[string]interface{}
+	for _, u := range suggestedUsers {
+		isPublic, _ := u["is_public"].(bool)
+		isFollowing, _ := u["is_following"].(bool)
+		isFollowedBy, _ := u["is_followed_by"].(bool)
+		if isPublic || isFollowing || isFollowedBy {
+			visibleSuggestedUsers = append(visibleSuggestedUsers, u)
+		}
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, visibleSuggestedUsers)
+}
+
+// GetOnlineUsers retrieves users that are currently online (connected via WebSocket)
+func (h *UserHandler) GetOnlineUsers(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Get online user IDs from WebSocket hub
+	onlineUserIDs := h.hub.GetOnlineUserIDs()
+
+	// If no users are online, return empty array
+	if len(onlineUserIDs) == 0 {
+		utils.RespondWithJSON(w, http.StatusOK, []models.User{})
+		return
+	}
+
+	// Filter out current user from online users
+	var filteredUserIDs []int
+	for _, userID := range onlineUserIDs {
+		if userID != user.ID {
+			filteredUserIDs = append(filteredUserIDs, userID)
+		}
+	}
+
+	// If no other users are online, return empty array
+	if len(filteredUserIDs) == 0 {
+		utils.RespondWithJSON(w, http.StatusOK, []models.User{})
+		return
+	}
+
+	// Get user details for online users
+	onlineUsers, err := models.GetUsersByIDs(h.db, filteredUserIDs)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to retrieve online users")
+		return
+	}
+
+	// Filter out private users unless the current user follows them
+	var visibleOnlineUsers []models.User
+	for _, u := range onlineUsers {
+		if u.IsPublic {
+			visibleOnlineUsers = append(visibleOnlineUsers, u)
+		} else {
+			status, err := models.IsFollowing(h.db, user.ID, u.ID)
+			if err != nil {
+				continue // skip on error
+			}
+			if status == "accepted" {
+				visibleOnlineUsers = append(visibleOnlineUsers, u)
+			}
+		}
+	}
+
+	// Limit to 4 users for sidebar display
+	if len(visibleOnlineUsers) > 4 {
+		visibleOnlineUsers = visibleOnlineUsers[:4]
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, visibleOnlineUsers)
 }
 
 // GetFollowCounts retrieves follower and following counts for a user
@@ -336,7 +412,7 @@ func (h *UserHandler) GetFollowStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
-		"status": status,
+		"status":  status,
 		"is_self": user.ID == targetUserID,
 	})
 }
@@ -370,4 +446,46 @@ func (h *UserHandler) CancelFollowRequest(w http.ResponseWriter, r *http.Request
 		"status":  "none",
 		"message": "Follow request cancelled",
 	})
+}
+
+// GetAllUsers returns all users (public and private) for the sidebar
+func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	allUsers, err := models.GetAllUsers(h.db, user.ID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to retrieve all users")
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, allUsers)
+}
+
+// AcceptMessageRequestHandler allows a user to accept a message request
+func (h *UserHandler) AcceptMessageRequestHandler(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+	// requester_id is the user who sent the message request
+	requesterIDStr := r.URL.Query().Get("requester_id")
+	if requesterIDStr == "" {
+		utils.RespondWithError(w, http.StatusBadRequest, "Missing requester_id")
+		return
+	}
+	requesterID, err := strconv.Atoi(requesterIDStr)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid requester_id")
+		return
+	}
+	if err := models.AcceptMessageRequest(h.db, user.ID, requesterID); err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to accept message request")
+		return
+	}
+	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{"success": true})
 }
