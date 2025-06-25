@@ -152,6 +152,13 @@ func main() {
 				r.Get("/", groupHandler.GetEvents)
 				r.Post("/", groupHandler.CreateEvent)
 			})
+
+			// Group chat
+			r.Route("/messages", func(r chi.Router) {
+				r.Use(authMiddleware)
+				r.Get("/", messageHandler.GetGroupMessages)
+				r.Post("/", messageHandler.SendGroupMessage)
+			})
 		})
 
 		// Event responses

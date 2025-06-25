@@ -377,6 +377,15 @@ export const messages = {
   }),
 
   getUnreadCount: () => fetchAPI("/api/messages/unread-count"),
+
+  // Group chat functions
+  getGroupMessages: (groupId, page = 1, limit = 50) =>
+    fetchAPI(`/api/groups/${groupId}/messages?page=${page}&limit=${limit}`),
+
+  sendGroupMessage: (groupId, content) => fetchAPI(`/api/groups/${groupId}/messages`, {
+    method: "POST",
+    body: JSON.stringify({ content })
+  }),
 }
 
 // Notifications API
