@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
           setUser(null);
         }
       } catch (error) {
-        console.error('Error loading user session:', error);
+        // Silently handle session errors (user not logged in)
         setUser(null);
       } finally {
         setLoading(false);
@@ -43,19 +43,16 @@ export function AuthProvider({ children }) {
   // Establish WebSocket connection when user is authenticated
   useEffect(() => {
     if (user && !websocket) {
-      console.log('Establishing WebSocket connection for user:', user.id);
       try {
         const ws = connectWebSocket((message) => {
-          console.log('WebSocket message received:', message);
           // Handle incoming messages here if needed
         });
         setWebsocket(ws);
       } catch (error) {
-        console.error('Failed to establish WebSocket connection:', error);
+        // Silently handle WebSocket connection errors
       }
     } else if (!user && websocket) {
       // Close WebSocket when user logs out
-      console.log('Closing WebSocket connection');
       websocket.close();
       setWebsocket(null);
     }
@@ -105,7 +102,6 @@ export function AuthProvider({ children }) {
 
       return false;
     } catch (error) {
-      console.error('Login error:', error);
       throw error;
     }
   };
@@ -113,31 +109,10 @@ export function AuthProvider({ children }) {
   // Register function
   const register = async (userData) => {
     try {
-      // const response = await fetch('/api/auth/register', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(userData),
-      // });
-
-      // const data = await response.json();
       const data = await auth.register(userData);
-
-      // if (!response.ok) {
-      //   if (data.issues) {
-      //     // Format validation errors
-      //     const errorMessage = data.issues.map(issue => issue.message).join(', ');
-      //     throw new Error(errorMessage);
-      //   }
-      //   throw new Error(data.error || 'Registration failed');
-      // }
-
-
       router.push('/login?registered=true');
       return true;
     } catch (error) {
-      console.error('Registration error:', error);
       throw error;
     }
   };
@@ -151,15 +126,11 @@ export function AuthProvider({ children }) {
         setWebsocket(null);
       }
 
-      // await fetch('/api/auth/logout', {
-      //   method: 'POST',
-      // });
       await auth.logout();
       setUser(null);
       router.replace('/login');
       return true;
     } catch (error) {
-      console.error('Logout error:', error);
       throw error;
     }
   };

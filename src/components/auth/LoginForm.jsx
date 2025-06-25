@@ -27,7 +27,6 @@ export default function LoginForm() {
   }, [searchParams]);
 
   const handleChange = (e) => {
-    console.log('Input changed:', e.target.name, e.target.value); // DEBUG
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
@@ -73,7 +72,6 @@ export default function LoginForm() {
       await login(formData.email, formData.password);
       // Redirect is handled in the login function
     } catch (error) {
-      console.error('Login error:', error);
       setSubmitError('Invalid email or password');
     } finally {
       setIsSubmitting(false);
@@ -143,15 +141,6 @@ export default function LoginForm() {
             Register
           </Link>
         </p>
-      </div>
-
-      {/* Debug info */}
-      <div className="mt-4 p-2 bg-gray-800 text-xs text-green-400 rounded">
-        <strong>Debug Info:</strong>
-        <br />Email: {formData.email}
-        <br />Password: {formData.password ? '***' : '(empty)'}
-        <br />Submitting: {isSubmitting ? 'Yes' : 'No'}
-        <br />Errors: {Object.keys(errors).length}
       </div>
     </div>
   );
