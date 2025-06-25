@@ -65,9 +65,10 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
     });
     
     try {
-      const res = await fetch(`/api/groups/comments/${comment.id}/reactions`, {
+      const res = await fetch(`http://localhost:8080/api/groups/comments/${comment.id}/reactions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           reaction_type: type
         })

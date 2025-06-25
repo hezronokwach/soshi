@@ -63,6 +63,7 @@ func main() {
 	postHandler := handlers.NewPostHandler(db)
 	commentHandler := handlers.NewCommentHandler(db)
 	groupHandler := handlers.NewGroupHandler(db)
+	groupCommentHandler := handlers.NewGroupCommentHandler(db)
 	userHandler := handlers.NewUserHandler(db, hub)
 	messageHandler := handlers.NewMessageHandler(db, hub)
 	activityHandler := handlers.NewActivityHandler(db)
@@ -117,6 +118,16 @@ func main() {
 		})
 	})
 
+	// Group comment routes (for reactions)
+	r.Route("/api/groups/comments/{commentID}", func(r chi.Router) {
+		r.Use(authMiddleware)
+		r.Route("/reactions", func(r chi.Router) {
+			r.Use(authMiddleware)
+			r.Get("/", groupCommentHandler.GetGroupPostCommentReactions)
+			r.Post("/", groupCommentHandler.AddGroupPostCommentReaction)
+		})
+	})
+
 	// Group routes
 	r.Route("/api/groups", func(r chi.Router) {
 		r.Use(authMiddleware)
@@ -144,6 +155,13 @@ func main() {
 				r.Use(authMiddleware)
 				r.Get("/", groupHandler.GetPosts)
 				r.Post("/", groupHandler.CreatePost)
+
+				// Group post comments
+				r.Route("/{groupPostID}/comments", func(r chi.Router) {
+					r.Use(authMiddleware)
+					r.Get("/", groupCommentHandler.GetGroupPostComments)
+					r.Post("/", groupCommentHandler.CreateGroupPostComment)
+				})
 			})
 
 			// Group events
