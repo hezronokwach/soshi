@@ -81,6 +81,7 @@ func main() {
 	r.Route("/api/posts", func(r chi.Router) {
 		r.Use(authMiddleware)
 		r.Get("/", postHandler.GetPosts)
+		r.Get("/liked", postHandler.GetLikedPosts) // New endpoint for liked posts
 		r.Post("/", postHandler.CreatePost)
 		r.Put("/", postHandler.UpdatePost)
 		r.Delete("/", postHandler.DeletePost)
