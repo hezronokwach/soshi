@@ -228,32 +228,40 @@ export default function GroupPosts({ params, group, fetchGroup }) {
                     <div className="flex items-center gap-2 sm:gap-4 py-2 border-t border-border">
                         <button
                             onClick={() => handlePostReaction(post.id, 'like')}
-                            className={`flex items-center gap-1 sm:gap-2 p-1 sm:p-1.5 rounded-full transition-colors ${
+                            className={`flex items-center gap-1 p-1 sm:p-1.5 rounded-full transition-colors ${
                                 reactions.userReaction === 'like'
-                                    ? 'text-blue-500'
-                                    : 'text-text-secondary hover:text-primary hover:bg-accent/50'
+                                    ? 'text-red-500'
+                                    : 'text-text-secondary hover:text-red-500 hover:bg-accent/50'
                             }`}
                             title="Like"
                         >
-                            <ThumbsUp size={14} className="sm:w-4 sm:h-4" />
-                            <span className="text-xs sm:text-sm">
-                                Like {reactions.likeCount > 0 && `(${reactions.likeCount})`}
-                            </span>
+                            <ThumbsUp
+                                size={16}
+                                className="sm:w-5 sm:h-5"
+                                fill={reactions.userReaction === 'like' ? 'currentColor' : 'none'}
+                            />
+                            {reactions.likeCount > 0 && (
+                                <span className="text-xs sm:text-sm">{reactions.likeCount}</span>
+                            )}
                         </button>
 
                         <button
                             onClick={() => handlePostReaction(post.id, 'dislike')}
-                            className={`flex items-center gap-1 sm:gap-2 p-1 sm:p-1.5 rounded-full transition-colors ${
+                            className={`flex items-center gap-1 p-1 sm:p-1.5 rounded-full transition-colors ${
                                 reactions.userReaction === 'dislike'
-                                    ? 'text-red-500'
-                                    : 'text-text-secondary hover:text-primary hover:bg-accent/50'
+                                    ? 'text-blue-500'
+                                    : 'text-text-secondary hover:text-blue-500 hover:bg-accent/50'
                             }`}
                             title="Dislike"
                         >
-                            <ThumbsDown size={14} className="sm:w-4 sm:h-4" />
-                            <span className="text-xs sm:text-sm">
-                                Dislike {reactions.dislikeCount > 0 && `(${reactions.dislikeCount})`}
-                            </span>
+                            <ThumbsDown
+                                size={16}
+                                className="sm:w-5 sm:h-5"
+                                fill={reactions.userReaction === 'dislike' ? 'currentColor' : 'none'}
+                            />
+                            {reactions.dislikeCount > 0 && (
+                                <span className="text-xs sm:text-sm">{reactions.dislikeCount}</span>
+                            )}
                         </button>
 
                         <button
