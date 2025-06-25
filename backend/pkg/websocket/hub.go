@@ -261,23 +261,39 @@ func (h *Hub) Run() {
 				// Send typing indicator to recipient only
 				h.SendMessageToUser(int(recipientID), message)
 
-			case "group":
+			case "group", "group_message":
 				// Group message to all members of a group
-				// groupID, ok := msg["group_id"].(float64)
-				// if !ok {
-				// 	log.Printf("Group message has no group_id")
-				// 	continue
-				// }
+				groupID, ok := msg["group_id"].(float64)
+				if !ok {
+					log.Printf("Group message has no group_id")
+					continue
+				}
 
-				// In a real implementation, we would check if each client is a member of the group
-				// For now, we'll just broadcast to all clients
+				// Get group members from database
+				members, err := models.GetGroupMembers(h.db, int(groupID))
+				if err != nil {
+					log.Printf("Failed to get group members: %v", err)
+					continue
+				}
+
+				// Create a map of member user IDs for quick lookup
+				memberIDs := make(map[int]bool)
+				for _, member := range members {
+					if member.Status == "accepted" {
+						memberIDs[member.UserID] = true
+					}
+				}
+
+				// Broadcast to all connected clients who are group members
 				for client := range h.clients {
-					select {
-					case client.Send <- message:
-					default:
-						close(client.Send)
-						delete(h.clients, client)
-						h.removeUserClient(client.UserID, client)
+					if memberIDs[client.UserID] {
+						select {
+						case client.Send <- message:
+						default:
+							close(client.Send)
+							delete(h.clients, client)
+							h.removeUserClient(client.UserID, client)
+						}
 					}
 				}
 

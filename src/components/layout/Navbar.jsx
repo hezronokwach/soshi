@@ -114,7 +114,6 @@ export default function Navbar() {
 
 
   const desktopNavStyles = {
-    display: 'none',
     alignItems: 'center',
     gap: '1.5rem'
   };
@@ -133,8 +132,7 @@ export default function Navbar() {
   };
 
   const mobileMenuButtonStyles = {
-    color: '#FFFFFF',
-    display: 'block'
+    color: '#FFFFFF'
   };
 
   const mobileMenuStyles = {
@@ -150,12 +148,6 @@ export default function Navbar() {
     color: '#FFFFFF'
   };
 
-  // Media query styles
-  if (typeof window !== 'undefined' && window.innerWidth >= 768) {
-    desktopNavStyles.display = 'flex';
-    mobileMenuButtonStyles.display = 'none';
-  }
-
   return (
     <nav style={navbarStyles}>
       <div style={containerStyles}>
@@ -165,7 +157,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        <div style={desktopNavStyles}>
+        <div className="hidden md:flex" style={desktopNavStyles}>
           {isAuthenticated ? (
             <>
               {/* Notification Icon */}
@@ -302,6 +294,7 @@ export default function Navbar() {
 
         {/* Mobile Menu Button */}
         <button
+          className="md:hidden"
           style={mobileMenuButtonStyles}
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >

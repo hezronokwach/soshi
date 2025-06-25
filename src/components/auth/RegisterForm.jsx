@@ -11,6 +11,7 @@ export default function RegisterForm() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     first_name: '',
     last_name: '',
     date_of_birth: '',
@@ -48,6 +49,12 @@ export default function RegisterForm() {
       newErrors.password = 'Password must be at least 8 characters';
     }
 
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
     if (!formData.first_name) {
       newErrors.first_name = 'First name is required';
     }
@@ -75,10 +82,11 @@ export default function RegisterForm() {
     setSubmitError('');
 
     try {
-      await register(formData);
+      // Remove confirmPassword before sending to API
+      const { confirmPassword, ...registrationData } = formData;
+      await register(registrationData);
       // Redirect is handled in the register function
     } catch (error) {
-      console.error('Registration error:', error);
       setSubmitError(error.message || 'Registration failed. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -112,7 +120,7 @@ export default function RegisterForm() {
           </div>
 
           {/* Password */}
-          <div className="md:col-span-2">
+          <div className="md:col-span-1">
             <label className="block text-sm font-medium mb-1">Password</label>
             <input
               type="password"
@@ -123,6 +131,20 @@ export default function RegisterForm() {
               placeholder="••••••••"
             />
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+          </div>
+
+          {/* Confirm Password */}
+          <div className="md:col-span-1">
+            <label className="block text-sm font-medium mb-1">Confirm Password</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="w-full bg-background-lighter border border-border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="••••••••"
+            />
+            {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
           </div>
 
           {/* First Name */}

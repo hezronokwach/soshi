@@ -343,7 +343,7 @@ export default function RightSidebar() {
           <div style={sectionStyles}>
             <div style={sectionHeaderStyles}>
               <h3 style={sectionTitleStyles}>Online Users ({onlineUsers.length})</h3>
-              <Link href="/friends" style={seeAllLinkStyles}>
+              <Link href="/online" style={seeAllLinkStyles}>
                 See All
               </Link>
             </div>

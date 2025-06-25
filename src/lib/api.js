@@ -24,10 +24,24 @@ async function fetchAPI(endpoint, options = {}) {
   try {
     const response = await fetch(url, fetchOptions)
 
+    // Debug logging for mark as read requests
+    if (endpoint.includes('/read')) {
+      console.log('Mark as read response status:', response.status);
+      console.log('Mark as read response headers:', Object.fromEntries(response.headers.entries()));
+      console.log('Browser:', navigator.userAgent.includes('Chrome') ? 'Chrome' : 'Other');
+      console.log('Request URL:', url);
+      console.log('Request options:', fetchOptions);
+    }
+
     // Handle non-JSON responses
     const contentType = response.headers.get("content-type")
     if (contentType && contentType.includes("application/json")) {
       const data = await response.json()
+
+      // Debug logging for mark as read requests
+      if (endpoint.includes('/read')) {
+        console.log('Mark as read response data:', data);
+      }
 
       // If response is not ok, throw error with message from API
       if (!response.ok) {
@@ -58,7 +72,12 @@ async function fetchAPI(endpoint, options = {}) {
     return response
   } catch (error) {
     // Handle network errors
-    console.error('API Error:', error)
+    // Only log errors that aren't session-related to avoid console spam
+    if (!error.message.includes('No session token provided') &&
+        !error.message.includes('Unauthorized')) {
+      console.error('API Error for', endpoint, ':', error)
+      console.error('Request options:', fetchOptions)
+    }
     throw error
   }
 }
@@ -372,11 +391,30 @@ export const messages = {
     body: JSON.stringify({ content })
   }),
 
-  markAsRead: (userId) => fetchAPI(`/api/messages/${userId}/read`, {
-    method: "PUT"
-  }),
+  markAsRead: async (userId) => {
+    console.log('Making markAsRead API call for userId:', userId);
+    try {
+      const result = await fetchAPI(`/api/messages/${userId}/read`, {
+        method: "PUT"
+      });
+      console.log('markAsRead API call successful:', result);
+      return result;
+    } catch (error) {
+      console.error('markAsRead API call failed:', error);
+      throw error;
+    }
+  },
 
   getUnreadCount: () => fetchAPI("/api/messages/unread-count"),
+
+  // Group chat functions
+  getGroupMessages: (groupId, page = 1, limit = 50) =>
+    fetchAPI(`/api/groups/${groupId}/messages?page=${page}&limit=${limit}`),
+
+  sendGroupMessage: (groupId, content) => fetchAPI(`/api/groups/${groupId}/messages`, {
+    method: "POST",
+    body: JSON.stringify({ content })
+  }),
 }
 
 // Notifications API
@@ -488,13 +526,13 @@ export const connectWebSocket = (onMessage) => {
   }
 
   ws.onclose = () => {
-    console.log("WebSocket connection closed")
-    // Attempt to reconnect after a delay
+    // Silently handle WebSocket close - attempt to reconnect after a delay
     setTimeout(() => connectWebSocket(onMessage), 5000)
   }
 
   ws.onerror = (error) => {
-    console.error("WebSocket error:", error)
+    // Silently handle WebSocket errors to avoid console spam
+    // In production, you might want to log this to an error tracking service
   }
 
   return ws

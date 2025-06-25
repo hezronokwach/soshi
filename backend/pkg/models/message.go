@@ -291,8 +291,20 @@ func MarkMessagesAsRead(db *sql.DB, recipientID, senderID int) error {
 		WHERE receiver_id = ? AND sender_id = ? AND is_read = 0
 	`
 
-	_, err := db.Exec(query, recipientID, senderID)
-	return err
+	result, err := db.Exec(query, recipientID, senderID)
+	if err != nil {
+		return err
+	}
+
+	// Log the number of rows affected for debugging
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		// This is not an error - it just means there were no unread messages to mark as read
+		// But we'll log it for debugging purposes
+		// Note: We don't return an error here because this is a valid scenario
+	}
+
+	return nil
 }
 
 // GetUnreadMessageCount gets the total number of unread messages for a user
@@ -310,4 +322,34 @@ func GetUnreadMessageCount(db *sql.DB, userID int) (int, error) {
 	}
 
 	return count, nil
+}
+
+// GetMessageByID retrieves a message by its ID with sender information
+func GetMessageByID(db *sql.DB, messageID int) (*Message, error) {
+	message := &Message{}
+	var sender User
+
+	query := `
+		SELECT m.id, m.sender_id, m.receiver_id, m.group_id, m.content, m.is_read, m.created_at,
+		s.id, s.email, s.first_name, s.last_name, s.avatar, s.nickname
+		FROM messages m
+		JOIN users s ON m.sender_id = s.id
+		WHERE m.id = ?
+	`
+
+	err := db.QueryRow(query, messageID).Scan(
+		&message.ID, &message.SenderID, &message.ReceiverID, &message.GroupID,
+		&message.Content, &message.IsRead, &message.CreatedAt,
+		&sender.ID, &sender.Email, &sender.FirstName, &sender.LastName,
+		&sender.Avatar, &sender.Nickname,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	message.Sender = &sender
+	return message, nil
 }

@@ -15,8 +15,10 @@ export default function ConversationList({
   const containerStyles = {
     flex: 1,
     overflowY: 'auto',
-    padding: '0.5rem',
-    minHeight: 0 // Important for flex child to allow scrolling
+    padding: '0.75rem',
+    minHeight: 0, // Important for flex child to allow scrolling
+    scrollbarWidth: 'thin',
+    scrollbarColor: '#2A3343 transparent'
   };
 
   const loadingStyles = {
@@ -40,36 +42,39 @@ export default function ConversationList({
   const conversationItemStyles = (isSelected, hasUnread) => ({
     display: 'flex',
     alignItems: 'center',
-    gap: '0.75rem',
-    padding: '0.75rem',
-    borderRadius: '0.5rem',
+    gap: '0.875rem',
+    padding: '1rem',
+    borderRadius: '0.75rem',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    backgroundColor: isSelected ? 'rgba(58, 134, 255, 0.1)' : 'transparent',
-    border: isSelected ? '1px solid rgba(58, 134, 255, 0.3)' : hasUnread ? '1px solid rgba(255, 0, 110, 0.2)' : '1px solid transparent',
-    marginBottom: '0.25rem',
-    position: 'relative'
+    backgroundColor: isSelected ? 'rgba(58, 134, 255, 0.15)' : 'transparent',
+    border: isSelected ? '1px solid rgba(58, 134, 255, 0.4)' : hasUnread ? '1px solid rgba(255, 0, 110, 0.3)' : '1px solid transparent',
+    marginBottom: '0.5rem',
+    position: 'relative',
+    boxShadow: isSelected ? '0 2px 8px rgba(58, 134, 255, 0.1)' : 'none'
   });
 
   const avatarStyles = {
-    width: '3rem',
-    height: '3rem',
+    width: '3.5rem',
+    height: '3.5rem',
     borderRadius: '50%',
-    backgroundColor: '#3A86FF',
+    background: 'linear-gradient(135deg, #3A86FF 0%, #8338EC 100%)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     color: '#FFFFFF',
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    flexShrink: 0
+    fontSize: '1rem',
+    fontWeight: '700',
+    flexShrink: 0,
+    boxShadow: '0 2px 8px rgba(58, 134, 255, 0.2)'
   };
 
   const avatarImageStyles = {
-    width: '3rem',
-    height: '3rem',
+    width: '3.5rem',
+    height: '3.5rem',
     borderRadius: '50%',
-    objectFit: 'cover'
+    objectFit: 'cover',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
   };
 
   const conversationInfoStyles = {
@@ -120,14 +125,15 @@ export default function ConversationList({
   };
 
   const onlineIndicatorStyles = {
-    width: '0.75rem',
-    height: '0.75rem',
+    width: '1rem',
+    height: '1rem',
     borderRadius: '50%',
     backgroundColor: '#06D6A0',
-    border: '2px solid #1A2333',
+    border: '3px solid #1A2333',
     position: 'absolute',
-    bottom: '0',
-    right: '0'
+    bottom: '-2px',
+    right: '-2px',
+    boxShadow: '0 0 0 2px rgba(6, 214, 160, 0.3)'
   };
 
   if (loading) {

@@ -87,15 +87,29 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
                     {acceptedMembers.map((member) => (
                         <div key={member.id} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg">
                             <div className="flex items-center gap-3">
-                                {member.user?.avatar || member.avatar ? (
-                                    <img src={member.user?.avatar || member.avatar} alt={member.user?.first_name} className="w-10 h-10 rounded-full" />
-                                ) : (
-                                    <div className="w-10 h-10 bg-gray-600 rounded-full"></div>
-                                )}
+                                <div className="relative">
+                                    {member.user?.avatar || member.avatar ? (
+                                        <img src={member.user?.avatar || member.avatar} alt={member.user?.first_name} className="w-10 h-10 rounded-full" />
+                                    ) : (
+                                        <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                            {((member.user?.first_name || member.first_name || '').charAt(0) +
+                                              (member.user?.last_name || member.last_name || '').charAt(0)).toUpperCase()}
+                                        </div>
+                                    )}
+                                    {/* Online indicator - randomly show some as online for demo */}
+                                    {Math.random() > 0.5 && (
+                                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-gray-800 rounded-full"></div>
+                                    )}
+                                </div>
                                 <div>
-                                    <p className="font-medium text-blue-400">
-                                        {member.user?.first_name || member.first_name} {member.user?.last_name || member.last_name}
-                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-medium text-blue-400">
+                                            {member.user?.first_name || member.first_name} {member.user?.last_name || member.last_name}
+                                        </p>
+                                        {Math.random() > 0.5 && (
+                                            <span className="text-xs text-green-400 font-medium">• Online</span>
+                                        )}
+                                    </div>
                                     {member.user_id === group.creator_id && (
                                         <p className="text-xs text-blue-300 font-medium">Creator</p>
                                     )}

@@ -9,6 +9,7 @@ import { groups } from '@/lib/api';
 import GroupPosts from '@/components/groups/GroupPosts';
 import GroupMembers from '@/components/groups/GroupMembers';
 import GroupEvents from '@/components/groups/GroupEvents';
+import GroupChatInterface from '@/components/chat/GroupChatInterface';
 
 export default function GroupDetailPage() {
   const params = useParams();
@@ -123,7 +124,7 @@ export default function GroupDetailPage() {
 
       {/* Navigation Tabs */}
       <div className="flex space-x-4 mb-6">
-        {['posts', 'members', 'events'].map((tab) => (
+        {['posts', 'members', 'events', 'chat'].map((tab) => (
           <Button
             key={tab}
             variant={activeTab === tab ? 'default' : 'outline'}
@@ -168,6 +169,13 @@ export default function GroupDetailPage() {
           group={group}
           fetchGroup={fetchGroup}
         />
+      )}
+
+      {/* Chat Tab */}
+      {activeTab === 'chat' && (
+        <div style={{ height: '600px' }}>
+          <GroupChatInterface group={group} />
+        </div>
       )}
     </div>
   );
