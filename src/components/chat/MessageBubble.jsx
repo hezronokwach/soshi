@@ -83,6 +83,8 @@ export default function MessageBubble({ message, isOwn, showAvatar, showTimestam
     fontSize: '0.95rem',
     lineHeight: '1.4',
     wordWrap: 'break-word',
+    overflowWrap: 'break-word',
+    wordBreak: 'break-word',
     transition: 'all 0.2s ease',
     border: isOwn ? 'none' : '1px solid #374151',
     boxShadow: isOwn

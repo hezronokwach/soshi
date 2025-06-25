@@ -7,7 +7,7 @@ import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import { User, MoreVertical } from 'lucide-react';
 
-export default function MessageArea({ conversation, currentUser }) {
+export default function MessageArea({ conversation, currentUser, onMessagesRead }) {
   const [messageList, setMessageList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -130,9 +130,15 @@ export default function MessageArea({ conversation, currentUser }) {
 
   const markMessagesAsRead = async () => {
     try {
-      await messages.markAsRead(conversation.id);
+      const response = await messages.markAsRead(conversation.id);
+      console.log('Mark as read response:', response); // Debug log
+      // Notify parent component that messages were read
+      if (onMessagesRead) {
+        onMessagesRead(conversation.id);
+      }
     } catch (error) {
       console.error('Failed to mark messages as read:', error);
+      console.error('Error details:', error.message); // More detailed error logging
     }
   };
 
@@ -197,50 +203,86 @@ export default function MessageArea({ conversation, currentUser }) {
     return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
   };
 
-  const headerStyles = {
-    padding: '1rem',
-    borderBottom: '1px solid #2A3343',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    backgroundColor: '#2A3343' // Header background from style guide
+  // Responsive header styles
+  const getHeaderStyles = () => {
+    const baseStyles = {
+      padding: '1rem',
+      borderBottom: '1px solid #2A3343',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.75rem',
+      backgroundColor: '#2A3343',
+      minHeight: '80px'
+    };
+
+    // Responsive adjustments
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth;
+      if (width <= 640) {
+        // Mobile
+        baseStyles.padding = '0.75rem';
+        baseStyles.minHeight = '70px';
+        baseStyles.gap = '0.5rem';
+      } else if (width <= 1024) {
+        // Tablet
+        baseStyles.padding = '0.875rem';
+        baseStyles.minHeight = '75px';
+      }
+    }
+
+    return baseStyles;
   };
 
-  const avatarStyles = {
-    width: '2.5rem',
-    height: '2.5rem',
-    borderRadius: '50%',
-    backgroundColor: '#3A86FF',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#FFFFFF',
-    fontSize: '0.875rem',
-    fontWeight: '600'
+  const headerStyles = getHeaderStyles();
+
+  // Responsive avatar and user info styles
+  const getResponsiveStyles = () => {
+    const isSmallScreen = typeof window !== 'undefined' && window.innerWidth <= 640;
+    const isMediumScreen = typeof window !== 'undefined' && window.innerWidth <= 1024;
+
+    return {
+      avatarStyles: {
+        width: isSmallScreen ? '2rem' : '2.5rem',
+        height: isSmallScreen ? '2rem' : '2.5rem',
+        borderRadius: '50%',
+        backgroundColor: '#3A86FF',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#FFFFFF',
+        fontSize: isSmallScreen ? '0.75rem' : '0.875rem',
+        fontWeight: '600',
+        position: 'relative'
+      },
+      avatarImageStyles: {
+        width: isSmallScreen ? '2rem' : '2.5rem',
+        height: isSmallScreen ? '2rem' : '2.5rem',
+        borderRadius: '50%',
+        objectFit: 'cover'
+      },
+      userInfoStyles: {
+        flex: 1,
+        minWidth: 0
+      },
+      nameStyles: {
+        fontSize: isSmallScreen ? '1rem' : isMediumScreen ? '1.0625rem' : '1.125rem',
+        fontWeight: '600',
+        color: '#FFFFFF',
+        marginBottom: '0.125rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        flexWrap: isSmallScreen ? 'wrap' : 'nowrap'
+      },
+      statusStyles: {
+        fontSize: isSmallScreen ? '0.75rem' : '0.875rem',
+        color: '#B8C1CF'
+      }
+    };
   };
 
-  const avatarImageStyles = {
-    width: '2.5rem',
-    height: '2.5rem',
-    borderRadius: '50%',
-    objectFit: 'cover'
-  };
-
-  const userInfoStyles = {
-    flex: 1
-  };
-
-  const nameStyles = {
-    fontSize: '1.125rem',
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: '0.125rem'
-  };
-
-  const statusStyles = {
-    fontSize: '0.875rem',
-    color: '#B8C1CF'
-  };
+  const responsiveStyles = getResponsiveStyles();
+  const { avatarStyles, avatarImageStyles, userInfoStyles, nameStyles, statusStyles } = responsiveStyles;
 
   const messagesContainerStyles = {
     flex: 1,
@@ -286,39 +328,39 @@ export default function MessageArea({ conversation, currentUser }) {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Header */}
       <div style={headerStyles}>
-        {conversation.avatar ? (
-          <img
-            src={conversation.avatar}
-            alt={`${conversation.first_name} ${conversation.last_name}`}
-            style={avatarImageStyles}
-          />
-        ) : (
-          <div style={avatarStyles}>
-            {getInitials(conversation.first_name, conversation.last_name)}
-          </div>
-        )}
-        
+        <div style={{ position: 'relative' }}>
+          {conversation.avatar ? (
+            <img
+              src={conversation.avatar}
+              alt={`${conversation.first_name} ${conversation.last_name}`}
+              style={avatarImageStyles}
+            />
+          ) : (
+            <div style={avatarStyles}>
+              {getInitials(conversation.first_name, conversation.last_name)}
+            </div>
+          )}
+          {/* Online indicator on avatar */}
+          {isOnline && (
+            <div
+              className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-green-500 border-2 border-surface z-10"
+            ></div>
+          )}
+        </div>
+
         <div style={userInfoStyles}>
           <div style={nameStyles}>
-            {conversation.first_name} {conversation.last_name}
+            <span style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              flex: 1
+            }}>
+              {conversation.first_name} {conversation.last_name}
+            </span>
             {isOnline && (
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                marginLeft: '0.5rem',
-                fontSize: '0.95em',
-                color: '#06D6A0',
-                fontWeight: 500
-              }}>
-                <span style={{
-                  display: 'inline-block',
-                  width: '0.7em',
-                  height: '0.7em',
-                  borderRadius: '50%',
-                  background: '#06D6A0',
-                  marginRight: '0.35em',
-                }}></span>
-                online
+              <span className="inline-flex items-center text-xs sm:text-sm text-green-500 font-medium flex-shrink-0">
+                • online
               </span>
             )}
           </div>

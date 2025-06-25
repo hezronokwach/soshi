@@ -180,7 +180,16 @@ export default function MessageInput({ onSendMessage, onTypingChange, disabled, 
     borderRadius: '0.375rem',
     cursor: 'pointer',
     transition: 'background-color 0.2s',
-    textAlign: 'center'
+    textAlign: 'center',
+    width: '2.5rem',
+    height: '2.5rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    lineHeight: 1,
+    border: 'none',
+    backgroundColor: 'transparent'
   };
 
   return (

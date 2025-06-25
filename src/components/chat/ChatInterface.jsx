@@ -9,7 +9,7 @@ import UserSelector from './UserSelector';
 import { MessageSquare, Users } from 'lucide-react';
 
 export default function ChatInterface() {
-  const { user } = useAuth();
+  const { user, websocket } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [showUserSelector, setShowUserSelector] = useState(false);
@@ -21,6 +21,54 @@ export default function ChatInterface() {
       fetchConversations();
     }
   }, [user]);
+
+  // Listen for new messages via WebSocket to update conversation list
+  useEffect(() => {
+    if (websocket && user) {
+      const handleMessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+
+          if (data.type === 'private_message' && data.message) {
+            const message = data.message;
+
+            // Update conversation list with new message
+            setConversations(prev => {
+              return prev.map(conv => {
+                const convUser = conv.user || conv;
+
+                // If this message is for this conversation
+                if (
+                  (message.sender_id === convUser.id && message.recipient_id === user.id) ||
+                  (message.sender_id === user.id && message.recipient_id === convUser.id)
+                ) {
+                  // Only increment unread count if message is from other user and conversation is not selected
+                  const shouldIncrementUnread =
+                    message.sender_id === convUser.id &&
+                    (!selectedConversation || selectedConversation.id !== convUser.id);
+
+                  return {
+                    ...conv,
+                    last_message: message.content,
+                    last_message_time: message.created_at,
+                    unread_count: shouldIncrementUnread ? (conv.unread_count || 0) + 1 : (conv.unread_count || 0)
+                  };
+                }
+                return conv;
+              });
+            });
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket message in ChatInterface:', error);
+        }
+      };
+
+      websocket.addEventListener('message', handleMessage);
+      return () => {
+        websocket.removeEventListener('message', handleMessage);
+      };
+    }
+  }, [websocket, user, selectedConversation]);
 
   const fetchConversations = async () => {
     try {
@@ -40,6 +88,16 @@ export default function ChatInterface() {
     const actualConversation = conversation.user || conversation;
     setSelectedConversation(actualConversation);
     setShowUserSelector(false);
+
+    // Immediately update the conversation list to remove unread indicators
+    setConversations(prev =>
+      prev.map(conv => {
+        const convUser = conv.user || conv;
+        return (convUser.id === actualConversation.id)
+          ? { ...conv, unread_count: 0 }
+          : conv;
+      })
+    );
   };
 
   const handleNewConversation = (selectedUser) => {
@@ -51,15 +109,27 @@ export default function ChatInterface() {
       avatar: selectedUser.avatar,
       nickname: selectedUser.nickname
     };
-    
+
     setSelectedConversation(newConversation);
     setShowUserSelector(false);
-    
+
     // Add to conversations list if not already there
     const exists = conversations.find(conv => conv.id === selectedUser.id);
     if (!exists) {
       setConversations(prev => [newConversation, ...prev]);
     }
+  };
+
+  const handleMessagesRead = (conversationId) => {
+    // Update conversation list to remove unread count
+    setConversations(prev =>
+      prev.map(conv => {
+        const convUser = conv.user || conv;
+        return (convUser.id === conversationId)
+          ? { ...conv, unread_count: 0 }
+          : conv;
+      })
+    );
   };
 
   // Responsive container - matching group chat styling
@@ -81,45 +151,53 @@ export default function ChatInterface() {
   // Responsive sidebar
   const sidebarStyles = {
     width: '100%',
-    maxWidth: 340,
-    minWidth: 0,
+    maxWidth: 360,
+    minWidth: 320,
     borderRight: '1px solid #2A3343',
     display: 'flex',
     flexDirection: 'column',
     backgroundColor: '#1A2333',
     flexShrink: 0,
+    position: 'relative',
+    overflow: 'hidden'
   };
 
   const sidebarHeaderStyles = {
-    padding: '1.5rem',
+    padding: '1.25rem 1.5rem',
     borderBottom: '1px solid #2A3343',
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
+    background: 'linear-gradient(135deg, rgba(58, 134, 255, 0.1) 0%, rgba(131, 56, 236, 0.1) 100%)',
+    backdropFilter: 'blur(10px)'
   };
 
   const titleStyles = {
-    fontSize: '1.25rem',
-    fontWeight: '600',
+    fontSize: '1.125rem',
+    fontWeight: '700',
     color: '#FFFFFF',
-    fontFamily: "'Outfit', sans-serif"
+    fontFamily: "'Outfit', sans-serif",
+    letterSpacing: '-0.025em'
   };
 
   const newChatButtonStyles = {
     backgroundColor: '#3A86FF',
     color: '#FFFFFF',
     border: 'none',
-    borderRadius: '0.5rem',
-    padding: '0.5rem',
+    borderRadius: '0.75rem',
+    padding: '0.625rem 1rem',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
     fontSize: '0.875rem',
-    fontWeight: '500',
-    transition: 'background-color 0.2s',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 2px 4px rgba(58, 134, 255, 0.2)',
     ':hover': {
-      backgroundColor: '#2D6FD9'
+      backgroundColor: '#2D6FD9',
+      transform: 'translateY(-1px)',
+      boxShadow: '0 4px 8px rgba(58, 134, 255, 0.3)'
     }
   };
 
@@ -182,17 +260,57 @@ export default function ChatInterface() {
     gap: '0.5rem'
   };
 
-  // Mobile responsiveness
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 600;
-  if (isMobile) {
+  // Responsive design for different screen sizes
+  const getScreenSize = () => {
+    if (typeof window === 'undefined') return 'desktop';
+    const width = window.innerWidth;
+    if (width <= 640) return 'mobile';
+    if (width <= 1024) return 'tablet';
+    return 'desktop';
+  };
+
+  const screenSize = getScreenSize();
+
+  // Apply responsive styles
+  if (screenSize === 'mobile') {
+    // Mobile phones (≤640px)
     containerStyles.flexDirection = 'column';
+    containerStyles.height = '100vh';
     containerStyles.borderRadius = 0;
-    sidebarStyles.maxWidth = '100vw';
+    containerStyles.margin = 0;
+
+    sidebarStyles.width = '100%';
+    sidebarStyles.maxWidth = '100%';
+    sidebarStyles.height = '40%';
     sidebarStyles.borderRight = 'none';
     sidebarStyles.borderBottom = '1px solid #2A3343';
-    mainAreaStyles.maxWidth = '100vw';
+
+    mainAreaStyles.width = '100%';
+    mainAreaStyles.maxWidth = '100%';
+    mainAreaStyles.height = '60%';
     mainAreaStyles.borderRadius = 0;
-    mainAreaStyles.margin = 0;
+  } else if (screenSize === 'tablet') {
+    // Tablets/iPads (641px - 1024px)
+    containerStyles.flexDirection = 'row';
+    containerStyles.height = '100%';
+
+    sidebarStyles.width = '35%';
+    sidebarStyles.minWidth = '300px';
+    sidebarStyles.maxWidth = '400px';
+
+    mainAreaStyles.width = '65%';
+    mainAreaStyles.flex = 1;
+  } else {
+    // Desktop/Laptops (>1024px)
+    containerStyles.flexDirection = 'row';
+    containerStyles.height = '100%';
+
+    sidebarStyles.width = '30%';
+    sidebarStyles.minWidth = '320px';
+    sidebarStyles.maxWidth = '380px';
+
+    mainAreaStyles.width = '70%';
+    mainAreaStyles.flex = 1;
   }
 
   if (!user) {
@@ -237,6 +355,7 @@ export default function ChatInterface() {
           <MessageArea
             conversation={selectedConversation}
             currentUser={user}
+            onMessagesRead={handleMessagesRead}
           />
         ) : (
           <div style={emptyStateStyles}>

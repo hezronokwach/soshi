@@ -233,22 +233,64 @@ const GroupChatInterface = ({ group }) => {
   );
 };
 
-// Styles - Following style-guide.md
-const containerStyles = {
-  display: 'flex',
-  flexDirection: 'column',
-  height: '100%',
-  backgroundColor: '#1A2333', // Background color from style guide
-  borderRadius: '0.75rem',
-  overflow: 'hidden',
-  border: '1px solid #2A3343' // Border color from style guide
+// Responsive Styles - Following style-guide.md
+const getContainerStyles = () => {
+  const baseStyles = {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    backgroundColor: '#1A2333',
+    borderRadius: '0.75rem',
+    overflow: 'hidden',
+    border: '1px solid #2A3343'
+  };
+
+  // Responsive adjustments
+  if (typeof window !== 'undefined') {
+    const width = window.innerWidth;
+    if (width <= 640) {
+      // Mobile
+      baseStyles.borderRadius = '0.5rem';
+      baseStyles.height = '100vh';
+    } else if (width <= 1024) {
+      // Tablet
+      baseStyles.borderRadius = '0.625rem';
+    }
+  }
+
+  return baseStyles;
 };
 
-const headerStyles = {
-  padding: '1rem',
-  borderBottom: '1px solid #2A3343',
-  backgroundColor: '#2A3343' // Header background from style guide
+const containerStyles = getContainerStyles();
+
+const getHeaderStyles = () => {
+  const baseStyles = {
+    padding: '1rem',
+    borderBottom: '1px solid #2A3343',
+    backgroundColor: '#2A3343',
+    minHeight: '80px',
+    display: 'flex',
+    alignItems: 'center'
+  };
+
+  // Responsive adjustments
+  if (typeof window !== 'undefined') {
+    const width = window.innerWidth;
+    if (width <= 640) {
+      // Mobile
+      baseStyles.padding = '0.75rem';
+      baseStyles.minHeight = '70px';
+    } else if (width <= 1024) {
+      // Tablet
+      baseStyles.padding = '0.875rem';
+      baseStyles.minHeight = '75px';
+    }
+  }
+
+  return baseStyles;
 };
+
+const headerStyles = getHeaderStyles();
 
 const groupInfoStyles = {
   display: 'flex',
@@ -256,36 +298,43 @@ const groupInfoStyles = {
   gap: '0.75rem'
 };
 
-const avatarStyles = {
-  width: '2.5rem',
-  height: '2.5rem',
-  borderRadius: '50%',
-  objectFit: 'cover'
+const getResponsiveGroupStyles = () => {
+  const isSmallScreen = typeof window !== 'undefined' && window.innerWidth <= 640;
+  const isMediumScreen = typeof window !== 'undefined' && window.innerWidth <= 1024;
+
+  return {
+    avatarStyles: {
+      width: isSmallScreen ? '2rem' : '2.5rem',
+      height: isSmallScreen ? '2rem' : '2.5rem',
+      borderRadius: '50%',
+      objectFit: 'cover'
+    },
+    defaultAvatarStyles: {
+      width: isSmallScreen ? '2rem' : '2.5rem',
+      height: isSmallScreen ? '2rem' : '2.5rem',
+      borderRadius: '50%',
+      backgroundColor: '#3A86FF',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: '#FFFFFF'
+    },
+    groupNameStyles: {
+      margin: 0,
+      fontSize: isSmallScreen ? '1rem' : isMediumScreen ? '1.0625rem' : '1.125rem',
+      fontWeight: '600',
+      color: '#FFFFFF'
+    },
+    memberCountStyles: {
+      margin: 0,
+      fontSize: isSmallScreen ? '0.75rem' : '0.875rem',
+      color: '#9CA3AF'
+    }
+  };
 };
 
-const defaultAvatarStyles = {
-  width: '2.5rem',
-  height: '2.5rem',
-  borderRadius: '50%',
-  backgroundColor: '#3A86FF', // Primary color from style guide
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: '#FFFFFF'
-};
-
-const groupNameStyles = {
-  margin: 0,
-  fontSize: '1.125rem',
-  fontWeight: '600',
-  color: '#FFFFFF' // Text color from style guide
-};
-
-const memberCountStyles = {
-  margin: 0,
-  fontSize: '0.875rem',
-  color: '#9CA3AF' // Secondary text color
-};
+const groupResponsiveStyles = getResponsiveGroupStyles();
+const { avatarStyles, defaultAvatarStyles, groupNameStyles, memberCountStyles } = groupResponsiveStyles;
 
 const messagesContainerStyles = {
   flex: 1,
