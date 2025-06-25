@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -172,12 +173,15 @@ func (h *MessageHandler) MarkMessagesAsRead(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Mark messages as read
+	log.Printf("Attempting to mark messages as read: user_id=%d, other_user_id=%d", user.ID, otherUserID)
 	err = models.MarkMessagesAsRead(h.db, user.ID, otherUserID)
 	if err != nil {
+		log.Printf("Error marking messages as read: user_id=%d, other_user_id=%d, error=%v", user.ID, otherUserID, err)
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to mark messages as read")
 		return
 	}
 
+	log.Printf("Successfully marked messages as read: user_id=%d, other_user_id=%d", user.ID, otherUserID)
 	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"status": "success"})
 }
 

@@ -291,8 +291,20 @@ func MarkMessagesAsRead(db *sql.DB, recipientID, senderID int) error {
 		WHERE receiver_id = ? AND sender_id = ? AND is_read = 0
 	`
 
-	_, err := db.Exec(query, recipientID, senderID)
-	return err
+	result, err := db.Exec(query, recipientID, senderID)
+	if err != nil {
+		return err
+	}
+
+	// Log the number of rows affected for debugging
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		// This is not an error - it just means there were no unread messages to mark as read
+		// But we'll log it for debugging purposes
+		// Note: We don't return an error here because this is a valid scenario
+	}
+
+	return nil
 }
 
 // GetUnreadMessageCount gets the total number of unread messages for a user

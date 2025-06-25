@@ -129,7 +129,14 @@ export default function MessageArea({ conversation, currentUser, onMessagesRead 
   };
 
   const markMessagesAsRead = async () => {
+    // Add validation to prevent unnecessary API calls
+    if (!conversation?.id || !currentUser?.id) {
+      console.warn('Cannot mark messages as read: missing conversation or user ID');
+      return;
+    }
+
     try {
+      console.log('Marking messages as read for conversation:', conversation.id); // Debug log
       const response = await messages.markAsRead(conversation.id);
       console.log('Mark as read response:', response); // Debug log
       // Notify parent component that messages were read
@@ -137,8 +144,9 @@ export default function MessageArea({ conversation, currentUser, onMessagesRead 
         onMessagesRead(conversation.id);
       }
     } catch (error) {
-      console.error('Failed to mark messages as read:', error);
-      console.error('Error details:', error.message); // More detailed error logging
+      console.error('Failed to mark messages as read for conversation:', conversation.id);
+      console.error('Error details:', error.message);
+      console.error('Full error:', error);
     }
   };
 

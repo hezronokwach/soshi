@@ -24,10 +24,21 @@ async function fetchAPI(endpoint, options = {}) {
   try {
     const response = await fetch(url, fetchOptions)
 
+    // Debug logging for mark as read requests
+    if (endpoint.includes('/read')) {
+      console.log('Mark as read response status:', response.status);
+      console.log('Mark as read response headers:', Object.fromEntries(response.headers.entries()));
+    }
+
     // Handle non-JSON responses
     const contentType = response.headers.get("content-type")
     if (contentType && contentType.includes("application/json")) {
       const data = await response.json()
+
+      // Debug logging for mark as read requests
+      if (endpoint.includes('/read')) {
+        console.log('Mark as read response data:', data);
+      }
 
       // If response is not ok, throw error with message from API
       if (!response.ok) {
@@ -377,9 +388,19 @@ export const messages = {
     body: JSON.stringify({ content })
   }),
 
-  markAsRead: (userId) => fetchAPI(`/api/messages/${userId}/read`, {
-    method: "PUT"
-  }),
+  markAsRead: async (userId) => {
+    console.log('Making markAsRead API call for userId:', userId);
+    try {
+      const result = await fetchAPI(`/api/messages/${userId}/read`, {
+        method: "PUT"
+      });
+      console.log('markAsRead API call successful:', result);
+      return result;
+    } catch (error) {
+      console.error('markAsRead API call failed:', error);
+      throw error;
+    }
+  },
 
   getUnreadCount: () => fetchAPI("/api/messages/unread-count"),
 
