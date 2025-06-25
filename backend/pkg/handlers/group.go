@@ -564,9 +564,9 @@ func (h *GroupHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
-	if req.Content == "" {
-		utils.RespondWithError(w, http.StatusBadRequest, "Content is required")
+	// Validate required fields - either content or image is required
+	if req.Content == "" && req.ImageURL == "" {
+		utils.RespondWithError(w, http.StatusBadRequest, "Content or image is required")
 		return
 	}
 
