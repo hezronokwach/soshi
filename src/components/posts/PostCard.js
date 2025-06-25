@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { upload } from "@/lib/api";
 import { getImageUrl } from "@/utils/image";
-import { Edit, Trash2, ThumbsUp, ThumbsDown, MessageSquare, Share2, Bookmark, BookmarkCheck } from "lucide-react";
+import { Edit, Trash2, ThumbsUp, ThumbsDown, MessageSquare, Share2, Bookmark, BookmarkCheck, Loader2 } from "lucide-react";
 import CommentSection from "@/components/comments/CommentSection";
 import SelectFollowersModal from "./SelectFollowersModal";
 
