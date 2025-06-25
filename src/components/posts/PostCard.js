@@ -78,10 +78,15 @@ export default function PostCard({ post, onDelete, onUpdate }) {
         .catch(console.error);
       
       // Check if post is saved
-      fetch(`/api/posts/${post.id}/saved`)
-        .then(res => res.json())
+      fetch(`/api/posts/${post.id}/saved`, {
+        credentials: 'include'
+      })
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to check save status');
+          return res.json();
+        })
         .then(data => setIsSaved(data.isSaved))
-        .catch(console.error);
+        .catch(error => console.error('Error checking save status:', error));
     }
   }, [post.id, user?.id]);
 
@@ -264,15 +269,19 @@ export default function PostCard({ post, onDelete, onUpdate }) {
     setIsSaved(!prevSaved);
     
     try {
-      const url = `/api/posts/${post.id}/saved`;
+      const url = `/api/posts/${post.id}/save`;
       const method = prevSaved ? 'DELETE' : 'POST';
       
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
       });
       
-      if (!res.ok) throw new Error('Failed to update save status');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to update save status');
+      }
       
       const data = await res.json();
       setIsSaved(data.isSaved);
@@ -280,6 +289,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
       console.error('Error updating save status:', error);
       // Rollback on error
       setIsSaved(prevSaved);
+      // Optionally show error to user
     } finally {
       setIsSaving(false);
     }
