@@ -15,6 +15,7 @@ export default function GroupPosts({ params, group, fetchGroup }) {
     const [imagePreview, setImagePreview] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [expandedComments, setExpandedComments] = useState({});
+    const [postReactions, setPostReactions] = useState({});
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -77,6 +78,51 @@ export default function GroupPosts({ params, group, fetchGroup }) {
         }));
     };
 
+    const handlePostReaction = async (postId, type) => {
+        try {
+            const res = await fetch(`http://localhost:8080/api/groups/${params.id}/posts/${postId}/reactions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    reaction_type: type
+                })
+            });
+
+            if (!res.ok) {
+                throw new Error('Failed to update reaction');
+            }
+
+            const data = await res.json();
+            setPostReactions(prev => ({
+                ...prev,
+                [postId]: data
+            }));
+        } catch (error) {
+            console.error('Error updating post reaction:', error);
+        }
+    };
+
+    // Load initial reactions for posts
+    const loadPostReactions = async (postId) => {
+        try {
+            const res = await fetch(`http://localhost:8080/api/groups/${params.id}/posts/${postId}/reactions`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setPostReactions(prev => ({
+                    ...prev,
+                    [postId]: data
+                }));
+            }
+        } catch (error) {
+            console.error('Error loading post reactions:', error);
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Create Post Form */}
@@ -136,7 +182,15 @@ export default function GroupPosts({ params, group, fetchGroup }) {
             </Card>
 
             {/* Posts List */}
-            {group.posts?.map((post) => (
+            {group.posts?.map((post) => {
+                // Load reactions for this post if not already loaded
+                if (!postReactions[post.id]) {
+                    loadPostReactions(post.id);
+                }
+
+                const reactions = postReactions[post.id] || { likeCount: 0, dislikeCount: 0, userReaction: null };
+
+                return (
                 <Card key={post.id} className="p-4">
                     {/* Post Header */}
                     <div className="flex items-center gap-3 mb-3">
@@ -172,19 +226,33 @@ export default function GroupPosts({ params, group, fetchGroup }) {
                     {/* Post Actions */}
                     <div className="flex items-center gap-4 py-2 border-t border-border">
                         <button
-                            className="flex items-center gap-2 text-text-secondary hover:text-primary transition-colors"
+                            onClick={() => handlePostReaction(post.id, 'like')}
+                            className={`flex items-center gap-2 transition-colors ${
+                                reactions.userReaction === 'like'
+                                    ? 'text-blue-500'
+                                    : 'text-text-secondary hover:text-primary'
+                            }`}
                             title="Like"
                         >
                             <ThumbsUp size={16} />
-                            <span className="text-sm">Like</span>
+                            <span className="text-sm">
+                                Like {reactions.likeCount > 0 && `(${reactions.likeCount})`}
+                            </span>
                         </button>
 
                         <button
-                            className="flex items-center gap-2 text-text-secondary hover:text-primary transition-colors"
+                            onClick={() => handlePostReaction(post.id, 'dislike')}
+                            className={`flex items-center gap-2 transition-colors ${
+                                reactions.userReaction === 'dislike'
+                                    ? 'text-red-500'
+                                    : 'text-text-secondary hover:text-primary'
+                            }`}
                             title="Dislike"
                         >
                             <ThumbsDown size={16} />
-                            <span className="text-sm">Dislike</span>
+                            <span className="text-sm">
+                                Dislike {reactions.dislikeCount > 0 && `(${reactions.dislikeCount})`}
+                            </span>
                         </button>
 
                         <button
@@ -211,7 +279,8 @@ export default function GroupPosts({ params, group, fetchGroup }) {
                         />
                     )}
                 </Card>
-            ))}
+                );
+            })}
         </div>
     );
 }
