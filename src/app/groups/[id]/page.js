@@ -104,8 +104,25 @@ export default function GroupDetailPage() {
           <div>
             <h1 className="text-3xl font-bold mb-2">{group.title}</h1>
             <p className="text-gray-400 mb-4">{group.description}</p>
-            <div className="text-sm text-gray-500">
-              Created by {group.first_name} {group.last_name} • {acceptedMembers.length} members
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <div className="flex items-center gap-2">
+                {group.creator?.avatar ? (
+                  <img
+                    src={group.creator.avatar}
+                    alt={`${group.creator.first_name} ${group.creator.last_name}`}
+                    className="w-5 h-5 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-5 h-5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-medium">
+                      {group.creator?.first_name?.[0]}{group.creator?.last_name?.[0]}
+                    </span>
+                  </div>
+                )}
+                <span>Created by {group.creator?.first_name || group.first_name} {group.creator?.last_name || group.last_name}</span>
+              </div>
+              <span>•</span>
+              <span>{acceptedMembers.length} members</span>
             </div>
           </div>
           <div className="flex gap-2">

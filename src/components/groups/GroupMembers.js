@@ -1,6 +1,7 @@
 // FILE: src/components/groups/GroupMembers.js
 
 'use client';
+import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { groups } from '@/lib/api';
@@ -49,9 +50,12 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
                                         <div className="w-10 h-10 bg-gray-600 rounded-full"></div>
                                     )}
                                     <div>
-                                        <p className="font-medium text-blue-400">
+                                        <Link
+                                            href={`/profile/${member.user?.id || member.user_id || member.id}`}
+                                            className="font-medium text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+                                        >
                                             {member.user?.first_name || member.first_name} {member.user?.last_name || member.last_name}
-                                        </p>
+                                        </Link>
                                         <p className="text-sm text-blue-300">Wants to join this group</p>
                                     </div>
                                 </div>
@@ -103,9 +107,12 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <p className="font-medium text-blue-400">
+                                        <Link
+                                            href={`/profile/${member.user?.id || member.user_id || member.id}`}
+                                            className="font-medium text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+                                        >
                                             {member.user?.first_name || member.first_name} {member.user?.last_name || member.last_name}
-                                        </p>
+                                        </Link>
                                         {Math.random() > 0.5 && (
                                             <span className="text-xs text-green-400 font-medium">• Online</span>
                                         )}

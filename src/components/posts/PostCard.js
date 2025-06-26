@@ -227,7 +227,6 @@ export default function PostCard({ post, onDelete, onUpdate }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: user.id,
           reaction_type: type
         })
       });

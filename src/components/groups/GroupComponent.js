@@ -246,7 +246,11 @@ export default function GroupComponent() {
                             className="w-5 h-5 rounded-full"
                           />
                         ) : (
-                          <div className="w-5 h-5 bg-gray-300 rounded-full"></div>
+                          <div className="w-5 h-5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs font-medium">
+                              {(group.creator?.first_name || group.first_name)?.[0]}{(group.creator?.last_name || group.last_name)?.[0]}
+                            </span>
+                          </div>
                         )}
                         <span>by {group.creator?.first_name || group.first_name} {group.creator?.last_name || group.last_name}</span>
                       </div>
