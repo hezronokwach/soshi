@@ -417,6 +417,212 @@ func AddPostReaction(db *sql.DB, postId int, userId int, reactionType string) (m
 	}, nil
 }
 
+// GetCommentedPosts retrieves posts that a user has commented on
+func GetCommentedPosts(db *sql.DB, userId int, page, limit int) ([]Post, error) {
+	offset := (page - 1) * limit
+	posts := []Post{}
+
+	query := `
+		SELECT DISTINCT p.id, p.user_id, p.content, p.image_url, p.privacy, 
+		COALESCE(p.like_count, 0) as like_count, COALESCE(p.dislike_count, 0) as dislike_count, 
+		p.created_at, p.updated_at,
+		u.id as user_id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
+		FROM posts p
+		JOIN users u ON p.user_id = u.id
+		JOIN comments c ON p.id = c.post_id
+		WHERE c.user_id = ?
+		AND (
+			(p.privacy = 'public') OR
+			(p.privacy = 'almost_private' AND p.user_id = ?) OR
+			(p.privacy = 'almost_private' AND EXISTS (
+				SELECT 1 FROM follows 
+				WHERE follower_id = ? AND following_id = p.user_id AND status = 'accepted'
+			)) OR
+			(p.privacy = 'private' AND p.user_id = ?) OR
+			(p.privacy = 'private' AND EXISTS (
+				SELECT 1 FROM post_privacy_users 
+				WHERE post_id = p.id AND user_id = ?
+			))
+		)
+		ORDER BY c.created_at DESC
+		LIMIT ? OFFSET ?
+	`
+
+	rows, err := db.Query(query, userId, userId, userId, userId, userId, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var post Post
+		var user User
+		
+		err := rows.Scan(
+			&post.ID, &post.UserID, &post.Content, &post.ImageURL, &post.Privacy,
+			&post.LikeCount, &post.DislikeCount, &post.CreatedAt, &post.UpdatedAt,
+			&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.Avatar, &user.Nickname,
+		)
+		if err != nil {
+			return nil, err
+		}
+		
+		post.User = &user
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
+
+// SavePost saves a post for a user
+func SavePost(db *sql.DB, userID, postID int) error {
+	_, err := db.Exec(`
+		INSERT INTO saved_posts (user_id, post_id)
+		VALUES (?, ?)
+		ON CONFLICT(user_id, post_id) DO NOTHING
+	`, userID, postID)
+	return err
+}
+
+// UnsavePost removes a saved post for a user
+func UnsavePost(db *sql.DB, userID, postID int) error {
+	_, err := db.Exec(`
+		DELETE FROM saved_posts 
+		WHERE user_id = ? AND post_id = ?
+	`, userID, postID)
+	return err
+}
+
+// IsPostSaved checks if a post is saved by a user
+func IsPostSaved(db *sql.DB, userID, postID int) (bool, error) {
+	var count int
+	err := db.QueryRow(`
+		SELECT COUNT(*) 
+		FROM saved_posts 
+		WHERE user_id = ? AND post_id = ?
+	`, userID, postID).Scan(&count)
+
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
+// GetSavedPosts retrieves posts that a user has saved
+func GetSavedPosts(db *sql.DB, userID, page, limit int) ([]Post, error) {
+	offset := (page - 1) * limit
+	posts := []Post{}
+
+	query := `
+		SELECT p.id, p.user_id, p.content, p.image_url, p.privacy, 
+		COALESCE(p.like_count, 0) as like_count, COALESCE(p.dislike_count, 0) as dislike_count, 
+		p.created_at, p.updated_at,
+		u.id as user_id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
+		FROM posts p
+		JOIN users u ON p.user_id = u.id
+		JOIN saved_posts sp ON p.id = sp.post_id
+		WHERE sp.user_id = ?
+		AND (
+			(p.privacy = 'public') OR
+			(p.privacy = 'almost_private' AND p.user_id = ?) OR
+			(p.privacy = 'almost_private' AND EXISTS (
+				SELECT 1 FROM follows 
+				WHERE follower_id = ? AND following_id = p.user_id AND status = 'accepted'
+			)) OR
+			(p.privacy = 'private' AND p.user_id = ?) OR
+			(p.privacy = 'private' AND EXISTS (
+				SELECT 1 FROM post_privacy_users 
+				WHERE post_id = p.id AND user_id = ?
+			))
+		)
+		ORDER BY sp.created_at DESC
+		LIMIT ? OFFSET ?
+	`
+
+	rows, err := db.Query(query, userID, userID, userID, userID, userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var post Post
+		var user User
+		
+		err := rows.Scan(
+			&post.ID, &post.UserID, &post.Content, &post.ImageURL, &post.Privacy,
+			&post.LikeCount, &post.DislikeCount, &post.CreatedAt, &post.UpdatedAt,
+			&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.Avatar, &user.Nickname,
+		)
+		if err != nil {
+			return nil, err
+		}
+		
+		post.User = &user
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
+
+// GetLikedPosts retrieves posts that a user has liked
+func GetLikedPosts(db *sql.DB, userId int, page, limit int) ([]Post, error) {
+	offset := (page - 1) * limit
+	posts := []Post{}
+
+	query := `
+		SELECT p.id, p.user_id, p.content, p.image_url, p.privacy, 
+		COALESCE(p.like_count, 0) as like_count, COALESCE(p.dislike_count, 0) as dislike_count, 
+		p.created_at, p.updated_at,
+		u.id as user_id, u.email, u.first_name, u.last_name, u.avatar, u.nickname
+		FROM posts p
+		JOIN users u ON p.user_id = u.id
+		JOIN post_reactions pr ON p.id = pr.post_id
+		WHERE pr.user_id = ? AND pr.reaction_type = 'like'
+		AND (
+			(p.privacy = 'public') OR
+			(p.privacy = 'almost_private' AND p.user_id = ?) OR
+			(p.privacy = 'almost_private' AND EXISTS (
+				SELECT 1 FROM follows 
+				WHERE follower_id = ? AND following_id = p.user_id AND status = 'accepted'
+			)) OR
+			(p.privacy = 'private' AND p.user_id = ?) OR
+			(p.privacy = 'private' AND EXISTS (
+				SELECT 1 FROM post_privacy_users 
+				WHERE post_id = p.id AND user_id = ?
+			))
+		)
+		ORDER BY pr.created_at DESC
+		LIMIT ? OFFSET ?
+	`
+
+	rows, err := db.Query(query, userId, userId, userId, userId, userId, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var post Post
+		var user User
+		
+		err := rows.Scan(
+			&post.ID, &post.UserID, &post.Content, &post.ImageURL, &post.Privacy,
+			&post.LikeCount, &post.DislikeCount, &post.CreatedAt, &post.UpdatedAt,
+			&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.Avatar, &user.Nickname,
+		)
+		if err != nil {
+			return nil, err
+		}
+		
+		post.User = &user
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
+
 // GetReactions gets reaction counts and user reaction for a post
 func GetPostReactions(db *sql.DB, postId int, userId int) (map[string]interface{}, error) {
 	// Get post counts
