@@ -251,3 +251,26 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Chat specific scrolling styles */
+.messages-scroll-container {
+  scrollbar-width: thin;
+  scrollbar-color: #2A3343 transparent;
+}
+
+.messages-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messages-scroll-container::-webkit-scrollbar-thumb {
+  background-color: #2A3343;
+  border-radius: 3px;
+}
+
+.messages-scroll-container::-webkit-scrollbar-thumb:hover {
+  background-color: #3A86FF;
+}

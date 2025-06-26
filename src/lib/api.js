@@ -234,6 +234,18 @@ export const groups = {
     return data;
   },
 
+  getAll: async () => {
+    const data = await fetchAPI("/api/groups");
+
+    // Return array directly for getAll
+    if (Array.isArray(data)) {
+      return data;
+    }
+
+    // If it's an object with groups property, return the groups array
+    return data.groups || [];
+  },
+
   createGroup: (groupData) =>
     fetchAPI("/api/groups", {
       method: "POST",
@@ -327,12 +339,27 @@ export const users = {
       method: "PUT",
       body: JSON.stringify(profileData),
     }),
-    
+
   updatePrivacy: (isPublic) =>
-  fetchAPI("/api/users/profile/privacy", {
-  method: "PUT", 
-  body: JSON.stringify({ is_public: isPublic }),
-  }),
+    fetchAPI("/api/users/profile/privacy", {
+      method: "PUT",
+      body: JSON.stringify({ is_public: isPublic }),
+    }),
+
+  changePassword: (currentPassword, newPassword) =>
+    fetchAPI("/api/users/change-password", {
+      method: "PUT",
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword
+      }),
+    }),
+
+  deleteAccount: (password) =>
+    fetchAPI("/api/users/account", {
+      method: "DELETE",
+      body: JSON.stringify({ password }),
+    }),
 
   // Follow functionality
   getFollowers: (userID = null) => {

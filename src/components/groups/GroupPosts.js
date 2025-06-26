@@ -195,17 +195,23 @@ export default function GroupPosts({ params, group, fetchGroup }) {
                 <Card key={post.id} className="p-3 sm:p-4">
                     {/* Post Header */}
                     <div className="flex items-center gap-2 sm:gap-3 mb-3">
-                        {post.avatar ? (
-                            <img src={post.avatar} alt={post.first_name} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full" />
+                        {(post.user?.avatar || post.avatar) ? (
+                            <img
+                                src={post.user?.avatar || post.avatar}
+                                alt={`${post.user?.first_name || post.first_name} ${post.user?.last_name || post.last_name}`}
+                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover"
+                            />
                         ) : (
                             <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gray-600 rounded-full flex items-center justify-center">
                                 <span className="text-white text-xs sm:text-sm font-medium">
-                                    {post.first_name?.[0]}{post.last_name?.[0]}
+                                    {(post.user?.first_name || post.first_name)?.[0]}{(post.user?.last_name || post.last_name)?.[0]}
                                 </span>
                             </div>
                         )}
                         <div className="min-w-0 flex-1">
-                            <p className="font-medium text-white text-sm sm:text-base truncate">{post.first_name} {post.last_name}</p>
+                            <p className="font-medium text-white text-sm sm:text-base truncate">
+                                {post.user?.first_name || post.first_name} {post.user?.last_name || post.last_name}
+                            </p>
                             <p className="text-xs sm:text-sm text-gray-400">{new Date(post.created_at).toLocaleDateString()}</p>
                         </div>
                     </div>

@@ -36,15 +36,19 @@ export default function DiscoverGroupsPage() {
 
   const categories = [
     { id: 'all', name: 'All Categories' },
-    { id: 'technology', name: 'Technology' },
-    { id: 'sports', name: 'Sports' },
-    { id: 'music', name: 'Music' },
-    { id: 'art', name: 'Art' },
-    { id: 'education', name: 'Education' },
-    { id: 'business', name: 'Business' },
-    { id: 'gaming', name: 'Gaming' },
-    { id: 'lifestyle', name: 'Lifestyle' },
-    { id: 'other', name: 'Other' }
+    { id: 'Technology', name: 'Technology' },
+    { id: 'Art', name: 'Art' },
+    { id: 'Travel', name: 'Travel' },
+    { id: 'Photography', name: 'Photography' },
+    { id: 'Books', name: 'Books' },
+    { id: 'Music', name: 'Music' },
+    { id: 'Sports', name: 'Sports' },
+    { id: 'General', name: 'General' },
+    { id: 'Food', name: 'Food' },
+    { id: 'Business', name: 'Business' },
+    { id: 'Education', name: 'Education' },
+    { id: 'Health', name: 'Health' },
+    { id: 'Other', name: 'Other' }
   ];
 
   const filteredGroups = allGroups.filter(group => {
@@ -69,9 +73,9 @@ export default function DiscoverGroupsPage() {
     <>
       <Navbar />
       <div className="min-h-screen bg-background">
-        <div className="flex">
+        <div className="flex pt-16"> {/* Add top padding for navbar */}
           <LeftSidebar />
-          
+
           {/* Main Content */}
           <main className="flex-1 p-6 max-w-4xl mx-auto">
             {/* Header */}
