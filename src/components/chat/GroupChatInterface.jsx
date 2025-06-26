@@ -342,7 +342,9 @@ const messagesContainerStyles = {
   padding: '1rem 0',
   display: 'flex',
   flexDirection: 'column',
-  backgroundColor: '#1A2333' // Plain chat background
+  backgroundColor: '#1A2333', // Plain chat background
+  minHeight: 0, // Important for flex child to allow scrolling
+  maxHeight: '100%' // Ensure it doesn't exceed container height
 };
 
 const inputContainerStyles = {
