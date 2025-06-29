@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import {
   User,
   Users,
@@ -9,14 +11,27 @@ import {
   Heart,
   MessageCircle,
   Bookmark,
-  Settings
+  Settings,
+  LogOut
 } from "lucide-react";
 
 export default function LeftSidebar() {
+  const router = useRouter();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
-    <aside className="fixed left-0 top-16 bottom-0 w-sidebar bg-surface border-r border-border overflow-y-auto z-20 glassmorphism"
+    <aside className="fixed left-0 top-16 bottom-0 w-sidebar bg-surface border-r border-border overflow-y-auto z-20 glassmorphism flex flex-col"
     >
-      <div className="p-6">
+      <div className="flex-1 p-6">
         <nav className="flex flex-col gap-2">
           {/* Main Navigation */}
           <Link
@@ -101,6 +116,17 @@ export default function LeftSidebar() {
             <span>Settings</span>
           </Link>
         </nav>
+      </div>
+
+      {/* Logout Button at Bottom */}
+      <div className="p-6 border-t border-border">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-4 py-3 w-full text-error rounded-lg font-medium transition-all duration-normal hover:bg-error/10 hover:scale-105"
+        >
+          <LogOut className="w-5 h-5" />
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
   );
