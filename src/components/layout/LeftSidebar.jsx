@@ -81,15 +81,7 @@ export default function LeftSidebar() {
           >
             <Users className="w-5 h-5" style={{color: '#06D6A0'}} />
             <span>Groups</span>
-          </Link>
-
-          <Link
-            href="/events"
-            className="flex items-center gap-3 px-4 py-3 text-text-primary rounded-lg font-medium transition-all duration-normal hover:bg-surface/50 hover:scale-105"
-          >
-            <Calendar className="w-5 h-5" style={{color: '#FFD166'}} />
-            <span>Events</span>
-          </Link>
+          </Link>  
 
           <Link
             href="/chat"
