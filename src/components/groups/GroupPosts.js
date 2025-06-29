@@ -124,43 +124,48 @@ export default function GroupPosts({ params, group, fetchGroup }) {
     };
 
     return (
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-6">
             {/* Create Post Form */}
-            <Card className="p-3 sm:p-4">
+            <Card variant="glassmorphism" className="p-6">
+                <div className="mb-4">
+                    <h3 className="text-lg font-display font-semibold text-text-primary mb-1">Share with the group</h3>
+                    <p className="text-text-secondary text-sm">What would you like to discuss?</p>
+                </div>
                 <form onSubmit={handleCreatePost}>
                     <textarea
                         value={newPost}
                         onChange={(e) => setNewPost(e.target.value)}
                         placeholder="What's on your mind?"
-                        className="w-full p-2 sm:p-3 border rounded-md mb-3 bg-background text-white resize-none text-sm sm:text-base"
-                        rows="3"
+                        className="w-full p-4 bg-background border border-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/25 transition-all duration-normal resize-none"
+                        rows="4"
                         disabled={isSubmitting}
                     />
 
                     {/* Image Preview */}
                     {imagePreview && (
-                        <div className="relative mb-3">
+                        <div className="relative mb-4">
                             <img
                                 src={imagePreview}
                                 alt="Preview"
-                                className="max-w-full max-h-48 sm:max-h-64 rounded-md border border-border object-cover"
+                                className="w-full max-h-64 rounded-lg border border-border object-cover shadow-lg"
                             />
                             <button
                                 type="button"
                                 onClick={removeImage}
-                                className="absolute top-1 right-1 sm:top-2 sm:right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                                className="absolute top-3 right-3 p-2 bg-error/90 hover:bg-error text-white rounded-full transition-all duration-normal hover:scale-105 shadow-lg"
                                 disabled={isSubmitting}
                             >
-                                <X size={14} className="sm:w-4 sm:h-4" />
+                                <X size={16} />
                             </button>
                         </div>
                     )}
 
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between mt-4">
+                        <div className="flex items-center gap-3">
                             {/* Image Upload */}
-                            <label className="cursor-pointer p-1.5 sm:p-2 text-text-secondary hover:text-primary transition-colors duration-150">
-                                <ImagePlus size={16} className="sm:w-[18px] sm:h-[18px]" />
+                            <label className="cursor-pointer flex items-center gap-2 px-3 py-2 text-text-secondary hover:text-primary hover:bg-primary/5 rounded-lg transition-all duration-normal hover:scale-105">
+                                <ImagePlus size={18} />
+                                <span className="text-sm font-medium">Add Image</span>
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -173,10 +178,11 @@ export default function GroupPosts({ params, group, fetchGroup }) {
 
                         <Button
                             type="submit"
+                            variant="primary"
+                            size="lg"
                             disabled={(!newPost.trim() && !image) || isSubmitting}
-                            className="text-sm sm:text-base px-3 py-1.5 sm:px-4 sm:py-2"
                         >
-                            {isSubmitting ? 'Posting...' : 'Post'}
+                            {isSubmitting ? 'Posting...' : 'Share Post'}
                         </Button>
                     </div>
                 </form>
@@ -192,32 +198,32 @@ export default function GroupPosts({ params, group, fetchGroup }) {
                 const reactions = postReactions[post.id] || { likeCount: 0, dislikeCount: 0, userReaction: null };
 
                 return (
-                <Card key={post.id} className="p-3 sm:p-4">
+                <Card key={post.id} variant="glassmorphism" hover className="p-6">
                     {/* Post Header */}
-                    <div className="flex items-center gap-2 sm:gap-3 mb-3">
+                    <div className="flex items-center gap-4 mb-4">
                         {(post.user?.avatar || post.avatar) ? (
                             <img
                                 src={post.user?.avatar || post.avatar}
                                 alt={`${post.user?.first_name || post.first_name} ${post.user?.last_name || post.last_name}`}
-                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover"
+                                className="w-12 h-12 rounded-full object-cover border border-border"
                             />
                         ) : (
-                            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                                <span className="text-white text-xs sm:text-sm font-medium">
+                            <div className="w-12 h-12 bg-primary-gradient rounded-full flex items-center justify-center shadow-lg">
+                                <span className="text-white text-lg font-display font-semibold">
                                     {(post.user?.first_name || post.first_name)?.[0]}{(post.user?.last_name || post.last_name)?.[0]}
                                 </span>
                             </div>
                         )}
                         <div className="min-w-0 flex-1">
-                            <p className="font-medium text-white text-sm sm:text-base truncate">
+                            <p className="font-display font-semibold text-text-primary text-lg">
                                 {post.user?.first_name || post.first_name} {post.user?.last_name || post.last_name}
                             </p>
-                            <p className="text-xs sm:text-sm text-gray-400">{new Date(post.created_at).toLocaleDateString()}</p>
+                            <p className="text-sm text-text-secondary">{new Date(post.created_at).toLocaleDateString()}</p>
                         </div>
                     </div>
 
                     {/* Post Content */}
-                    <p className="mb-2 sm:mb-3 text-white whitespace-pre-wrap text-sm sm:text-base leading-relaxed">{post.content}</p>
+                    <p className="mb-4 text-text-primary whitespace-pre-wrap text-base leading-relaxed">{post.content}</p>
 
                     {/* Post Image */}
                     {(post.image_path || post.image_url) && (
