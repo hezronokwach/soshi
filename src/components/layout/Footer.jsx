@@ -40,13 +40,13 @@ export default function Footer() {
   }
 
   return (
-    <footer style={footerStyles}>
-      <div style={containerStyles}>
-        <p style={copyrightTextStyles}>
+    <footer className="bg-surface border-t border-border py-4 w-full mt-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-center max-w-2xl mx-auto px-4 gap-2">
+        <p className="text-text-secondary text-sm">
           &copy; {currentYear} Soshi. All rights reserved.
         </p>
-        <div style={madeWithStyles}>
-          Made with <Heart style={{ height: '1rem', width: '1rem', color: '#EF476F' }} /> by Soshi Team
+        <div className="flex items-center gap-1 text-text-secondary text-sm">
+          Made with <Heart className="h-4 w-4 text-error" /> by Soshi Team
         </div>
       </div>
     </footer>

@@ -145,45 +145,13 @@ export default function RightSidebar() {
     }
   };
 
-  const sidebarStyles = {
-    display: 'none',
-    position: 'fixed',
-    right: 0,
-    top: '64px',
-    bottom: 0,
-    width: '320px',
-    backgroundColor: '#1A2333',
-    borderLeft: '1px solid #2A3343',
-    overflowY: 'auto',
-    zIndex: 20
-  };
+  const sidebarClasses = "fixed right-0 top-16 bottom-0 w-80 bg-surface border-l border-border overflow-y-auto z-20 glassmorphism";
+  const containerClasses = "p-6";
 
-  const containerStyles = {
-    padding: '1.5rem 1rem'
-  };
-
-  const sectionStyles = {
-    marginBottom: '2rem'
-  };
-
-  const sectionHeaderStyles = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '1rem'
-  };
-
-  const sectionTitleStyles = {
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    color: '#FFFFFF'
-  };
-
-  const seeAllLinkStyles = {
-    fontSize: '0.75rem',
-    color: '#3A86FF',
-    textDecoration: 'none'
-  };
+  const sectionClasses = "mb-8";
+  const sectionHeaderClasses = "flex items-center justify-between mb-4";
+  const sectionTitleClasses = "text-sm font-display font-semibold text-text-primary";
+  const seeAllLinkClasses = "text-xs text-primary hover:text-primary-hover transition-colors";
 
   const userListStyles = {
     maxHeight: '200px',
@@ -318,17 +286,13 @@ export default function RightSidebar() {
     transition: 'background-color 0.2s'
   };
 
-  // Media query styles
-  if (typeof window !== 'undefined' && window.innerWidth >= 1280) {
-    sidebarStyles.display = 'block';
-  }
-
   if (loading) {
     return (
-      <aside style={sidebarStyles}>
-        <div style={containerStyles}>
-          <div style={{ color: '#FFFFFF', textAlign: 'center', padding: '2rem' }}>
-            Loading...
+      <aside className={sidebarClasses}>
+        <div className={containerClasses}>
+          <div className="text-text-primary text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent mb-4"></div>
+            <p>Loading...</p>
           </div>
         </div>
       </aside>
@@ -336,14 +300,14 @@ export default function RightSidebar() {
   }
 
   return (
-    <aside style={sidebarStyles}>
-      <div style={containerStyles}>
+    <aside className={sidebarClasses}>
+      <div className={containerClasses}>
         {/* Online Users */}
         {onlineUsers.length > 0 && (
-          <div style={sectionStyles}>
-            <div style={sectionHeaderStyles}>
-              <h3 style={sectionTitleStyles}>Online Users ({onlineUsers.length})</h3>
-              <Link href="/online" style={seeAllLinkStyles}>
+          <div className={sectionClasses}>
+            <div className={sectionHeaderClasses}>
+              <h3 className={sectionTitleClasses}>Online Users ({onlineUsers.length})</h3>
+              <Link href="/online" className={seeAllLinkClasses}>
                 See All
               </Link>
             </div>
@@ -379,10 +343,10 @@ export default function RightSidebar() {
 
         {/* Your Groups */}
         {userGroups.length > 0 && (
-          <div style={sectionStyles}>
-            <div style={sectionHeaderStyles}>
-              <h3 style={sectionTitleStyles}>Your Groups</h3>
-              <Link href="/groups" style={seeAllLinkStyles}>
+          <div className={sectionClasses}>
+            <div className={sectionHeaderClasses}>
+              <h3 className={sectionTitleClasses}>Your Groups</h3>
+              <Link href="/groups" className={seeAllLinkClasses}>
                 See All
               </Link>
             </div>
@@ -413,10 +377,10 @@ export default function RightSidebar() {
         )}
 
         {/* All Users (Suggested Users) */}
-        <div style={sectionStyles}>
-          <div style={sectionHeaderStyles}>
-            <h3 style={sectionTitleStyles}>All Users</h3>
-            <Link href="/discover/people" style={seeAllLinkStyles}>
+        <div className={sectionClasses}>
+          <div className={sectionHeaderClasses}>
+            <h3 className={sectionTitleClasses}>All Users</h3>
+            <Link href="/discover/people" className={seeAllLinkClasses}>
               See All
             </Link>
           </div>
@@ -482,10 +446,10 @@ export default function RightSidebar() {
 
         {/* Suggested Groups */}
         {suggestedGroups.length > 0 && (
-          <div style={sectionStyles}>
-            <div style={sectionHeaderStyles}>
-              <h3 style={sectionTitleStyles}>Suggested Groups</h3>
-              <Link href="/discover/groups" style={seeAllLinkStyles}>
+          <div className={sectionClasses}>
+            <div className={sectionHeaderClasses}>
+              <h3 className={sectionTitleClasses}>Suggested Groups</h3>
+              <Link href="/discover/groups" className={seeAllLinkClasses}>
                 See All
               </Link>
             </div>
