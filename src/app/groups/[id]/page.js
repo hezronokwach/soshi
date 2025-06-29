@@ -97,40 +97,51 @@ export default function GroupDetailPage() {
   const acceptedMembers = group.members?.filter(member => member.status === 'accepted') || [];
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
       {/* Group Header */}
-      <Card className="p-6 mb-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">{group.title}</h1>
-            <p className="text-gray-400 mb-4">{group.description}</p>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+      <Card variant="glassmorphism" className="p-8 mb-8">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+          <div className="flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+              <h1 className="text-3xl lg:text-4xl font-display font-bold text-text-primary">{group.title}</h1>
+              <span className="px-4 py-2 text-sm font-medium bg-secondary/20 text-secondary rounded-full border border-secondary/30 w-fit">
+                {group.category || 'General'}
+              </span>
+            </div>
+            <p className="text-text-secondary text-lg mb-4 leading-relaxed">{group.description}</p>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-text-secondary">
               <div className="flex items-center gap-2">
                 {group.creator?.avatar ? (
                   <img
                     src={group.creator.avatar}
                     alt={`${group.creator.first_name} ${group.creator.last_name}`}
-                    className="w-5 h-5 rounded-full object-cover"
+                    className="w-6 h-6 rounded-full object-cover border border-border"
                   />
                 ) : (
-                  <div className="w-5 h-5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-medium">
+                  <div className="w-6 h-6 bg-primary-gradient rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-semibold">
                       {group.creator?.first_name?.[0]}{group.creator?.last_name?.[0]}
                     </span>
                   </div>
                 )}
                 <span>Created by {group.creator?.first_name || group.first_name} {group.creator?.last_name || group.last_name}</span>
               </div>
-              <span>•</span>
-              <span>{acceptedMembers.length} members</span>
+              <span className="hidden sm:inline">•</span>
+              <span className="flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                {acceptedMembers.length} members
+              </span>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3 w-full lg:w-auto">
             {!isCreator && (
               <Button
-                variant="outline"
+                variant="danger"
+                size="lg"
                 onClick={handleLeaveGroup}
-                className="text-red-400 hover:text-red-300 border-red-400 hover:border-red-300"
+                className="flex-1 lg:flex-none"
               >
                 Leave Group
               </Button>
@@ -140,17 +151,18 @@ export default function GroupDetailPage() {
       </Card>
 
       {/* Navigation Tabs */}
-      <div className="flex space-x-4 mb-6">
+      <div className="flex flex-wrap gap-3 mb-8">
         {['posts', 'members', 'events', 'chat'].map((tab) => (
           <Button
             key={tab}
-            variant={activeTab === tab ? 'default' : 'outline'}
+            variant={activeTab === tab ? 'primary' : 'ghost'}
+            size="lg"
             onClick={() => setActiveTab(tab)}
-            className="capitalize"
+            className="capitalize relative"
           >
             {tab}
             {tab === 'members' && pendingMembers.length > 0 && (
-              <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+              <span className="ml-2 bg-error text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg">
                 {pendingMembers.length}
               </span>
             )}

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { upload } from "@/lib/api";
 import { getImageUrl } from "@/utils/image";
-import { Edit, Trash2, ThumbsUp, ThumbsDown, MessageSquare, Share2, Bookmark, BookmarkCheck, Loader2 } from "lucide-react";
+import { Edit, Trash2, ThumbsUp, ThumbsDown, MessageSquare, Bookmark, BookmarkCheck, Loader2, ImagePlus } from "lucide-react";
 import CommentSection from "@/components/comments/CommentSection";
 import SelectFollowersModal from "./SelectFollowersModal";
 
@@ -295,29 +295,24 @@ export default function PostCard({ post, onDelete, onUpdate }) {
   };
 
   return (
-   <div 
-    className="p-6 rounded-xl border border-border/20 shadow-xl backdrop-blur-glass mb-6"
-    style={{
-      background: 'rgba(26, 35, 51, 0.7)',
-      backdropFilter: 'blur(10px)',
-      border: '1px solid rgba(255, 255, 255, 0.1)'
-    }}
+   <div
+    className="glassmorphism p-6 rounded-xl shadow-xl transition-all duration-normal hover:shadow-2xl hover:scale-102 animate-hover"
   >
     {/* Post Header */}
-    <div className="flex items-start justify-between mb-4">
-      <div className="flex items-start space-x-3">
-        <div className="h-12 w-12 rounded-full bg-primary/90 flex items-center justify-center text-white text-lg font-medium shadow-md">
+    <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start space-x-4">
+        <div className="h-14 w-14 rounded-full bg-primary-gradient flex items-center justify-center text-white text-xl font-display font-semibold shadow-lg hover:shadow-glow transition-all duration-normal">
           {post.user?.first_name?.[0] || "U"}
         </div>
-        <div>
-          <h3 className="font-medium text-text-primary">
+        <div className="flex-1">
+          <h3 className="font-display font-semibold text-lg text-text-primary mb-1">
             {post.user?.first_name || 'Unknown'} {post.user?.last_name || ''}
           </h3>
           <div className="flex items-center text-sm text-text-secondary">
             <span>{new Date(post.created_at).toLocaleString()}</span>
             {post.privacy !== "public" && (
-              <span className="ml-2 text-xs px-2 py-0.5 bg-surface/50 rounded-full border border-border/30">
-                {post.privacy === "followers" ? "👥 Followers" : "🔒 Private"}
+              <span className="ml-3 text-xs px-3 py-1 bg-surface/70 rounded-full border border-border/50 backdrop-blur-sm">
+                {post.privacy === "almost private" ? "👥 Almost Private" : "🔒 Private"}
               </span>
             )}
           </div>
@@ -329,7 +324,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
         <div className="flex gap-2">
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className="p-2 text-text-secondary hover:text-primary hover:bg-surface/50 rounded-full transition-normal"
+            className="p-2.5 text-text-secondary hover:text-secondary hover:bg-secondary/10 rounded-lg transition-all duration-normal hover:scale-105"
             title="Edit post"
           >
             <Edit size={18} />
@@ -338,7 +333,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
           <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className="p-2 text-text-secondary hover:text-error disabled:opacity-50 rounded-full hover:bg-surface/50 transition-normal"
+            className="p-2.5 text-text-secondary hover:text-error hover:bg-error/10 disabled:opacity-50 rounded-lg transition-all duration-normal hover:scale-105"
             title="Delete post"
           >
             {isDeleting ? (
@@ -418,9 +413,9 @@ export default function PostCard({ post, onDelete, onUpdate }) {
                 backgroundSize: "1.25em 1.25em"
               }}
             >
-              <option value="public" className="bg-surface text-text-primary">🌍 Public</option>
-              <option value="followers" className="bg-surface text-text-primary">👥 Followers Only</option>
-              <option value="private" className="bg-surface text-text-primary">🔒 Private</option>
+              <option value="public" style={{backgroundColor: '#1A2333', color: '#FFFFFF'}} onMouseEnter={(e) => e.target.style.backgroundColor = '#2A3343'} onMouseLeave={(e) => e.target.style.backgroundColor = '#1A2333'}>🌍 Public</option>
+              <option value="almost private" style={{backgroundColor: '#1A2333', color: '#FFFFFF'}} onMouseEnter={(e) => e.target.style.backgroundColor = '#2A3343'} onMouseLeave={(e) => e.target.style.backgroundColor = '#1A2333'}>👥 Almost Private</option>
+              <option value="private" style={{backgroundColor: '#1A2333', color: '#FFFFFF'}} onMouseEnter={(e) => e.target.style.backgroundColor = '#2A3343'} onMouseLeave={(e) => e.target.style.backgroundColor = '#1A2333'}>🔒 Private</option>
             </select>
             {editedPrivacy === 'private' && selectedUsers.length > 0 && (
               <span className="absolute -top-2 -right-2 bg-primary text-white text-xs font-medium rounded-full h-5 min-w-5 flex items-center justify-center px-1">
@@ -481,36 +476,38 @@ export default function PostCard({ post, onDelete, onUpdate }) {
 
     {/* Post Actions */}
     <div className="flex flex-wrap gap-1 sm:gap-4 text-text-secondary px-1 pt-2 border-t border-border/20">
-      <button 
+      <button
         disabled={isReacting}
         onClick={() => handleReaction('like')}
-        className={`flex items-center gap-1.5 p-2 rounded-xl transition-normal ${
-          reactions.userReaction === 'like' 
-            ? 'text-primary bg-primary/10' 
-            : 'hover:text-primary hover:bg-surface/50'
+        className={`flex items-center gap-2 p-2.5 rounded-xl transition-all duration-normal ${
+          reactions.userReaction === 'like'
+            ? 'text-error bg-error/10 shadow-glow'
+            : 'text-text-secondary hover:text-error hover:bg-error/5 hover:scale-105'
         }`}
-        title="Like"
+        title={`Like${reactions.likeCount > 0 ? ` (${reactions.likeCount})` : ''}`}
       >
         <ThumbsUp
-          size={20} 
+          size={20}
           strokeWidth={2}
           className="transition-transform hover:scale-110"
           fill={reactions.userReaction === 'like' ? 'currentColor' : 'none'}
         />
-        <span className="text-sm font-medium">
-          {reactions.likeCount > 0 ? reactions.likeCount : 'Like'}
-        </span>
+        {reactions.likeCount > 0 && (
+          <span className="text-sm font-medium">
+            {reactions.likeCount}
+          </span>
+        )}
       </button>
-      
-      <button 
+
+      <button
         disabled={isReacting}
         onClick={() => handleReaction('dislike')}
-        className={`flex items-center gap-1.5 p-2 rounded-xl transition-normal ${
+        className={`flex items-center gap-2 p-2.5 rounded-xl transition-all duration-normal ${
           reactions.userReaction === 'dislike'
-            ? 'text-primary bg-primary/10' 
-            : 'hover:text-primary hover:bg-surface/50'
+            ? 'text-primary bg-primary/10 shadow-glow'
+            : 'text-text-secondary hover:text-primary hover:bg-primary/5 hover:scale-105'
         }`}
-        title="Dislike"
+        title={`Dislike${reactions.dislikeCount > 0 ? ` (${reactions.dislikeCount})` : ''}`}
       >
         <ThumbsDown
           size={20}
@@ -518,49 +515,42 @@ export default function PostCard({ post, onDelete, onUpdate }) {
           className="transition-transform hover:scale-110"
           fill={reactions.userReaction === 'dislike' ? 'currentColor' : 'none'}
         />
-        <span className="text-sm font-medium">
-          {reactions.dislikeCount > 0 ? reactions.dislikeCount : 'Dislike'}
-        </span>
+        {reactions.dislikeCount > 0 && (
+          <span className="text-sm font-medium">
+            {reactions.dislikeCount}
+          </span>
+        )}
       </button>
 
-      <button 
+      <button
         onClick={() => setShowComments(!showComments)}
-        className={`flex items-center gap-1.5 p-2 rounded-xl transition-normal ${
-          showComments 
-            ? 'text-primary bg-primary/10' 
-            : 'hover:text-primary hover:bg-surface/50'
+        className={`flex items-center gap-2 p-2.5 rounded-xl transition-all duration-normal ${
+          showComments
+            ? 'text-secondary bg-secondary/10 shadow-glow'
+            : 'text-text-secondary hover:text-secondary hover:bg-secondary/5 hover:scale-105'
         }`}
         title="Comment"
       >
-        <MessageSquare 
-          size={20} 
+        <MessageSquare
+          size={20}
           strokeWidth={2}
           className="transition-transform hover:scale-110"
         />
-        <span className="text-sm font-medium">
-          {commentCount > 0 ? `${commentCount} Comment${commentCount !== 1 ? 's' : ''}` : 'Comment'}
-        </span>
-      </button>
-      
-      <button 
-        className="flex items-center gap-1.5 p-2 rounded-xl hover:text-primary hover:bg-surface/50 transition-normal"
-        title="Share"
-      >
-        <Share2 
-          size={20} 
-          strokeWidth={2}
-          className="transition-transform hover:scale-110"
-        />
-        <span className="text-sm font-medium">Share</span>
+        {commentCount > 0 && (
+          <span className="text-sm font-medium">
+            {commentCount}
+          </span>
+        )}
       </button>
 
-      <button 
+
+      <button
         onClick={handleSavePost}
         disabled={isSaving}
-        className={`flex items-center gap-1.5 p-2 rounded-xl transition-normal ${
-          isSaved 
-            ? 'text-yellow-500 bg-yellow-500/10' 
-            : 'text-text-secondary hover:text-primary hover:bg-surface/50'
+        className={`flex items-center gap-2 p-2.5 rounded-xl transition-all duration-normal ${
+          isSaved
+            ? 'text-warning bg-warning/10 shadow-glow'
+            : 'text-text-secondary hover:text-warning hover:bg-warning/5 hover:scale-105'
         }`}
         title={isSaved ? 'Remove from saved' : 'Save post'}
       >
@@ -571,7 +561,6 @@ export default function PostCard({ post, onDelete, onUpdate }) {
         ) : (
           <Bookmark size={20} strokeWidth={2} className="transition-transform hover:scale-110" />
         )}
-        <span className="text-sm font-medium">{isSaved ? 'Saved' : 'Save'}</span>
       </button>
     </div>
 

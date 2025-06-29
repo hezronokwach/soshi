@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import {
   User,
   Users,
@@ -9,173 +11,122 @@ import {
   Heart,
   MessageCircle,
   Bookmark,
-  Settings
+  Settings,
+  LogOut
 } from "lucide-react";
 
 export default function LeftSidebar() {
-  const sidebarStyles = {
-    display: 'none',
-    position: 'fixed',
-    left: 0,
-    top: '64px',
-    bottom: 0,
-    width: '300px',
-    backgroundColor: '#1A2333',
-    borderRight: '1px solid #2A3343',
-    overflowY: 'auto',
-    zIndex: 20
+  const router = useRouter();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
-
-  const containerStyles = {
-    padding: '1.5rem 1rem'
-  };
-
-  const navStyles = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem'
-  };
-
-  const linkStyles = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    padding: '0.75rem 1rem',
-    color: '#FFFFFF',
-    borderRadius: '0.5rem',
-    textDecoration: 'none',
-    transition: 'background-color 0.2s'
-  };
-
-  const activeLinkStyles = {
-    ...linkStyles,
-    backgroundColor: 'rgba(58, 134, 255, 0.1)',
-    color: '#3A86FF'
-  };
-
-  const iconStyles = {
-    width: '1.25rem',
-    height: '1.25rem'
-  };
-
-  const dividerStyles = {
-    margin: '1.5rem 0',
-    border: 'none',
-    borderTop: '1px solid #2A3343'
-  };
-
-  const sectionTitleStyles = {
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    color: '#B8C1CF',
-    marginBottom: '0.75rem',
-    paddingLeft: '1rem'
-  };
-
-
-
-  // Media query styles
-  if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
-    sidebarStyles.display = 'block';
-  }
 
   return (
-    <aside style={sidebarStyles}>
-      <div style={containerStyles}>
-        <nav style={navStyles}>
+    <aside className="fixed left-0 top-16 bottom-0 w-sidebar bg-surface border-r border-border overflow-y-auto z-20 glassmorphism flex flex-col"
+    >
+      <div className="flex-1 p-6">
+        <nav className="flex flex-col gap-2">
           {/* Main Navigation */}
           <Link
             href="/feed"
-            style={activeLinkStyles}
+            className="flex items-center gap-3 px-4 py-3 text-primary bg-primary/10 rounded-lg font-medium transition-all duration-normal hover:bg-primary/20 hover:scale-105"
           >
-            <MessageCircle style={{...iconStyles, color: '#3A86FF'}} />
+            <MessageCircle className="w-5 h-5" />
             <span>Posts</span>
           </Link>
 
           <Link
             href="/posts/liked"
-            style={linkStyles}
+            className="flex items-center gap-3 px-4 py-3 text-text-primary rounded-lg font-medium transition-all duration-normal hover:bg-surface/50 hover:scale-105"
           >
-            <Heart style={{...iconStyles, color: '#EF476F'}} />
+            <Heart className="w-5 h-5" style={{color: '#EF476F'}} />
             <span>Liked Posts</span>
           </Link>
 
           <Link
             href="/posts/commented"
-            style={linkStyles}
+            className="flex items-center gap-3 px-4 py-3 text-text-primary rounded-lg font-medium transition-all duration-normal hover:bg-surface/50 hover:scale-105"
           >
-            <MessageSquare style={{...iconStyles, color: '#118AB2'}} />
+            <MessageSquare className="w-5 h-5" style={{color: '#118AB2'}} />
             <span>Commented Posts</span>
           </Link>
 
           <Link
             href="/posts/saved"
-            style={linkStyles}
+            className="flex items-center gap-3 px-4 py-3 text-text-primary rounded-lg font-medium transition-all duration-normal hover:bg-surface/50 hover:scale-105"
           >
-            <Bookmark style={{...iconStyles, color: '#FFD166'}} />
+            <Bookmark className="w-5 h-5" style={{color: '#FFD166'}} />
             <span>Saved Posts</span>
           </Link>
 
-          <hr style={dividerStyles} />
+          <hr className="my-6 border-border" />
 
-          <h3 style={sectionTitleStyles}>PROFILE</h3>
+          <h3 className="text-sm font-display font-semibold text-text-secondary mb-3 px-4 uppercase tracking-wider">Profile</h3>
 
           <Link
             href="/profile"
-            style={linkStyles}
+            className="flex items-center gap-3 px-4 py-3 text-text-primary rounded-lg font-medium transition-all duration-normal hover:bg-surface/50 hover:scale-105"
           >
-            <User style={{...iconStyles, color: '#8338EC'}} />
+            <User className="w-5 h-5" style={{color: '#8338EC'}} />
             <span>My Profile</span>
           </Link>
 
           <Link
             href="/profile/followers"
-            style={linkStyles}
+            className="flex items-center gap-3 px-4 py-3 text-text-primary rounded-lg font-medium transition-all duration-normal hover:bg-surface/50 hover:scale-105"
           >
-            <Users style={{...iconStyles, color: '#06D6A0'}} />
+            <Users className="w-5 h-5" style={{color: '#06D6A0'}} />
             <span>Followers</span>
           </Link>
 
-          <hr style={dividerStyles} />
+          <hr className="my-6 border-border" />
 
-          <h3 style={sectionTitleStyles}>DISCOVER</h3>
+          <h3 className="text-sm font-display font-semibold text-text-secondary mb-3 px-4 uppercase tracking-wider">Discover</h3>
 
           <Link
             href="/groups"
-            style={linkStyles}
+            className="flex items-center gap-3 px-4 py-3 text-text-primary rounded-lg font-medium transition-all duration-normal hover:bg-surface/50 hover:scale-105"
           >
-            <Users style={{...iconStyles, color: '#06D6A0'}} />
+            <Users className="w-5 h-5" style={{color: '#06D6A0'}} />
             <span>Groups</span>
-          </Link>
-
-          <Link
-            href="/events"
-            style={linkStyles}
-          >
-            <Calendar style={{...iconStyles, color: '#FFD166'}} />
-            <span>Events</span>
-          </Link>
+          </Link>  
 
           <Link
             href="/chat"
-            style={linkStyles}
+            className="flex items-center gap-3 px-4 py-3 text-text-primary rounded-lg font-medium transition-all duration-normal hover:bg-surface/50 hover:scale-105"
           >
-            <MessageSquare style={{...iconStyles, color: '#118AB2'}} />
+            <MessageSquare className="w-5 h-5" style={{color: '#118AB2'}} />
             <span>Messages</span>
           </Link>
 
-          <hr style={dividerStyles} />
+          <hr className="my-6 border-border" />
 
           <Link
             href="/settings"
-            style={linkStyles}
+            className="flex items-center gap-3 px-4 py-3 text-text-secondary rounded-lg font-medium transition-all duration-normal hover:bg-surface/50 hover:scale-105"
           >
-            <Settings style={{...iconStyles, color: '#B8C1CF'}} />
+            <Settings className="w-5 h-5" style={{color: '#B8C1CF'}} />
             <span>Settings</span>
           </Link>
         </nav>
+      </div>
 
-
+      {/* Logout Button at Bottom */}
+      <div className="p-6 border-t border-border">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-4 py-3 w-full text-error rounded-lg font-medium transition-all duration-normal hover:bg-error/10 hover:scale-105"
+        >
+          <LogOut className="w-5 h-5" />
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
   );
