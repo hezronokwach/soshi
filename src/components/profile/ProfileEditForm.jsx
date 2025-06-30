@@ -16,6 +16,7 @@ import {
   Globe,
   Lock
 } from 'lucide-react';
+import { getAvatarUrl, getInitials } from '@/utils/image';
 
 // Validation schema
 const profileSchema = z.object({
@@ -72,19 +73,32 @@ export default function ProfileEditForm({
   // Submit handler
   const onSubmit = async (data) => {
     try {
+      let avatarUrl = user?.avatar || '';
+      
+      // Handle avatar upload if a new file was selected
+      if (avatarFile) {
+        try {
+          const { upload } = await import('@/lib/api');
+          const uploadResponse = await upload.uploadFile(avatarFile);
+          avatarUrl = uploadResponse.url;
+        } catch (uploadError) {
+          console.error('Avatar upload failed:', uploadError);
+          throw new Error('Failed to upload avatar');
+        }
+      }
+      
       const formData = {
         ...data,
-        avatar: avatarFile
+        avatar: avatarUrl
       };
       await onSave(formData);
     } catch (error) {
       console.error('Error saving profile:', error);
+      throw error;
     }
   };
 
-  const getInitials = (firstName, lastName) => {
-    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
-  };
+
 
   return (
     <div className="bg-[#1A2333] border border-[#2A3343] rounded-lg p-6 shadow-xl">
@@ -105,7 +119,7 @@ export default function ProfileEditForm({
             <div className="w-20 h-20 bg-[#1A2333] rounded-full flex items-center justify-center overflow-hidden border-2 border-[#2A3343] hover:border-[#3A86FF] transition-all duration-250">
               {avatarPreview ? (
                 <img 
-                  src={avatarPreview} 
+                  src={getAvatarUrl(avatarPreview)} 
                   alt="Avatar preview"
                   className="w-full h-full object-cover"
                 />
