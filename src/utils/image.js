@@ -1,19 +1,42 @@
-// Utility function to get the correct image URL, handling both relative and absolute paths
-export const getImageUrl = (url) => {
-  if (!url) return null;
+/**
+ * Utility functions for handling images and avatars
+ */
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+
+/**
+ * Get the full URL for an avatar image
+ * @param {string} avatarPath - The avatar path from the API
+ * @returns {string} The full URL to the avatar
+ */
+export function getAvatarUrl(avatarPath) {
+  if (!avatarPath) return '';
   
-  // If the URL is already absolute, use it as is
-  if (url.startsWith('http') || url.startsWith('blob:')) {
-    return `${url}${url.includes('?') ? '&' : '?'}t=${new Date().getTime()}`;
+  // If it's already a full URL, return as is
+  if (avatarPath.startsWith('http://') || avatarPath.startsWith('https://')) {
+    return avatarPath;
   }
   
-  // Ensure the URL starts with a single forward slash
-  let cleanUrl = url.startsWith('/') ? url : `/${url}`;
+  // If it's a data URL (from file preview), return as is
+  if (avatarPath.startsWith('data:')) {
+    return avatarPath;
+  }
   
-  // Prepend the backend URL
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+  // If it's a relative path, prepend the API base URL
+  if (avatarPath.startsWith('/')) {
+    return `${API_BASE_URL}${avatarPath}`;
+  }
   
-  // Construct the full URL with cache-busting
-  const fullUrl = `${backendUrl}${cleanUrl}`;
-  return `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}t=${new Date().getTime()}`;
-};
+  // Default case - assume it's a relative path
+  return `${API_BASE_URL}/${avatarPath}`;
+}
+
+/**
+ * Get initials from first and last name
+ * @param {string} firstName 
+ * @param {string} lastName 
+ * @returns {string} The initials
+ */
+export function getInitials(firstName, lastName) {
+  return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
+}
