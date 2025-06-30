@@ -32,6 +32,33 @@ export function getAvatarUrl(avatarPath) {
 }
 
 /**
+ * Get the full URL for any image (posts, comments, etc.)
+ * @param {string} imagePath - The image path from the API
+ * @returns {string} The full URL to the image
+ */
+export function getImageUrl(imagePath) {
+  if (!imagePath) return '';
+  
+  // If it's already a full URL, return as is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // If it's a data URL (from file preview), return as is
+  if (imagePath.startsWith('data:')) {
+    return imagePath;
+  }
+  
+  // If it's a relative path, prepend the API base URL
+  if (imagePath.startsWith('/')) {
+    return `${API_BASE_URL}${imagePath}`;
+  }
+  
+  // Default case - assume it's a relative path
+  return `${API_BASE_URL}/${imagePath}`;
+}
+
+/**
  * Get initials from first and last name
  * @param {string} firstName 
  * @param {string} lastName 
