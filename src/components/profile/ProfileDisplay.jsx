@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import FollowButton from '@/components/connections/FollowButton';
 import { users } from '@/lib/api';
+import { getAvatarUrl, getInitials } from '@/utils/image';
 
 export default function ProfileDisplay({ 
   user, 
@@ -66,9 +67,7 @@ export default function ProfileDisplay({
     }
   };
 
-  const getInitials = (firstName, lastName) => {
-    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
-  };
+
 
   return (
     <div className="bg-[#1A2333] border border-[#2A3343] rounded-lg overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-350 hover:scale-[1.02]">
@@ -95,7 +94,7 @@ export default function ProfileDisplay({
           <div className="w-24 h-24 bg-black/20 rounded-full flex items-center justify-center text-2xl font-semibold border-2 border-white/20 shadow-lg hover:shadow-[0_0_25px_rgba(255,255,255,0.3)] transition-all duration-350">
             {profile.avatar ? (
               <img 
-                src={profile.avatar} 
+                src={getAvatarUrl(profile.avatar)} 
                 alt={`${profile.first_name} ${profile.last_name}`}
                 className="w-24 h-24 rounded-full object-cover"
               />
