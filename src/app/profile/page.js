@@ -8,6 +8,7 @@ import ProfileDisplay from '@/components/profile/ProfileDisplay';
 import ProfileEditForm from '@/components/profile/ProfileEditForm';
 import ActivityPage from '@/components/activity/ActivityPage';
 import ConnectionsPage from '@/components/connections/ConnectionsPage';
+import { User, Activity, Users } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -77,40 +78,43 @@ export default function ProfilePage() {
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-[#0F1624]">
       <Navbar />
       <div className="container mx-auto max-w-4xl p-4 space-y-6" style={{ paddingTop: '5rem' }}>
       {/* Tab Navigation */}
-      <div className="bg-surface border border-border rounded-lg p-4">
-        <div className="flex gap-2 overflow-x-auto">
+      <div className="bg-[#1A2333] border border-[#2A3343] rounded-lg p-6 shadow-xl">
+        <div className="flex gap-3 overflow-x-auto">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-250 whitespace-nowrap ${
               activeTab === 'profile'
-                ? 'bg-primary text-white'
-                : 'bg-background hover:bg-border text-text-primary'
+                ? 'bg-gradient-to-r from-[#3A86FF] to-[#8338EC] text-white shadow-[0_0_15px_rgba(58,134,255,0.5)] hover:scale-105'
+                : 'bg-[#0F1624] text-[#B8C1CF] hover:bg-[#2A3343] hover:text-[#FFFFFF] border border-[#2A3343] hover:border-[#3A86FF] hover:scale-105'
             }`}
           >
+            <User size={18} className={activeTab === 'profile' ? 'text-white' : 'text-[#3A86FF]'} />
             Profile
           </button>
           <button
             onClick={() => setActiveTab('activity')}
-            className={`px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-250 whitespace-nowrap ${
               activeTab === 'activity'
-                ? 'bg-primary text-white'
-                : 'bg-background hover:bg-border text-text-primary'
+                ? 'bg-gradient-to-r from-[#8338EC] to-[#FF006E] text-white shadow-[0_0_15px_rgba(131,56,236,0.5)] hover:scale-105'
+                : 'bg-[#0F1624] text-[#B8C1CF] hover:bg-[#2A3343] hover:text-[#FFFFFF] border border-[#2A3343] hover:border-[#8338EC] hover:scale-105'
             }`}
           >
+            <Activity size={18} className={activeTab === 'activity' ? 'text-white' : 'text-[#8338EC]'} />
             Activity
           </button>
           <button
             onClick={() => setActiveTab('connections')}
-            className={`px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-250 whitespace-nowrap ${
               activeTab === 'connections'
-                ? 'bg-primary text-white'
-                : 'bg-background hover:bg-border text-text-primary'
+                ? 'bg-gradient-to-r from-[#FF006E] to-[#06D6A0] text-white shadow-[0_0_15px_rgba(255,0,110,0.5)] hover:scale-105'
+                : 'bg-[#0F1624] text-[#B8C1CF] hover:bg-[#2A3343] hover:text-[#FFFFFF] border border-[#2A3343] hover:border-[#FF006E] hover:scale-105'
             }`}
           >
+            <Users size={18} className={activeTab === 'connections' ? 'text-white' : 'text-[#FF006E]'} />
             Connections
           </button>
         </div>
@@ -151,6 +155,6 @@ export default function ProfilePage() {
         />
       )}
       </div>
-    </>
+    </div>
   );
 }
