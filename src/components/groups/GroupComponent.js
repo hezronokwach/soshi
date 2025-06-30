@@ -149,56 +149,87 @@ export default function GroupComponent() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Groups</h1>
-        <Button onClick={() => setShowCreateForm(!showCreateForm)}>
-          {showCreateForm ? 'Cancel' : 'Create Group'}
-        </Button>
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Page Header */}
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl lg:text-4xl font-display font-bold text-text-primary mb-2">
+              Groups
+            </h1>
+            <p className="text-lg text-text-secondary">
+              Connect with communities that share your interests
+            </p>
+          </div>
+          <Button
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            variant="primary"
+            size="lg"
+            className="w-full sm:w-auto"
+          >
+            {showCreateForm ? 'Cancel' : 'Create Group'}
+          </Button>
+        </div>
       </div>
 
       {showCreateForm && (
-        <Card className="p-6 mb-6">
+        <Card variant="glassmorphism" className="p-8 mb-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-display font-bold text-text-primary mb-2">Create New Group</h2>
+            <p className="text-text-secondary">Start a community around your interests</p>
+          </div>
           <form onSubmit={handleCreateGroup}>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium mb-1">Group Title</label>
+                <label className="block text-sm font-display font-semibold text-text-primary mb-2">Group Title</label>
                 <Input
                   value={newGroup.title}
                   onChange={(e) => setNewGroup({ ...newGroup, title: e.target.value })}
                   placeholder="Enter group title"
+                  variant="filled"
+                  size="lg"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Category</label>
+                <label className="block text-sm font-display font-semibold text-text-primary mb-2">Category</label>
                 <select
                   value={newGroup.category}
                   onChange={(e) => setNewGroup({ ...newGroup, category: e.target.value })}
-                  className="w-full p-2 border rounded-md bg-grey"
+                  className="w-full p-3 bg-background border border-border rounded-lg text-text-primary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/25 transition-all duration-normal appearance-none pr-10 font-medium"
+                  style={{
+                    backgroundImage: "url(" + encodeURI("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23B8C1CF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") + "" + ")",
+                    backgroundPosition: "right 0.75rem center",
+                    backgroundRepeat: "no-repeat",
+                    backgroundSize: "1.25em 1.25em"
+                  }}
                   required
                 >
                   {GROUP_CATEGORIES.map(category => (
-                    <option key={category} value={category}>{category}</option>
+                    <option key={category} value={category} style={{backgroundColor: '#1A2333', color: '#FFFFFF'}}>{category}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
+                <label className="block text-sm font-display font-semibold text-text-primary mb-2">Description</label>
                 <textarea
                   value={newGroup.description}
                   onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
-                  placeholder="Enter group description"
-                  className="w-full p-2 border rounded-md"
-                  rows="3"
+                  placeholder="Describe what your group is about..."
+                  className="w-full p-3 bg-background border border-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/25 transition-all duration-normal resize-none"
+                  rows="4"
                 />
               </div>
-              <div className="flex gap-2">
-                <Button type="submit">Create Group</Button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button type="submit" variant="primary" size="lg" className="flex-1">
+                  Create Group
+                </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="tertiary"
+                  size="lg"
                   onClick={() => setShowCreateForm(false)}
+                  className="flex-1"
                 >
                   Cancel
                 </Button>
@@ -208,19 +239,19 @@ export default function GroupComponent() {
         </Card>
       )}
 
-      <div className="space-y-4">
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-1">
         {groupsList.map((group) => {
           const joinButtonState = getJoinButtonState(group);
 
           return (
-            <Card key={group.id} className="p-6 hover:shadow-lg transition-shadow">
-              <div className="flex items-center justify-between">
+            <Card key={group.id} variant="glassmorphism" hover className="p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 {/* Left side: Group info */}
-                <div className="flex items-center space-x-4 flex-1">
+                <div className="flex items-start space-x-4 flex-1">
                   {/* Group avatar */}
                   <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">
+                    <div className="w-16 h-16 bg-primary-gradient rounded-xl flex items-center justify-center shadow-lg">
+                      <span className="text-white font-display font-bold text-xl">
                         {group.title.charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -228,45 +259,51 @@ export default function GroupComponent() {
 
                   {/* Group details */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-lg">{group.title}</h3>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                      <h3 className="font-display font-bold text-xl text-text-primary">{group.title}</h3>
                       {/* Category badge */}
-                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
+                      <span className="px-3 py-1 text-xs font-medium bg-secondary/20 text-secondary rounded-full border border-secondary/30 w-fit">
                         {group.category || 'General'}
                       </span>
                     </div>
-                    <p className="text-gray-600 text-sm mb-2">{group.description}</p>
+                    <p className="text-text-secondary text-sm mb-3 line-clamp-2">{group.description}</p>
 
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-text-secondary">
+                      <div className="flex items-center gap-2">
                         {group.creator?.avatar || group.avatar ? (
                           <img
                             src={group.creator?.avatar || group.avatar}
                             alt={`${group.creator?.first_name || group.first_name} ${group.creator?.last_name || group.last_name}`}
-                            className="w-5 h-5 rounded-full"
+                            className="w-6 h-6 rounded-full border border-border"
                           />
                         ) : (
-                          <div className="w-5 h-5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs font-medium">
+                          <div className="w-6 h-6 bg-primary-gradient rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs font-semibold">
                               {(group.creator?.first_name || group.first_name)?.[0]}{(group.creator?.last_name || group.last_name)?.[0]}
                             </span>
                           </div>
                         )}
                         <span>by {group.creator?.first_name || group.first_name} {group.creator?.last_name || group.last_name}</span>
                       </div>
-                      <span>•</span>
-                      <span>{group.member_count} members</span>
+                      <span className="hidden sm:inline">•</span>
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        {group.member_count} members
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Right side: Action buttons */}
-                <div className="flex gap-2 flex-shrink-0">
+                <div className="flex gap-3 flex-shrink-0 w-full sm:w-auto">
                   <Button
-                    size="sm"
+                    size="lg"
                     variant={joinButtonState.variant}
                     disabled={joinButtonState.disabled}
                     onClick={() => handleButtonClick(group)}
+                    className="flex-1 sm:flex-none"
                   >
                     {joinButtonState.text}
                   </Button>
@@ -278,8 +315,18 @@ export default function GroupComponent() {
       </div>
 
       {groupsList.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500">No groups found. Create the first one!</p>
+        <div className="text-center py-16">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-surface border border-border flex items-center justify-center">
+            <svg className="w-10 h-10 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-display font-semibold text-text-primary mb-2">
+            No groups yet
+          </h3>
+          <p className="text-text-secondary max-w-md mx-auto">
+            Be the first to create a group and start building your community!
+          </p>
         </div>
       )}
     </div>

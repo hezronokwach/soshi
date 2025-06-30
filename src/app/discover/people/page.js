@@ -66,109 +66,115 @@ export default function DiscoverPeoplePage() {
     <>
       <Navbar />
       <div className="min-h-screen bg-background">
-        <div className="flex">
+        <div className="flex pt-16"> {/* Add top padding for navbar */}
           <LeftSidebar />
-          
+
           {/* Main Content */}
-          <main className="flex-1 p-6 max-w-4xl mx-auto">
-            {/* Header */}
-            <div className="bg-surface border border-border rounded-lg p-6 mb-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-primary-gradient rounded-full flex items-center justify-center">
-                  <UserPlus size={24} className="text-white" />
+          <main className="flex-1 lg:ml-sidebar xl:mr-80">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+              {/* Header */}
+              <div className="glassmorphism p-8 mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-primary-gradient rounded-2xl flex items-center justify-center shadow-xl">
+                    <UserPlus size={28} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h1 className="text-3xl lg:text-4xl font-display font-bold text-text-primary mb-2">Discover People</h1>
+                    <p className="text-lg text-text-secondary">Find and connect with new people on Soshi</p>
+                  </div>
                 </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-text-primary">Discover People</h1>
-                  <p className="text-text-secondary">Find and connect with new people on Soshi</p>
+
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-text-secondary" size={20} />
+                  <input
+                    type="text"
+                    placeholder="Search people by name or nickname..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/25 text-text-primary placeholder-text-secondary transition-all duration-normal"
+                  />
                 </div>
               </div>
 
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" size={20} />
-                <input
-                  type="text"
-                  placeholder="Search people..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-text-primary"
-                />
-              </div>
-            </div>
-
-            {/* Users List */}
-            <div className="bg-surface border border-border rounded-lg p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-text-primary">
-                  All Users ({filteredUsers.length})
-                </h2>
-              </div>
-
-              {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  <span className="ml-3 text-text-secondary">Loading people...</span>
+              {/* Users List */}
+              <div className="glassmorphism p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-display font-bold text-text-primary">
+                    People ({filteredUsers.length})
+                  </h2>
                 </div>
-              ) : filteredUsers.length === 0 ? (
-                <div className="text-center py-12">
-                  <Users size={48} className="mx-auto text-text-secondary mb-4" />
-                  <h3 className="text-lg font-semibold text-text-primary mb-2">
-                    {searchTerm ? 'No people found' : 'No users available'}
-                  </h3>
-                  <p className="text-text-secondary">
-                    {searchTerm ? 'Try adjusting your search terms' : 'Check back later for new users'}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
+
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <span className="text-text-secondary">Loading people...</span>
+                  </div>
+                ) : filteredUsers.length === 0 ? (
+                  <div className="text-center py-16">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-surface border border-border flex items-center justify-center">
+                      <Users size={40} className="text-text-secondary" />
+                    </div>
+                    <h3 className="text-xl font-display font-semibold text-text-primary mb-2">
+                      {searchTerm ? 'No people found' : 'No users available'}
+                    </h3>
+                    <p className="text-text-secondary max-w-md mx-auto">
+                      {searchTerm ? 'Try adjusting your search terms to find more people' : 'Check back later for new users to connect with'}
+                    </p>
+                  </div>
+                ) : (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1">
                   {filteredUsers.map((userItem) => (
                     <div
                       key={userItem.id}
-                      className="flex items-center justify-between p-4 bg-background border border-border rounded-lg hover:border-primary transition-colors"
+                      className="glassmorphism p-6 hover:shadow-glow hover:scale-102 transition-all duration-normal animate-hover"
                     >
-                      <Link
-                        href={`/profile/${userItem.id}`}
-                        className="flex items-center gap-3 flex-1 min-w-0"
-                      >
-                        <div className="relative">
-                          {userItem.avatar ? (
-                            <img
-                              src={userItem.avatar}
-                              alt={`${userItem.first_name} ${userItem.last_name}`}
-                              className="w-12 h-12 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
-                              {getInitials(userItem.first_name, userItem.last_name)}
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-text-primary truncate">
-                            {userItem.first_name} {userItem.last_name}
-                          </h3>
-                          <p className="text-sm text-text-secondary truncate">
-                            {userItem.nickname ? `@${userItem.nickname}` : 'User'}
-                          </p>
-                          {userItem.about_me && (
-                            <p className="text-sm text-text-secondary mt-1 line-clamp-2">
-                              {userItem.about_me}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <Link
+                          href={`/profile/${userItem.id}`}
+                          className="flex items-start gap-4 flex-1 min-w-0 group"
+                        >
+                          <div className="relative">
+                            {userItem.avatar ? (
+                              <img
+                                src={userItem.avatar}
+                                alt={`${userItem.first_name} ${userItem.last_name}`}
+                                className="w-16 h-16 rounded-full object-cover border border-border group-hover:border-primary transition-colors"
+                              />
+                            ) : (
+                              <div className="w-16 h-16 bg-primary-gradient rounded-full flex items-center justify-center text-white font-display font-bold text-lg shadow-lg">
+                                {getInitials(userItem.first_name, userItem.last_name)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-display font-bold text-xl text-text-primary group-hover:text-primary transition-colors">
+                              {userItem.first_name} {userItem.last_name}
+                            </h3>
+                            <p className="text-sm text-text-secondary mb-2">
+                              {userItem.nickname ? `@${userItem.nickname}` : 'User'}
                             </p>
-                          )}
+                            {userItem.about_me && (
+                              <p className="text-sm text-text-secondary leading-relaxed line-clamp-3">
+                                {userItem.about_me}
+                              </p>
+                            )}
+                          </div>
+                        </Link>
+
+                        <div className="flex-shrink-0 w-full sm:w-auto">
+                          <FollowButton
+                            targetUserID={userItem.id}
+                            onStatusChange={(status) => handleFollowStatusChange(userItem.id, status)}
+                            size="large"
+                          />
                         </div>
-                      </Link>
-                      
-                      <div className="flex-shrink-0 ml-4">
-                        <FollowButton
-                          targetUserID={userItem.id}
-                          onStatusChange={(status) => handleFollowStatusChange(userItem.id, status)}
-                          size="medium"
-                        />
                       </div>
                     </div>
                   ))}
                 </div>
-              )}
+                )}
+              </div>
             </div>
           </main>
 

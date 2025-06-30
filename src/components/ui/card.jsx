@@ -4,13 +4,26 @@ import { cn } from "@/lib/utils"
 
 function Card({
   className,
+  variant = "default",
+  hover = false,
   ...props
 }) {
+  const variants = {
+    default: "bg-surface border-border shadow-lg",
+    glassmorphism: "glassmorphism shadow-xl",
+    elevated: "bg-surface border-border shadow-xl hover:shadow-2xl",
+    flat: "bg-surface border-border",
+  };
+
+  const hoverStyles = hover ? "hover:scale-102 hover:shadow-glow animate-hover" : "";
+
   return (
     (<div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
+        "text-text-primary flex flex-col gap-6 rounded-lg border py-6 transition-all duration-normal",
+        variants[variant],
+        hoverStyles,
         className
       )}
       {...props} />)
@@ -37,9 +50,9 @@ function CardTitle({
   ...props
 }) {
   return (
-    (<div
+    (<h3
       data-slot="card-title"
-      className={cn("leading-none font-semibold", className)}
+      className={cn("leading-none font-display font-semibold text-text-primary", className)}
       {...props} />)
   );
 }
@@ -49,9 +62,9 @@ function CardDescription({
   ...props
 }) {
   return (
-    (<div
+    (<p
       data-slot="card-description"
-      className={cn("text-muted-foreground text-sm", className)}
+      className={cn("text-text-secondary text-sm", className)}
       {...props} />)
   );
 }

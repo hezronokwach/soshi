@@ -202,6 +202,18 @@
     box-shadow: 0 0 15px rgba(58, 134, 255, 0.5);
   }
 
+  .hover\:scale-102:hover {
+    transform: scale(1.02);
+  }
+
+  .hover\:scale-105:hover {
+    transform: scale(1.05);
+  }
+
+  .transition-normal {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   .bg-primary-gradient {
     background-image: linear-gradient(135deg, #3A86FF 0%, #8338EC 100%);
   }

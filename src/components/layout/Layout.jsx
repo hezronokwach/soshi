@@ -54,33 +54,26 @@ export default function Layout({ children }) {
 
       <Navbar />
 
-      <div style={{ display: 'flex', flex: 1, paddingTop: '64px' }}>
-        {/* Left Sidebar */}
-        <LeftSidebar />
+      <div className="flex flex-1 pt-16">
+        {/* Left Sidebar - Hidden on mobile and tablet, visible on desktop */}
+        <div className="hidden lg:block">
+          <LeftSidebar />
+        </div>
 
         {/* Main Content */}
-        <main style={{
-          flex: 1,
-          marginLeft: 0,
-          marginRight: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: 'calc(100vh - 64px)'
-        }}>
-          <div style={{
-            maxWidth: '800px',
-            width: '100%',
-            margin: '0 auto',
-            padding: '2rem 1.5rem',
-            flex: 1
-          }}>
-            {children}
+        <main className="flex-1 flex flex-col min-h-[calc(100vh-4rem)]">
+          <div className="flex-1 lg:ml-sidebar xl:mr-80">
+            <div className="max-w-2xl mx-auto px-4 lg:px-6">
+              {children}
+            </div>
           </div>
           <Footer />
         </main>
 
-        {/* Right Sidebar */}
-        <RightSidebar />
+        {/* Right Sidebar - Hidden on mobile, tablet, and small desktop, visible on large desktop */}
+        <div className="hidden xl:block">
+          <RightSidebar />
+        </div>
       </div>
     </div>
   );
