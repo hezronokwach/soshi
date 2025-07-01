@@ -295,8 +295,8 @@ export default function PostCard({ post, onDelete, onUpdate }) {
   };
 
   return (
-   <div
-    className="glassmorphism p-6 rounded-xl shadow-xl transition-all duration-normal hover:shadow-2xl hover:scale-102 animate-hover"
+  <div
+  className="glassmorphism p-6 rounded-xl shadow-xl transition-all duration-normal hover:shadow-2xl hover:scale-102 animate-hover overflow-hidden"
   >
     {/* Post Header */}
     <div className="flex items-start justify-between mb-6">
@@ -304,12 +304,12 @@ export default function PostCard({ post, onDelete, onUpdate }) {
         <div className="h-14 w-14 rounded-full bg-primary-gradient flex items-center justify-center text-white text-xl font-display font-semibold shadow-lg hover:shadow-glow transition-all duration-normal">
           {post.user?.first_name?.[0] || "U"}
         </div>
-        <div className="flex-1">
-          <h3 className="font-display font-semibold text-lg text-text-primary mb-1">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-display font-semibold text-lg text-text-primary mb-1 truncate">
             {post.user?.first_name || 'Unknown'} {post.user?.last_name || ''}
           </h3>
           <div className="flex items-center text-sm text-text-secondary">
-            <span>{new Date(post.created_at).toLocaleString()}</span>
+            <span className="truncate">{new Date(post.created_at).toLocaleString()}</span>
             {post.privacy !== "public" && (
               <span className="ml-3 text-xs px-3 py-1 bg-surface/70 rounded-full border border-border/50 backdrop-blur-sm">
                 {post.privacy === "almost private" ? "👥 Almost Private" : "🔒 Private"}
@@ -353,7 +353,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
         <textarea
           value={editedContent}
           onChange={(e) => setEditedContent(e.target.value)}
-          className="w-full p-4 bg-background/80 border border-border/30 rounded-xl text-text-primary placeholder-text-secondary/70 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-normal resize-none"
+          className="w-full p-4 bg-background/80 border border-border/30 rounded-xl text-text-primary placeholder-text-secondary/70 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-normal resize-none text-overflow-safe"
           rows="3"
           placeholder="What's on your mind?"
         />
@@ -455,7 +455,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
         </div>
       </div>
     ) : (
-      <p className="mb-4 text-text-primary whitespace-pre-line">{post.content}</p>
+      <p className="mb-4 text-text-primary whitespace-pre-line text-overflow-safe">{post.content}</p>
     )}
 
     {/* Post Image */}
