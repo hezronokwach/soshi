@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { upload } from "@/lib/api";
 import { getImageUrl } from "@/utils/image";
-import { Edit, Trash2, ThumbsUp, ThumbsDown, MessageSquare, Bookmark, BookmarkCheck, Loader2, ImagePlus } from "lucide-react";
+import { Edit, Trash2, ThumbsUp, ThumbsDown, MessageSquare, Bookmark, BookmarkCheck, Loader2, ImagePlus, X } from "lucide-react";
 import CommentSection from "@/components/comments/CommentSection";
 import SelectFollowersModal from "./SelectFollowersModal";
 
@@ -72,10 +72,15 @@ export default function PostCard({ post, onDelete, onUpdate }) {
   useEffect(() => {
     if (user?.id) {
       // Fetch reactions
-      fetch(`/api/posts/${post.id}/reactions?userId=${user.id}`)
-        .then(res => res.json())
+      fetch(`/api/posts/${post.id}/reactions?userId=${user.id}`, {
+        credentials: 'include'
+      })
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to fetch reactions');
+          return res.json();
+        })
         .then(data => setReactions(data))
-        .catch(console.error);
+        .catch(error => console.error('Error fetching reactions:', error));
       
       // Check if post is saved
       fetch(`/api/posts/${post.id}/saved`, {
@@ -149,11 +154,13 @@ export default function PostCard({ post, onDelete, onUpdate }) {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include',
         body: JSON.stringify({
           id: post.id,
           content: editedContent,
           privacy: editedPrivacy,
-          selected_users: post.selected_users || []
+          selected_users: selectedUsers,
+          image_url: imageUrl
         }),
       });
 
@@ -193,6 +200,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           id: post.id
         })
@@ -240,6 +248,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
       const res = await fetch(`/api/posts/${post.id}/reactions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           reaction_type: type
         })
