@@ -82,6 +82,7 @@ export default function CreatePostComponent({ onPostCreated }) {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include',
         body: JSON.stringify({
           userId: user.id,
           content,
@@ -92,6 +93,8 @@ export default function CreatePostComponent({ onPostCreated }) {
       });
 
       if (!postRes.ok) throw new Error("Failed to create post");
+      
+      const newPost = await postRes.json();
 
       // Reset form
       setContent("");
@@ -100,8 +103,8 @@ export default function CreatePostComponent({ onPostCreated }) {
       setPrivacy("public");
       setSelectedUsers([]);
 
-      // Notify parent
-      if (onPostCreated) onPostCreated();
+      // Notify parent with the new post data
+      if (onPostCreated) onPostCreated(newPost);
     } catch (error) {
       console.error("Error creating post:", error);
       alert("Error creating post. Please try again.");
