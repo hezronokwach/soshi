@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import Navbar from '@/components/layout/Navbar';
 import ProfileDisplay from '@/components/profile/ProfileDisplay';
 import ProfileEditForm from '@/components/profile/ProfileEditForm';
 import ActivityPage from '@/components/activity/ActivityPage';
@@ -40,14 +39,14 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto max-w-4xl p-4">
-        <div className="bg-surface border border-border rounded-lg p-8">
+      <div className="w-full py-4 sm:py-6 lg:py-8">
+        <div className="bg-[#1A2333] border border-[#2A3343] rounded-lg p-8 shadow-xl">
           <div className="animate-pulse">
-            <div className="h-32 bg-background rounded-lg mb-6"></div>
+            <div className="h-32 bg-[#0F1624] rounded-lg mb-6"></div>
             <div className="space-y-4">
-              <div className="h-4 bg-background rounded w-3/4"></div>
-              <div className="h-4 bg-background rounded w-1/2"></div>
-              <div className="h-4 bg-background rounded w-2/3"></div>
+              <div className="h-4 bg-[#0F1624] rounded w-3/4"></div>
+              <div className="h-4 bg-[#0F1624] rounded w-1/2"></div>
+              <div className="h-4 bg-[#0F1624] rounded w-2/3"></div>
             </div>
           </div>
         </div>
@@ -57,18 +56,18 @@ export default function ProfilePage() {
 
   if (error) {
     return (
-      <div className="container mx-auto max-w-4xl p-4">
-        <div className="bg-surface border border-error rounded-lg p-8 text-center">
-          <div className="text-error mb-4">
+      <div className="w-full py-4 sm:py-6 lg:py-8">
+        <div className="bg-[#1A2333] border border-[#EF476F] rounded-lg p-8 text-center shadow-xl">
+          <div className="text-[#EF476F] mb-4">
             <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-text-primary mb-2">Error Loading Profile</h2>
-          <p className="text-text-secondary mb-4">{error}</p>
+          <h2 className="text-xl font-semibold text-[#FFFFFF] mb-2 font-outfit">Error Loading Profile</h2>
+          <p className="text-[#B8C1CF] mb-4 font-inter">{error}</p>
           <button 
             onClick={() => window.location.reload()}
-            className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-lg transition-colors"
+            className="bg-gradient-to-r from-[#3A86FF] to-[#8338EC] hover:shadow-[0_0_15px_rgba(58,134,255,0.5)] text-white px-6 py-3 rounded-lg transition-all duration-250 hover:scale-105 font-medium"
           >
             Try Again
           </button>
@@ -78,9 +77,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F1624]">
-      <Navbar />
-      <div className="container mx-auto max-w-4xl p-4 space-y-6" style={{ paddingTop: '5rem' }}>
+    <div className="w-full py-4 sm:py-6 lg:py-8">
+      <div className="space-y-6">
       {/* Tab Navigation */}
       <div className="bg-[#1A2333] border border-[#2A3343] rounded-lg p-6 shadow-xl">
         <div className="flex gap-3 overflow-x-auto">
