@@ -34,9 +34,13 @@ export default function FeedPage() {
   }, [user, page]);
 
   // Handle new post creation
-  const handlePostCreated = () => {
-    setPage(1);
-    fetchPosts();
+  const handlePostCreated = (newPost) => {
+    if (newPost) {
+      setPosts(prev => [newPost, ...prev]);
+    } else {
+      setPage(1);
+      fetchPosts();
+    }
   };
 
   return (
@@ -148,15 +152,20 @@ export default function FeedPage() {
         )}
 
         {/* Load more button */}
-        {posts.length > 0 && (
+        {posts.length > 0 && posts.length >= 10 && (
           <div className="text-center pt-6 sm:pt-8">
             <button
               onClick={() => setPage(prev => prev + 1)}
-              className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-[#3A86FF] to-[#8338EC] hover:shadow-[0_0_20px_rgba(58,134,255,0.5)] text-white font-medium rounded-xl transition-all duration-250 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#3A86FF] focus:ring-offset-2 focus:ring-offset-[#0F1624] font-sans text-sm sm:text-base"
+              disabled={isLoading}
+              className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-[#3A86FF] to-[#8338EC] hover:shadow-[0_0_20px_rgba(58,134,255,0.5)] text-white font-medium rounded-xl transition-all duration-250 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#3A86FF] focus:ring-offset-2 focus:ring-offset-[#0F1624] font-sans text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <TrendingUp size={16} className="sm:w-[18px] sm:h-[18px]" />
-              <span className="hidden sm:inline">Load More Posts</span>
-              <span className="sm:hidden">Load More</span>
+              {isLoading ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <TrendingUp size={16} className="sm:w-[18px] sm:h-[18px]" />
+              )}
+              <span className="hidden sm:inline">{isLoading ? 'Loading...' : 'Load More Posts'}</span>
+              <span className="sm:hidden">{isLoading ? 'Loading...' : 'Load More'}</span>
             </button>
           </div>
         )}
