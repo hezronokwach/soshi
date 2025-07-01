@@ -189,18 +189,21 @@ export default function ProfileDisplay({
 
         {/* Social stats */}
         <div className="border-t border-[#2A3343] pt-6">
-          <div className="flex items-center justify-center gap-8">
-            <div className="text-center bg-[#0F1624] p-4 rounded-lg border border-[#2A3343] hover:border-[#FF006E] transition-all duration-250 hover:shadow-[0_0_15px_rgba(255,0,110,0.3)]">
+          <div className="flex flex-wrap items-stretch justify-between gap-8">
+            {/* Activity: Posts */}
+            <div className="flex-1 min-w-[120px] text-center bg-[#0F1624] p-4 rounded-lg border border-[#2A3343] hover:border-[#FF006E] transition-all duration-250 hover:shadow-[0_0_15px_rgba(255,0,110,0.3)]">
               <div className="text-2xl font-bold text-[#FFFFFF] font-outfit">0</div>
               <div className="text-[#B8C1CF] text-sm font-medium">Posts</div>
             </div>
-            <div className="text-center bg-[#0F1624] p-4 rounded-lg border border-[#2A3343] hover:border-[#3A86FF] transition-all duration-250 hover:shadow-[0_0_15px_rgba(58,134,255,0.3)]">
+            {/* Connections: Followers */}
+            <div className="flex-1 min-w-[120px] text-center bg-[#0F1624] p-4 rounded-lg border border-[#2A3343] hover:border-[#3A86FF] transition-all duration-250 hover:shadow-[0_0_15px_rgba(58,134,255,0.3)]">
               <div className="text-2xl font-bold text-[#FFFFFF] font-outfit">
                 {countsLoading ? '...' : followCounts.followers}
               </div>
               <div className="text-[#B8C1CF] text-sm font-medium">Followers</div>
             </div>
-            <div className="text-center bg-[#0F1624] p-4 rounded-lg border border-[#2A3343] hover:border-[#8338EC] transition-all duration-250 hover:shadow-[0_0_15px_rgba(131,56,236,0.3)]">
+            {/* Connections: Following */}
+            <div className="flex-1 min-w-[120px] text-center bg-[#0F1624] p-4 rounded-lg border border-[#2A3343] hover:border-[#8338EC] transition-all duration-250 hover:shadow-[0_0_15px_rgba(131,56,236,0.3)]">
               <div className="text-2xl font-bold text-[#FFFFFF] font-outfit">
                 {countsLoading ? '...' : followCounts.following}
               </div>
