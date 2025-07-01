@@ -76,16 +76,16 @@ export default function NotificationsPage() {
   return (
     <>
       <Navbar />
-      <div className="container mx-auto max-w-4xl p-4 space-y-6" style={{ paddingTop: '5rem' }}>
-        <div className="bg-surface border border-border rounded-lg p-6">
+      <div className="w-full px-3 sm:px-4 lg:px-6 xl:px-8 lg:pl-8 py-4 space-y-6" style={{ paddingTop: '5rem' }}>
+        <div className="bg-[#1A2333] border border-[#2A3343] rounded-lg p-6 shadow-xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-primary-gradient rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-r from-[#3A86FF] to-[#8338EC] rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(58,134,255,0.3)]">
                 <Bell size={24} className="text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-text-primary">Notifications</h1>
-                <p className="text-text-secondary">Stay updated with your latest activities</p>
+                <h1 className="text-2xl font-bold text-[#FFFFFF] font-outfit">Notifications</h1>
+                <p className="text-[#B8C1CF] font-inter">Stay updated with your latest activities</p>
               </div>
             </div>
             
@@ -138,10 +138,10 @@ export default function NotificationsPage() {
               {notificationsList.map((notification) => (
                 <div 
                   key={notification.id}
-                  className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                  className={`border rounded-lg p-4 cursor-pointer transition-all duration-250 hover:scale-[1.01] ${
                     notification.is_read 
-                      ? 'bg-background border-border' 
-                      : 'bg-primary/5 border-primary/20'
+                      ? 'bg-[#0F1624] border-[#2A3343] hover:border-[#3A86FF]' 
+                      : 'bg-[#3A86FF]/10 border-[#3A86FF]/30 hover:border-[#3A86FF]'
                   }`}
                   onClick={() => !notification.is_read && handleMarkAsRead(notification.id)}
                 >
@@ -150,10 +150,10 @@ export default function NotificationsPage() {
                       {getNotificationIcon(notification.type)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`${notification.is_read ? 'text-text-secondary' : 'text-text-primary font-medium'}`}>
+                      <p className={`font-inter break-words ${notification.is_read ? 'text-[#B8C1CF]' : 'text-[#FFFFFF] font-medium'}`}>
                         {notification.message}
                       </p>
-                      <p className="text-text-disabled text-sm mt-1">
+                      <p className="text-[#6C7A89] text-sm mt-1 font-inter">
                         {formatDate(notification.created_at)}
                       </p>
                     </div>
