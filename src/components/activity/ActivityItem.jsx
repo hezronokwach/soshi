@@ -44,12 +44,12 @@ export default function ActivityItem({
       case 'post_created':
         return (
           <span>
-            <span className="font-semibold text-text-primary">
+            <span className="font-semibold text-[#3A86FF]">
               {user?.first_name} {user?.last_name}
             </span>
-            <span className="text-text-secondary"> created a new post</span>
+            <span className="text-[#B8C1CF]"> created a new post</span>
             {metadata?.content_preview && (
-              <span className="text-text-secondary">: "{metadata.content_preview}"</span>
+              <span className="text-[#B8C1CF]">: "{metadata.content_preview}"</span>
             )}
           </span>
         );
@@ -57,19 +57,19 @@ export default function ActivityItem({
       case 'comment_created':
         return (
           <span>
-            <span className="font-semibold text-text-primary">
+            <span className="font-semibold text-[#8338EC]">
               {user?.first_name} {user?.last_name}
             </span>
-            <span className="text-text-secondary"> commented</span>
+            <span className="text-[#B8C1CF]"> commented</span>
             {target_user && target_user.id !== user?.id && (
-              <span className="text-text-secondary">
-                {' '}on <span className="font-semibold text-text-primary">
+              <span className="text-[#B8C1CF]">
+                {' '}on <span className="font-semibold text-[#FF006E]">
                   {target_user.first_name} {target_user.last_name}
                 </span>'s post
               </span>
             )}
             {metadata?.content_preview && (
-              <span className="text-text-secondary">: "{metadata.content_preview}"</span>
+              <span className="text-[#B8C1CF]">: "{metadata.content_preview}"</span>
             )}
           </span>
         );
@@ -77,19 +77,19 @@ export default function ActivityItem({
       case 'post_liked':
         return (
           <span>
-            <span className="font-semibold text-text-primary">
+            <span className="font-semibold text-[#06D6A0]">
               {user?.first_name} {user?.last_name}
             </span>
-            <span className="text-text-secondary"> liked</span>
+            <span className="text-[#B8C1CF]"> liked</span>
             {target_user && target_user.id !== user?.id && (
-              <span className="text-text-secondary">
-                {' '}<span className="font-semibold text-text-primary">
+              <span className="text-[#B8C1CF]">
+                {' '}<span className="font-semibold text-[#FF006E]">
                   {target_user.first_name} {target_user.last_name}
                 </span>'s post
               </span>
             )}
             {target_user && target_user.id === user?.id && (
-              <span className="text-text-secondary"> their own post</span>
+              <span className="text-[#B8C1CF]"> their own post</span>
             )}
           </span>
         );
@@ -139,10 +139,10 @@ export default function ActivityItem({
       default:
         return (
           <span>
-            <span className="font-semibold text-text-primary">
+            <span className="font-semibold text-[#B8C1CF]">
               {user?.first_name} {user?.last_name}
             </span>
-            <span className="text-text-secondary"> performed an action</span>
+            <span className="text-[#B8C1CF]"> performed an action</span>
           </span>
         );
     }
@@ -166,12 +166,12 @@ export default function ActivityItem({
   };
 
   return (
-    <div className={`bg-surface border border-border rounded-lg p-4 transition-opacity ${
+    <div className={`bg-[#1A2333] border border-[#2A3343] rounded-lg p-4 shadow-lg transition-all duration-250 hover:shadow-xl hover:scale-[1.01] ${
       activity.is_hidden ? 'opacity-50' : 'opacity-100'
     }`}>
       <div className="flex items-start gap-3">
         {/* Activity Icon */}
-        <div className="flex-shrink-0 w-10 h-10 bg-background rounded-full flex items-center justify-center">
+        <div className="flex-shrink-0 w-10 h-10 bg-[#0F1624] border border-[#2A3343] rounded-full flex items-center justify-center">
           {getActivityIcon(activity.activity_type)}
         </div>
 
@@ -193,31 +193,31 @@ export default function ActivityItem({
         {/* Activity Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <p className="text-sm">
+            <div className="flex-1 min-w-0 pr-2">
+              <p className="text-sm text-[#FFFFFF] font-inter break-words overflow-wrap-anywhere">
                 {getActivityDescription()}
               </p>
               
               {/* Post/Comment Preview */}
               {activity.post && (
-                <div className="mt-2 p-3 bg-background rounded-lg border border-border">
-                  <p className="text-sm text-text-secondary line-clamp-2">
-                    {activity.post.content}
+                <div className="mt-2 p-3 bg-[#0F1624] rounded-lg border border-[#2A3343] overflow-hidden">
+                  <p className="text-sm text-[#B8C1CF] break-words overflow-wrap-anywhere font-inter" style={{wordBreak: 'break-word', overflowWrap: 'anywhere', hyphens: 'auto'}}>
+                    {activity.post.content.length > 150 ? `${activity.post.content.substring(0, 150)}...` : activity.post.content}
                   </p>
                   {activity.post.image_url && (
                     <img 
                       src={activity.post.image_url} 
                       alt="Post content"
-                      className="mt-2 max-w-full h-20 object-cover rounded"
+                      className="mt-2 w-full max-w-full h-20 object-cover rounded border border-[#2A3343]"
                     />
                   )}
                 </div>
               )}
 
               {activity.comment && (
-                <div className="mt-2 p-3 bg-background rounded-lg border border-border">
-                  <p className="text-sm text-text-secondary line-clamp-2">
-                    {activity.comment.content}
+                <div className="mt-2 p-3 bg-[#0F1624] rounded-lg border border-[#2A3343] overflow-hidden">
+                  <p className="text-sm text-[#B8C1CF] break-words overflow-wrap-anywhere font-inter" style={{wordBreak: 'break-word', overflowWrap: 'anywhere', hyphens: 'auto'}}>
+                    {activity.comment.content.length > 150 ? `${activity.comment.content.substring(0, 150)}...` : activity.comment.content}
                   </p>
                 </div>
               )}
@@ -225,16 +225,16 @@ export default function ActivityItem({
 
             {/* Actions Menu */}
             {isOwnActivity && (
-              <div className="relative ml-2">
+              <div className="relative ml-2 flex-shrink-0">
                 <button
                   onClick={() => setShowMenu(!showMenu)}
-                  className="p-1 hover:bg-background rounded transition-colors"
+                  className="p-1 hover:bg-[#0F1624] rounded transition-all duration-250 hover:scale-110"
                 >
-                  <MoreHorizontal size={16} className="text-text-secondary" />
+                  <MoreHorizontal size={16} className="text-[#B8C1CF]" />
                 </button>
 
                 {showMenu && (
-                  <div className="absolute right-0 top-8 bg-surface border border-border rounded-lg shadow-lg py-1 z-10 min-w-[120px]">
+                  <div className="absolute right-0 top-8 bg-[#1A2333] border border-[#2A3343] rounded-lg shadow-xl py-1 z-10 min-w-[120px]">
                     <button
                       onClick={() => {
                         if (activity.is_hidden) {
@@ -244,7 +244,7 @@ export default function ActivityItem({
                         }
                         setShowMenu(false);
                       }}
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-background transition-colors flex items-center gap-2"
+                      className="w-full px-3 py-2 text-left text-sm text-[#FFFFFF] hover:bg-[#0F1624] transition-all duration-250 flex items-center gap-2 font-inter"
                     >
                       {activity.is_hidden ? (
                         <>
@@ -266,12 +266,12 @@ export default function ActivityItem({
 
           {/* Timestamp */}
           <div className="mt-2 flex items-center justify-between">
-            <span className="text-xs text-text-disabled">
+            <span className="text-xs text-[#6C7A89] font-inter">
               {formatTimeAgo(activity.created_at)}
             </span>
             
             {activity.is_hidden && (
-              <span className="text-xs text-warning flex items-center gap-1">
+              <span className="text-xs text-[#FFD166] flex items-center gap-1 font-inter">
                 <EyeOff size={12} />
                 Hidden
               </span>
