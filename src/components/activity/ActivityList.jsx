@@ -100,14 +100,14 @@ export default function ActivityList({
       <div className="space-y-4">
         {/* Loading skeleton */}
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="bg-surface border border-border rounded-lg p-4">
+          <div key={i} className="bg-[#1A2333] border border-[#2A3343] rounded-lg p-4 shadow-lg">
             <div className="animate-pulse">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-background rounded-full"></div>
-                <div className="w-8 h-8 bg-background rounded-full"></div>
+                <div className="w-10 h-10 bg-[#0F1624] rounded-full"></div>
+                <div className="w-8 h-8 bg-[#0F1624] rounded-full"></div>
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-background rounded w-3/4"></div>
-                  <div className="h-3 bg-background rounded w-1/2"></div>
+                  <div className="h-4 bg-[#0F1624] rounded w-3/4"></div>
+                  <div className="h-3 bg-[#0F1624] rounded w-1/2"></div>
                 </div>
               </div>
             </div>
@@ -119,12 +119,12 @@ export default function ActivityList({
 
   if (error) {
     return (
-      <div className="bg-surface border border-error rounded-lg p-6 text-center">
-        <div className="text-error mb-2">Failed to load activities</div>
-        <p className="text-text-secondary text-sm mb-4">{error}</p>
+      <div className="bg-[#1A2333] border border-[#EF476F] rounded-lg p-6 text-center shadow-xl">
+        <div className="text-[#EF476F] mb-2 font-semibold font-outfit">Failed to load activities</div>
+        <p className="text-[#B8C1CF] text-sm mb-4 font-inter">{error}</p>
         <button 
           onClick={() => fetchActivities(1, filters, false)}
-          className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-lg transition-colors"
+          className="bg-gradient-to-r from-[#3A86FF] to-[#8338EC] hover:shadow-[0_0_15px_rgba(58,134,255,0.5)] text-white px-6 py-3 rounded-lg transition-all duration-250 hover:scale-105 font-medium"
         >
           Try Again
         </button>
@@ -161,7 +161,7 @@ export default function ActivityList({
               <div className="text-center pt-4">
                 <button
                   onClick={loadMore}
-                  className="bg-primary hover:bg-primary-hover text-white px-6 py-2 rounded-lg transition-colors"
+                  className="bg-gradient-to-r from-[#3A86FF] to-[#8338EC] hover:shadow-[0_0_15px_rgba(58,134,255,0.5)] text-white px-6 py-3 rounded-lg transition-all duration-250 hover:scale-105 font-medium"
                 >
                   Load More
                 </button>
@@ -171,14 +171,14 @@ export default function ActivityList({
             {/* Loading more indicator */}
             {loading && activities.length > 0 && (
               <div className="text-center py-4">
-                <div className="text-text-secondary">Loading more activities...</div>
+                <div className="text-[#B8C1CF] font-inter">Loading more activities...</div>
               </div>
             )}
           </>
         ) : (
-          <div className="bg-surface border border-border rounded-lg p-8 text-center">
-            <div className="text-text-secondary mb-2">No activities found</div>
-            <p className="text-text-disabled text-sm">
+          <div className="bg-[#1A2333] border border-[#2A3343] rounded-lg p-8 text-center shadow-xl">
+            <div className="text-[#B8C1CF] mb-2 font-semibold font-outfit">No activities found</div>
+            <p className="text-[#6C7A89] text-sm font-inter">
               {userID 
                 ? "This user hasn't performed any visible activities yet."
                 : "You haven't performed any activities yet. Start by creating posts or interacting with others!"
