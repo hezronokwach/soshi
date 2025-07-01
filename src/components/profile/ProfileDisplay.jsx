@@ -194,19 +194,13 @@ export default function ProfileDisplay({
               <div className="text-2xl font-bold text-[#FFFFFF] font-outfit">0</div>
               <div className="text-[#B8C1CF] text-sm font-medium">Posts</div>
             </div>
-            <div 
-              onClick={() => window.location.href = '/profile?tab=connections'}
-              className="text-center cursor-pointer bg-[#0F1624] p-4 rounded-lg border border-[#2A3343] hover:border-[#3A86FF] transition-all duration-250 hover:shadow-[0_0_15px_rgba(58,134,255,0.3)] hover:scale-105"
-            >
+            <div className="text-center bg-[#0F1624] p-4 rounded-lg border border-[#2A3343] hover:border-[#3A86FF] transition-all duration-250 hover:shadow-[0_0_15px_rgba(58,134,255,0.3)]">
               <div className="text-2xl font-bold text-[#FFFFFF] font-outfit">
                 {countsLoading ? '...' : followCounts.followers}
               </div>
               <div className="text-[#B8C1CF] text-sm font-medium">Followers</div>
             </div>
-            <div 
-              onClick={() => window.location.href = '/profile?tab=connections'}
-              className="text-center cursor-pointer bg-[#0F1624] p-4 rounded-lg border border-[#2A3343] hover:border-[#8338EC] transition-all duration-250 hover:shadow-[0_0_15px_rgba(131,56,236,0.3)] hover:scale-105"
-            >
+            <div className="text-center bg-[#0F1624] p-4 rounded-lg border border-[#2A3343] hover:border-[#8338EC] transition-all duration-250 hover:shadow-[0_0_15px_rgba(131,56,236,0.3)]">
               <div className="text-2xl font-bold text-[#FFFFFF] font-outfit">
                 {countsLoading ? '...' : followCounts.following}
               </div>
