@@ -227,6 +227,7 @@ func main() {
 		r.Post("/{userID}/follow", userHandler.FollowUser)
 		r.Delete("/{userID}/follow", userHandler.UnfollowUser)
 		r.Delete("/{userID}/follow-request", userHandler.CancelFollowRequest)
+		r.Post("/{userID}/accept-follow", userHandler.AcceptFollowRequest)
 
 		// Get all users (including private)
 		r.Get("/all", userHandler.GetAllUsers)
