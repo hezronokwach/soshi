@@ -7,10 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
+	md "github.com/hezronokwach/soshi/pkg/middleware"
 	"github.com/hezronokwach/soshi/pkg/models"
 	"github.com/hezronokwach/soshi/pkg/utils"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type CommentHandler struct {
@@ -31,7 +30,7 @@ func (h *CommentHandler) GetPostComments(w http.ResponseWriter, r *http.Request)
 	// }
 
 	// Get post ID from URL
-	postIdStr := chi.URLParam(r, "postID")
+	postIdStr := md.GetURLParam(r, "postID")
 	postId, err := strconv.Atoi(postIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")
@@ -108,7 +107,7 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get post ID from URL
-	postIdStr := chi.URLParam(r, "postID")
+	postIdStr := md.GetURLParam(r, "postID")
 	postId, err := strconv.Atoi(postIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")
@@ -165,7 +164,7 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Log the created comment data for debugging
-	log.Printf("Created comment: ID=%d, PostID=%d, UserID=%d, ImageURL=%s", 
+	log.Printf("Created comment: ID=%d, PostID=%d, UserID=%d, ImageURL=%s",
 		createdComment.ID, createdComment.PostID, createdComment.UserID, createdComment.ImageURL)
 
 	// Get user data for the comment
@@ -180,7 +179,7 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 // GetComment retrieves a comment by ID
 func (h *CommentHandler) GetComment(w http.ResponseWriter, r *http.Request) {
 	// Get comment ID from URL
-	commentIdStr := chi.URLParam(r, "commentID")
+	commentIdStr := md.GetURLParam(r, "commentID")
 	commentId, err := strconv.Atoi(commentIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid comment ID")
@@ -211,7 +210,7 @@ func (h *CommentHandler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get comment ID from URL
-	commentIdStr := chi.URLParam(r, "commentID")
+	commentIdStr := md.GetURLParam(r, "commentID")
 	commentId, err := strconv.Atoi(commentIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid comment ID")
@@ -267,7 +266,7 @@ func (h *CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get comment ID from URL
-	commentIdStr := chi.URLParam(r, "commentID")
+	commentIdStr := md.GetURLParam(r, "commentID")
 	commentId, err := strconv.Atoi(commentIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid comment ID")
@@ -307,7 +306,7 @@ func (h *CommentHandler) GetReactions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get comment ID from URL
-	commentIdStr := chi.URLParam(r, "commentID")
+	commentIdStr := md.GetURLParam(r, "commentID")
 	commentId, err := strconv.Atoi(commentIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid comment ID")
@@ -334,7 +333,7 @@ func (h *CommentHandler) AddReaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get comment ID from URL
-	commentIdStr := chi.URLParam(r, "commentID")
+	commentIdStr := md.GetURLParam(r, "commentID")
 	commentId, err := strconv.Atoi(commentIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid comment ID")
