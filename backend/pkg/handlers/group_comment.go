@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-chi/chi/v5"
+	md "github.com/hezronokwach/soshi/pkg/middleware"
 	"github.com/hezronokwach/soshi/pkg/models"
 	"github.com/hezronokwach/soshi/pkg/utils"
 )
@@ -30,7 +30,7 @@ func (h *GroupCommentHandler) GetGroupPostComments(w http.ResponseWriter, r *htt
 	}
 
 	// Get group post ID from URL
-	groupPostIdStr := chi.URLParam(r, "groupPostID")
+	groupPostIdStr := md.GetURLParam(r, "groupPostID")
 	groupPostId, err := strconv.Atoi(groupPostIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group post ID")
@@ -90,7 +90,7 @@ func (h *GroupCommentHandler) CreateGroupPostComment(w http.ResponseWriter, r *h
 	}
 
 	// Get group post ID from URL
-	groupPostIdStr := chi.URLParam(r, "groupPostID")
+	groupPostIdStr := md.GetURLParam(r, "groupPostID")
 	groupPostId, err := strconv.Atoi(groupPostIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group post ID")
@@ -154,7 +154,7 @@ func (h *GroupCommentHandler) GetGroupPostComment(w http.ResponseWriter, r *http
 	}
 
 	// Get comment ID from URL
-	commentIdStr := chi.URLParam(r, "commentID")
+	commentIdStr := md.GetURLParam(r, "commentID")
 	commentId, err := strconv.Atoi(commentIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid comment ID")
@@ -203,7 +203,7 @@ func (h *GroupCommentHandler) UpdateGroupPostComment(w http.ResponseWriter, r *h
 	}
 
 	// Get comment ID from URL
-	commentIdStr := chi.URLParam(r, "commentID")
+	commentIdStr := md.GetURLParam(r, "commentID")
 	commentId, err := strconv.Atoi(commentIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid comment ID")
@@ -254,7 +254,7 @@ func (h *GroupCommentHandler) DeleteGroupPostComment(w http.ResponseWriter, r *h
 	}
 
 	// Get comment ID from URL
-	commentIdStr := chi.URLParam(r, "commentID")
+	commentIdStr := md.GetURLParam(r, "commentID")
 	commentId, err := strconv.Atoi(commentIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid comment ID")
@@ -281,7 +281,7 @@ func (h *GroupCommentHandler) AddGroupPostCommentReaction(w http.ResponseWriter,
 	}
 
 	// Get comment ID from URL
-	commentIdStr := chi.URLParam(r, "commentID")
+	commentIdStr := md.GetURLParam(r, "commentID")
 	commentId, err := strconv.Atoi(commentIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid comment ID")
@@ -324,7 +324,7 @@ func (h *GroupCommentHandler) GetGroupPostCommentReactions(w http.ResponseWriter
 	}
 
 	// Get comment ID from URL
-	commentIdStr := chi.URLParam(r, "commentID")
+	commentIdStr := md.GetURLParam(r, "commentID")
 	commentId, err := strconv.Atoi(commentIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid comment ID")
