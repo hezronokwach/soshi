@@ -1,7 +1,7 @@
 'use client';
 
-import Layout from '@/components/layout/Layout';
-import ChatInterface from '@/components/chat/ChatInterface';
+import Layout from '../../components/layout/Layout';
+import ChatInterface from '../../components/chat/ChatInterface';
 import './chat.module.css';
 
 export default function ChatPage() {

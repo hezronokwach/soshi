@@ -1,5 +1,5 @@
 "use client";
-import GroupComponent from '@/components/groups/GroupComponent';
+import GroupComponent from '../../components/groups/GroupComponent';
 
 export default function GroupsPage() {
   return (

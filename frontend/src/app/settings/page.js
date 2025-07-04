@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Layout from '@/components/layout/Layout';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { users } from '@/lib/api';
+import Layout from '../../components/layout/Layout';
+import { Card } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { useAuth } from '../../hooks/useAuth';
+import { users } from '../../lib/api';
 import { User, Mail, Lock, Shield, Globe } from 'lucide-react';
 
 export default function SettingsPage() {

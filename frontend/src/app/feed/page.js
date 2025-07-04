@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { posts as postsAPI } from "@/lib/api";
-import CreatePostComponent from "@/components/posts/CreatePostComponent";
-import PostCard from "@/components/posts/PostCard";
+import { useAuth } from "../../hooks/useAuth";
+import { posts as postsAPI } from "../../lib/api";
+import CreatePostComponent from "../../components/posts/CreatePostComponent";
+import PostCard from "../../components/posts/PostCard";
 import { Home, TrendingUp, Users, MessageCircle, Loader2 } from 'lucide-react';
 
 export default function FeedPage() {

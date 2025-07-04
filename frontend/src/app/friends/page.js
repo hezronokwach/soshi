@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { users } from '@/lib/api';
-import Navbar from '@/components/layout/Navbar';
-import LeftSidebar from '@/components/layout/LeftSidebar';
-import RightSidebar from '@/components/layout/RightSidebar';
+import { useAuth } from '../../hooks/useAuth';
+import { users } from '../../lib/api';
+import Navbar from '../../components/layout/Navbar';
+import LeftSidebar from '../../components/layout/LeftSidebar';
+import RightSidebar from '../../components/layout/RightSidebar';
 import { Users, Search, UserPlus, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
