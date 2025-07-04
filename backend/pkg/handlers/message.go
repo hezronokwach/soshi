@@ -25,7 +25,7 @@ func NewMessageHandler(db *sql.DB, hub *websocket.Hub) *MessageHandler {
 // SendPrivateMessage handles sending a private message
 func (h *MessageHandler) SendPrivateMessage(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -69,7 +69,7 @@ func (h *MessageHandler) SendPrivateMessage(w http.ResponseWriter, r *http.Reque
 // GetPrivateMessages retrieves messages between current user and another user
 func (h *MessageHandler) GetPrivateMessages(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -111,7 +111,7 @@ func (h *MessageHandler) GetPrivateMessages(w http.ResponseWriter, r *http.Reque
 // GetConversations retrieves all conversations for the current user
 func (h *MessageHandler) GetConversations(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -135,7 +135,7 @@ func (h *MessageHandler) GetConversations(w http.ResponseWriter, r *http.Request
 // GetUnreadCount returns the count of unread messages for the current user
 func (h *MessageHandler) GetUnreadCount(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -158,7 +158,7 @@ func (h *MessageHandler) GetUnreadCount(w http.ResponseWriter, r *http.Request) 
 // MarkMessagesAsRead marks messages as read
 func (h *MessageHandler) MarkMessagesAsRead(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -188,7 +188,7 @@ func (h *MessageHandler) MarkMessagesAsRead(w http.ResponseWriter, r *http.Reque
 // GetUnreadMessageCount gets the total unread message count for the current user
 func (h *MessageHandler) GetUnreadMessageCount(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -207,7 +207,7 @@ func (h *MessageHandler) GetUnreadMessageCount(w http.ResponseWriter, r *http.Re
 // SendGroupMessage handles sending a message to a group chat
 func (h *MessageHandler) SendGroupMessage(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -258,7 +258,7 @@ func (h *MessageHandler) SendGroupMessage(w http.ResponseWriter, r *http.Request
 // GetGroupMessages retrieves messages for a group chat
 func (h *MessageHandler) GetGroupMessages(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return

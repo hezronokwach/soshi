@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	md "github.com/hezronokwach/soshi/pkg/middleware"
 	"github.com/hezronokwach/soshi/pkg/models"
 	"github.com/hezronokwach/soshi/pkg/utils"
 )
@@ -20,7 +21,7 @@ func NewNotificationHandler(db *sql.DB) *NotificationHandler {
 // GetNotifications retrieves notifications for the current user
 func (h *NotificationHandler) GetNotifications(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -55,7 +56,7 @@ func (h *NotificationHandler) GetNotifications(w http.ResponseWriter, r *http.Re
 // MarkNotificationAsRead marks a notification as read
 func (h *NotificationHandler) MarkNotificationAsRead(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -85,7 +86,7 @@ func (h *NotificationHandler) MarkNotificationAsRead(w http.ResponseWriter, r *h
 // MarkAllNotificationsAsRead marks all notifications as read for the current user
 func (h *NotificationHandler) MarkAllNotificationsAsRead(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -107,7 +108,7 @@ func (h *NotificationHandler) MarkAllNotificationsAsRead(w http.ResponseWriter, 
 // GetUnreadCount gets the count of unread notifications
 func (h *NotificationHandler) GetUnreadCount(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return

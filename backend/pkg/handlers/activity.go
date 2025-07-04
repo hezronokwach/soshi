@@ -23,7 +23,7 @@ func NewActivityHandler(db *sql.DB) *ActivityHandler {
 // GetUserActivities retrieves user's activity with filtering options
 func (h *ActivityHandler) GetUserActivities(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -97,7 +97,7 @@ func (h *ActivityHandler) GetUserActivities(w http.ResponseWriter, r *http.Reque
 // GetUserPosts retrieves all posts by a user
 func (h *ActivityHandler) GetUserPosts(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -147,7 +147,7 @@ func (h *ActivityHandler) GetUserPosts(w http.ResponseWriter, r *http.Request) {
 // HideActivity hides an activity from user's activity feed
 func (h *ActivityHandler) HideActivity(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -177,7 +177,7 @@ func (h *ActivityHandler) HideActivity(w http.ResponseWriter, r *http.Request) {
 // UnhideActivity unhides an activity in user's activity feed
 func (h *ActivityHandler) UnhideActivity(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -207,7 +207,7 @@ func (h *ActivityHandler) UnhideActivity(w http.ResponseWriter, r *http.Request)
 // GetActivitySettings retrieves user's activity display settings
 func (h *ActivityHandler) GetActivitySettings(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -225,7 +225,7 @@ func (h *ActivityHandler) GetActivitySettings(w http.ResponseWriter, r *http.Req
 // UpdateActivitySettings updates user's activity display settings
 func (h *ActivityHandler) UpdateActivitySettings(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
