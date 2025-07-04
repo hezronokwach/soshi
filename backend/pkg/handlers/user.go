@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-chi/chi/v5"
+	md "github.com/hezronokwach/soshi/pkg/middleware"
 	"github.com/hezronokwach/soshi/pkg/models"
 	"github.com/hezronokwach/soshi/pkg/utils"
 	"github.com/hezronokwach/soshi/pkg/websocket"
@@ -50,7 +50,7 @@ func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if requesting another user's profile
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	var targetUserID int
 	var err error
 
@@ -141,7 +141,6 @@ func (h *UserHandler) UpdateProfilePrivacy(w http.ResponseWriter, r *http.Reques
 		INSERT OR REPLACE INTO user_profiles (user_id, is_public, updated_at)
 		VALUES (?, ?, CURRENT_TIMESTAMP)
 	`, user.ID, privacyData.IsPublic)
-
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to update privacy setting")
 		return
@@ -163,7 +162,7 @@ func (h *UserHandler) GetFollowing(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if requesting another user's following list
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	var targetUserID int
 	var err error
 
@@ -290,7 +289,7 @@ func (h *UserHandler) GetFollowCounts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if requesting another user's counts
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	var targetUserID int
 	var err error
 
@@ -324,7 +323,7 @@ func (h *UserHandler) FollowUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get user ID to follow from URL
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	targetUserID, err := strconv.Atoi(userIDParam)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -371,7 +370,7 @@ func (h *UserHandler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get user ID to unfollow from URL
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	targetUserID, err := strconv.Atoi(userIDParam)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -402,7 +401,7 @@ func (h *UserHandler) GetFollowStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get target user ID from URL
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	targetUserID, err := strconv.Atoi(userIDParam)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -432,7 +431,7 @@ func (h *UserHandler) CancelFollowRequest(w http.ResponseWriter, r *http.Request
 	}
 
 	// Get target user ID from URL
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	targetUserID, err := strconv.Atoi(userIDParam)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -479,7 +478,7 @@ func (h *UserHandler) AcceptFollowRequest(w http.ResponseWriter, r *http.Request
 	}
 
 	// Get follower ID from URL
-	followerIDParam := chi.URLParam(r, "userID")
+	followerIDParam := md.GetURLParam(r, "userID")
 	followerID, err := strconv.Atoi(followerIDParam)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
