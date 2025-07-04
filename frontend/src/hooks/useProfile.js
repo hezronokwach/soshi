@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { users, upload } from '@/lib/api';
+import { users, upload } from '../lib/api';
 
 export function useProfile(userId = null) {
   const [profile, setProfile] = useState(null);

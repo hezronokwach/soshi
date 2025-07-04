@@ -2,7 +2,7 @@
 
 import { useState, useEffect, createContext, useContext } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth, connectWebSocket } from '@/lib/api';
+import { auth, connectWebSocket } from '../lib/api';
 
 // Create auth context
 const AuthContext = createContext(null);

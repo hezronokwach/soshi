@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { activity as activityAPI } from '@/lib/api';
+import { activity as activityAPI } from '../lib/api';
 
 export function useActivity(userID = null) {
   const [activities, setActivities] = useState([]);

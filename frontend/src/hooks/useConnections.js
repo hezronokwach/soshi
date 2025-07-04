@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { users } from '@/lib/api';
+import { users } from '../lib/api';
 
 export function useConnections(userID = null) {
   const [followers, setFollowers] = useState([]);
