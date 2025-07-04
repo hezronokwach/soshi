@@ -157,15 +157,35 @@
 
   a {
     color: #3A86FF;
-    transition: color 0.25s;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   a:hover {
     color: #2D6FD9;
+    transform: translateY(-1px);
   }
 
   a:focus {
     color: #1A5DC0;
+    outline: 2px solid #3A86FF;
+    outline-offset: 2px;
+  }
+
+  button {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  button:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  button:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   code {
