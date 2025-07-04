@@ -1,11 +1,11 @@
 // src/components/groups/GroupComponent.js
 'use client';
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useAuth } from '@/hooks/useAuth';
-import { groups } from '@/lib/api';
+import { Card } from '../ui/card';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { useAuth } from '../../hooks/useAuth';
+import { groups } from '../../lib/api';
 
 // Predefined categories (you can also make this dynamic)
 const GROUP_CATEGORIES = [

@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 import { ThumbsUp, ThumbsDown, Edit, Trash2 } from 'lucide-react';
-import { getImageUrl } from '@/utils/image';
+import { getImageUrl } from '../../utils/image';
 import GroupCommentForm from './GroupCommentForm';
 
 export default function GroupCommentItem({ comment, groupId, groupPostId, onUpdate, onDelete }) {

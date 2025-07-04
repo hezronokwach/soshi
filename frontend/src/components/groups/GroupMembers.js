@@ -2,9 +2,9 @@
 
 'use client';
 import Link from 'next/link';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { groups } from '@/lib/api';
+import { Card } from '../ui/card';
+import { Button } from '../ui/button';
+import { groups } from '../../lib/api';
 
 export default function GroupMembers({ params, group, isCreator, pendingMembers, acceptedMembers, fetchGroup }) {
     // Handle member requests

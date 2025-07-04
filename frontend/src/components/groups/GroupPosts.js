@@ -2,11 +2,11 @@
 
 'use client';
 import { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { groups, upload } from '@/lib/api';
+import { Card } from '../ui/card';
+import { Button } from '../ui/button';
+import { groups, upload } from '../../lib/api';
 import { ImagePlus, X, ThumbsUp, ThumbsDown, MessageSquare } from 'lucide-react';
-import { getImageUrl } from '@/utils/image';
+import { getImageUrl } from '../../utils/image';
 import GroupPostComments from './GroupPostComments';
 
 export default function GroupPosts({ params, group, fetchGroup }) {

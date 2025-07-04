@@ -1,10 +1,10 @@
 // FILE: src/components/groups/GroupEvents.js
 'use client';
 import { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { groups } from '@/lib/api';
+import { Card } from '../ui/card';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { groups } from '../../lib/api';
 
 export default function GroupEvents({ params, group, fetchGroup }) {
   const [newEvent, setNewEvent] = useState({
