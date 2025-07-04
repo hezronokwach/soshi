@@ -119,7 +119,7 @@ export default function SavedPostsPage() {
     <div className="max-w-2xl mx-auto py-6 px-4">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Saved Posts</h1>
-        <p className="text-text-secondary">Posts you've saved for later</p>
+        <p className="text-text-secondary">{"Posts you've saved for later"}</p>
       </div>
 
       <div className="space-y-6">
