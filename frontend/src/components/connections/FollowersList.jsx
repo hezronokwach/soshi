@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { users } from '@/lib/api';
+import { users } from '../../lib/api';
 import UserCard from './UserCard';
 import { 
   Users, 

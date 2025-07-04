@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 import { MessageSquare } from 'lucide-react';
 import CommentForm from './CommentForm';
 import CommentList from './CommentList';

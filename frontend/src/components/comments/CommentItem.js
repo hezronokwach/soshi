@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 import { MessageSquare, ThumbsUp, ThumbsDown, Edit, Trash2 } from 'lucide-react';
-import { getImageUrl } from '@/utils/image';
+import { getImageUrl } from '../../utils/image';
 import CommentForm from './CommentForm';
 import CommentList from './CommentList';
 

@@ -8,7 +8,7 @@ import {
   Check,
   X 
 } from 'lucide-react';
-import { users } from '@/lib/api';
+import { users } from '../../lib/api';
 
 export default function FollowButton({ 
   targetUserID, 

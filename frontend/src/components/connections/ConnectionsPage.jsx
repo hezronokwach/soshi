@@ -7,7 +7,7 @@ import {
   UserCheck
 } from 'lucide-react';
 import FollowersList from './FollowersList';
-import { users } from '@/lib/api';
+import { users } from '../../lib/api';
 
 export default function ConnectionsPage({ userID = null, isOwnProfile = false }) {
   const [activeTab, setActiveTab] = useState('followers');

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { upload } from '@/lib/api';
+import { useAuth } from '../../hooks/useAuth';
+import { upload } from '../../lib/api';
 import { ImagePlus, X } from 'lucide-react';
 
 export default function CommentForm({ onSubmit, parentId = null, onCancel, initialContent = '' }) {
