@@ -60,7 +60,7 @@ export default function LikedPostsPage() {
           ))
         ) : (
           <div className="text-center py-8 text-text-secondary">
-            <p>You haven't liked any posts yet.</p>
+            <p>{"You haven't liked any posts yet."}</p>
           </div>
         )}
 
