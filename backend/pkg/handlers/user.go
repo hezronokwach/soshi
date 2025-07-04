@@ -345,9 +345,14 @@ func (h *UserHandler) FollowUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create notification for the followed user
-	notificationMessage := user.FirstName + " " + user.LastName + " started following you"
-	_, _ = models.CreateNotification(h.db, targetUserID, "follow", notificationMessage, user.ID)
+	// Create notification based on follow status
+	var notificationMessage string
+	if status == "accepted" {
+		notificationMessage = user.FirstName + " " + user.LastName + " started following you"
+	} else {
+		notificationMessage = user.FirstName + " " + user.LastName + " is requesting to follow you"
+	}
+	_, _ = models.CreateNotification(h.db, targetUserID, "follow_request", notificationMessage, user.ID)
 
 	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
 		"success": true,
@@ -463,6 +468,35 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.RespondWithJSON(w, http.StatusOK, allUsers)
+}
+
+// AcceptFollowRequest accepts a follow request
+func (h *UserHandler) AcceptFollowRequest(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value("user").(*models.User)
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Get follower ID from URL
+	followerIDParam := chi.URLParam(r, "userID")
+	followerID, err := strconv.Atoi(followerIDParam)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	// Accept the follow request
+	err = models.AcceptFollowRequest(h.db, followerID, user.ID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+		"success": true,
+		"message": "Follow request accepted",
+	})
 }
 
 // AcceptMessageRequestHandler allows a user to accept a message request
