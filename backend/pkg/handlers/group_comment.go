@@ -23,7 +23,7 @@ func NewGroupCommentHandler(db *sql.DB) *GroupCommentHandler {
 // GetGroupPostComments retrieves comments for a group post
 func (h *GroupCommentHandler) GetGroupPostComments(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -83,7 +83,7 @@ func (h *GroupCommentHandler) GetGroupPostComments(w http.ResponseWriter, r *htt
 // CreateGroupPostComment creates a new comment on a group post
 func (h *GroupCommentHandler) CreateGroupPostComment(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -147,7 +147,7 @@ func (h *GroupCommentHandler) CreateGroupPostComment(w http.ResponseWriter, r *h
 // GetGroupPostComment retrieves a specific group post comment
 func (h *GroupCommentHandler) GetGroupPostComment(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -196,7 +196,7 @@ func (h *GroupCommentHandler) GetGroupPostComment(w http.ResponseWriter, r *http
 // UpdateGroupPostComment updates a group post comment
 func (h *GroupCommentHandler) UpdateGroupPostComment(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -247,7 +247,7 @@ func (h *GroupCommentHandler) UpdateGroupPostComment(w http.ResponseWriter, r *h
 // DeleteGroupPostComment deletes a group post comment
 func (h *GroupCommentHandler) DeleteGroupPostComment(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -274,7 +274,7 @@ func (h *GroupCommentHandler) DeleteGroupPostComment(w http.ResponseWriter, r *h
 // AddGroupPostCommentReaction adds or updates a reaction to a group post comment
 func (h *GroupCommentHandler) AddGroupPostCommentReaction(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -317,7 +317,7 @@ func (h *GroupCommentHandler) AddGroupPostCommentReaction(w http.ResponseWriter,
 // GetGroupPostCommentReactions retrieves reactions for a group post comment
 func (h *GroupCommentHandler) GetGroupPostCommentReactions(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return

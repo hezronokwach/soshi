@@ -35,7 +35,7 @@ func (h *GroupHandler) GetGroups(w http.ResponseWriter, r *http.Request) {
 // CreateGroup creates a new group
 func (h *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -131,7 +131,7 @@ func (h *GroupHandler) GetGroup(w http.ResponseWriter, r *http.Request) {
 // UpdateGroup updates a group
 func (h *GroupHandler) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -221,7 +221,7 @@ func (h *GroupHandler) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 // DeleteGroup deletes a group
 func (h *GroupHandler) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -263,7 +263,7 @@ func (h *GroupHandler) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 // JoinGroup handles a user joining a group
 func (h *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -314,7 +314,7 @@ func (h *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 // LeaveGroup handles a user leaving a group
 func (h *GroupHandler) LeaveGroup(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -341,7 +341,7 @@ func (h *GroupHandler) LeaveGroup(w http.ResponseWriter, r *http.Request) {
 // UpdateMember updates a member's status in a group
 func (h *GroupHandler) UpdateMember(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -443,7 +443,7 @@ func (h *GroupHandler) UpdateMember(w http.ResponseWriter, r *http.Request) {
 // RemoveMember removes a member from a group
 func (h *GroupHandler) RemoveMember(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -495,7 +495,7 @@ func (h *GroupHandler) RemoveMember(w http.ResponseWriter, r *http.Request) {
 // GetPosts retrieves posts in a group
 func (h *GroupHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -538,7 +538,7 @@ func (h *GroupHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 // CreatePost creates a new post in a group
 func (h *GroupHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -582,7 +582,7 @@ func (h *GroupHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 // GetEvents retrieves events in a group
 func (h *GroupHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -609,7 +609,7 @@ func (h *GroupHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 // CreateEvent creates a new event in a group
 func (h *GroupHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -677,7 +677,7 @@ func (h *GroupHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 // RespondToEvent handles a user responding to an event
 func (h *GroupHandler) RespondToEvent(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -720,7 +720,7 @@ func (h *GroupHandler) RespondToEvent(w http.ResponseWriter, r *http.Request) {
 // AddGroupPostReaction handles adding/updating reactions to group posts
 func (h *GroupHandler) AddGroupPostReaction(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "User not authenticated")
 		return
@@ -763,7 +763,7 @@ func (h *GroupHandler) AddGroupPostReaction(w http.ResponseWriter, r *http.Reque
 // GetGroupPostReactions handles getting reactions for a group post
 func (h *GroupHandler) GetGroupPostReactions(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "User not authenticated")
 		return

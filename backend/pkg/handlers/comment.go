@@ -23,7 +23,7 @@ func NewCommentHandler(db *sql.DB) *CommentHandler {
 // GetPostComments retrieves comments for a post
 func (h *CommentHandler) GetPostComments(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	// user, ok := r.Context().Value("user").(*models.User)
+	// user, ok := md.GetUserFromContext(r.Context())
 	// if !ok {
 	// 	utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 	// 	return
@@ -100,7 +100,7 @@ func (h *CommentHandler) GetPostComments(w http.ResponseWriter, r *http.Request)
 // CreateComment creates a new comment
 func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -203,7 +203,7 @@ func (h *CommentHandler) GetComment(w http.ResponseWriter, r *http.Request) {
 // UpdateComment updates a comment
 func (h *CommentHandler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -259,7 +259,7 @@ func (h *CommentHandler) UpdateComment(w http.ResponseWriter, r *http.Request) {
 // DeleteComment deletes a comment
 func (h *CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -299,7 +299,7 @@ func (h *CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 // GetReactions gets reactions for a comment
 func (h *CommentHandler) GetReactions(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -326,7 +326,7 @@ func (h *CommentHandler) GetReactions(w http.ResponseWriter, r *http.Request) {
 // AddReaction adds a reaction to a comment
 func (h *CommentHandler) AddReaction(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
