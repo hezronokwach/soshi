@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/hezronokwach/soshi/pkg/models"
+	md "github.com/hezronokwach/soshi/pkg/middleware"
 	"github.com/hezronokwach/soshi/pkg/utils"
 
 	"github.com/google/uuid"
@@ -23,7 +23,7 @@ func NewUploadHandler() *UploadHandler {
 // UploadFile handles file uploads
 func (h *UploadHandler) UploadFile(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return

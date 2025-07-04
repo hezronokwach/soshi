@@ -22,7 +22,7 @@ func NewPostHandler(db *sql.DB) *PostHandler {
 // GetPosts retrieves posts for the feed
 func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -58,7 +58,7 @@ func (h *PostHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 // CreatePost creates a new post
 func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -122,7 +122,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 // UpdatePost updates an existing post
 func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -178,7 +178,7 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 // DeletePost deletes a post
 func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -213,7 +213,7 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 // GetReactions gets reactions for a post
 func (h *PostHandler) GetReactions(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -244,7 +244,7 @@ func (h *PostHandler) GetReactions(w http.ResponseWriter, r *http.Request) {
 // GetCommentedPosts retrieves posts that the current user has commented on
 func (h *PostHandler) GetCommentedPosts(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -284,7 +284,7 @@ func (h *PostHandler) GetCommentedPosts(w http.ResponseWriter, r *http.Request) 
 // SavePost saves a post for the current user
 func (h *PostHandler) SavePost(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -312,7 +312,7 @@ func (h *PostHandler) SavePost(w http.ResponseWriter, r *http.Request) {
 // UnsavePost removes a saved post for the current user
 func (h *PostHandler) UnsavePost(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -340,7 +340,7 @@ func (h *PostHandler) UnsavePost(w http.ResponseWriter, r *http.Request) {
 // CheckPostSaved checks if a post is saved by the current user
 func (h *PostHandler) CheckPostSaved(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -368,7 +368,7 @@ func (h *PostHandler) CheckPostSaved(w http.ResponseWriter, r *http.Request) {
 // GetSavedPosts retrieves posts saved by the current user
 func (h *PostHandler) GetSavedPosts(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -408,7 +408,7 @@ func (h *PostHandler) GetSavedPosts(w http.ResponseWriter, r *http.Request) {
 // GetLikedPosts retrieves posts liked by the current user
 func (h *PostHandler) GetLikedPosts(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -448,7 +448,7 @@ func (h *PostHandler) GetLikedPosts(w http.ResponseWriter, r *http.Request) {
 // AddReaction adds a reaction to a post
 func (h *PostHandler) AddReaction(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
