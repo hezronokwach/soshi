@@ -6,10 +6,9 @@ import (
 	"net/http"
 	"strconv"
 
+	md "github.com/hezronokwach/soshi/pkg/middleware"
 	"github.com/hezronokwach/soshi/pkg/models"
 	"github.com/hezronokwach/soshi/pkg/utils"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type PostHandler struct {
@@ -221,7 +220,11 @@ func (h *PostHandler) GetReactions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get post ID from URL
-	postIdStr := chi.URLParam(r, "postID")
+	postIdStr := md.GetURLParam(r, "postID")
+	if postIdStr == "" {
+		utils.RespondWithError(w, http.StatusBadRequest, "Missing postID")
+		return
+	}
 	postId, err := strconv.Atoi(postIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")
@@ -288,7 +291,7 @@ func (h *PostHandler) SavePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get post ID from URL
-	postID, err := strconv.Atoi(chi.URLParam(r, "postID"))
+	postID, err := strconv.Atoi(md.GetURLParam(r, "postID"))
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")
 		return
@@ -316,7 +319,7 @@ func (h *PostHandler) UnsavePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get post ID from URL
-	postID, err := strconv.Atoi(chi.URLParam(r, "postID"))
+	postID, err := strconv.Atoi(md.GetURLParam(r, "postID"))
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")
 		return
@@ -344,7 +347,7 @@ func (h *PostHandler) CheckPostSaved(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get post ID from URL
-	postID, err := strconv.Atoi(chi.URLParam(r, "postID"))
+	postID, err := strconv.Atoi(md.GetURLParam(r, "postID"))
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")
 		return
@@ -452,7 +455,7 @@ func (h *PostHandler) AddReaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get post ID from URL
-	postIdStr := chi.URLParam(r, "postID")
+	postIdStr := md.GetURLParam(r, "postID")
 	postId, err := strconv.Atoi(postIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")
