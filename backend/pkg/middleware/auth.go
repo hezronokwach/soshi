@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/hezronokwach/soshi/pkg/models"
+	"github.com/hezronokwach/soshi/pkg/utils"
 )
 
 // Auth middleware to check if user is authenticated
@@ -16,10 +17,10 @@ func Auth(db *sql.DB) func(http.Handler) http.Handler {
 			cookie, err := r.Cookie("session_token")
 			if err != nil {
 				if err == http.ErrNoCookie {
-					http.Error(w, "Unauthorized", http.StatusUnauthorized)
+					utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 					return
 				}
-				http.Error(w, "Bad request", http.StatusBadRequest)
+				utils.RespondWithError(w, http.StatusBadRequest, "Bad Request")
 				return
 			}
 			sessionToken := cookie.Value
@@ -27,22 +28,22 @@ func Auth(db *sql.DB) func(http.Handler) http.Handler {
 			// Get session
 			session, err := models.GetSessionByToken(db, sessionToken)
 			if err != nil {
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
+				utils.RespondWithError(w, http.StatusInternalServerError, "Internal server error")
 				return
 			}
 			if session == nil {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 				return
 			}
 
 			// Get user
 			user, err := models.GetUserById(db, session.UserID)
 			if err != nil {
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
+				utils.RespondWithError(w, http.StatusInternalServerError, "Internal server error")
 				return
 			}
 			if user == nil {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 				return
 			}
 
