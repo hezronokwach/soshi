@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { messages, connectWebSocket } from '@/lib/api';
+import { useAuth } from '../../hooks/useAuth';
+import { messages, connectWebSocket } from '../../lib/api';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import { MessageSquare, Users } from 'lucide-react';

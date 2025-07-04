@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { users } from '@/lib/api';
+import { users } from '../../lib/api';
 import { X, Search, User } from 'lucide-react';
 
 export default function UserSelector({ onUserSelect, onClose }) {

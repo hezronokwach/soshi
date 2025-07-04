@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { messages } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
+import { messages } from '../../lib/api';
+import { useAuth } from '../../hooks/useAuth';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import { User, MoreVertical } from 'lucide-react';

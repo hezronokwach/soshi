@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { messages } from '@/lib/api';
+import { useAuth } from '../../hooks/useAuth';
+import { messages } from '../../lib/api';
 import ConversationList from './ConversationList';
 import MessageArea from './MessageArea';
 import UserSelector from './UserSelector';
