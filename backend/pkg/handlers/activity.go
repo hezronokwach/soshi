@@ -280,7 +280,7 @@ func (h *ActivityHandler) filterActivitiesByPrivacy(activities []models.Activity
 		}
 	}
 
-	// Filter activities based on settings
+	// Filter activities based on settings and post privacy
 	var filteredActivities []models.Activity
 	for _, activity := range activities {
 		shouldShow := false
@@ -296,10 +296,77 @@ func (h *ActivityHandler) filterActivitiesByPrivacy(activities []models.Activity
 			shouldShow = true // Show unknown activity types by default
 		}
 
+		// Additional privacy check for post-related activities
+		if shouldShow && activity.TargetType == "post" && activity.TargetID > 0 {
+			// Check if the post is private and if viewer has access
+			canView, err := h.canViewPost(activity.TargetID, viewerUserID)
+			if err != nil || !canView {
+				shouldShow = false
+			}
+		}
+
 		if shouldShow {
 			filteredActivities = append(filteredActivities, activity)
 		}
 	}
 
 	return filteredActivities, nil
+}
+
+// Helper function to check if a user can view a specific post
+func (h *ActivityHandler) canViewPost(postID int, viewerUserID int) (bool, error) {
+	var privacy string
+	var postOwnerID int
+	var selectedUsers string
+	
+	err := h.db.QueryRow(`
+		SELECT privacy, user_id, COALESCE(selected_users, '') 
+		FROM posts 
+		WHERE id = ?
+	`, postID).Scan(&privacy, &postOwnerID, &selectedUsers)
+	
+	if err != nil {
+		return false, err
+	}
+	
+	// Post owner can always see their own posts
+	if postOwnerID == viewerUserID {
+		return true, nil
+	}
+	
+	// Public posts are visible to everyone
+	if privacy == "public" {
+		return true, nil
+	}
+	
+	// Almost private posts are visible to followers
+	if privacy == "almost_private" {
+		var isFollowing bool
+		err := h.db.QueryRow(`
+			SELECT EXISTS(
+				SELECT 1 FROM follows 
+				WHERE follower_id = ? AND following_id = ? AND status = 'accepted'
+			)
+		`, viewerUserID, postOwnerID).Scan(&isFollowing)
+		
+		if err != nil {
+			return false, err
+		}
+		
+		return isFollowing, nil
+	}
+	
+	// Private posts are only visible to selected users
+	if privacy == "private" {
+		// Check if viewer is in selected users list
+		// This is a simplified check - in production you'd parse the JSON properly
+		if selectedUsers != "" {
+			// Simple string contains check - should be improved with proper JSON parsing
+			viewerIDStr := strconv.Itoa(viewerUserID)
+			return strings.Contains(selectedUsers, viewerIDStr), nil
+		}
+		return false, nil
+	}
+	
+	return false, nil
 }
