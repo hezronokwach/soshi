@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-chi/chi/v5"
+	md "github.com/hezronokwach/soshi/pkg/middleware"
 	"github.com/hezronokwach/soshi/pkg/models"
 	"github.com/hezronokwach/soshi/pkg/utils"
 	"github.com/hezronokwach/soshi/pkg/websocket"
@@ -32,7 +32,7 @@ func (h *MessageHandler) SendPrivateMessage(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Get recipient user ID from URL
-	recipientIDStr := chi.URLParam(r, "userID")
+	recipientIDStr := md.GetURLParam(r, "userID")
 	recipientID, err := strconv.Atoi(recipientIDStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -76,7 +76,7 @@ func (h *MessageHandler) GetPrivateMessages(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Get other user ID from URL
-	otherUserIDStr := chi.URLParam(r, "userID")
+	otherUserIDStr := md.GetURLParam(r, "userID")
 	otherUserID, err := strconv.Atoi(otherUserIDStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -165,7 +165,7 @@ func (h *MessageHandler) MarkMessagesAsRead(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Get other user ID from URL
-	otherUserIDStr := chi.URLParam(r, "userID")
+	otherUserIDStr := md.GetURLParam(r, "userID")
 	otherUserID, err := strconv.Atoi(otherUserIDStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -214,7 +214,7 @@ func (h *MessageHandler) SendGroupMessage(w http.ResponseWriter, r *http.Request
 	}
 
 	// Get group ID from URL
-	groupIDStr := chi.URLParam(r, "groupID")
+	groupIDStr := md.GetURLParam(r, "groupID")
 	groupID, err := strconv.Atoi(groupIDStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -265,7 +265,7 @@ func (h *MessageHandler) GetGroupMessages(w http.ResponseWriter, r *http.Request
 	}
 
 	// Get group ID from URL
-	groupIDStr := chi.URLParam(r, "groupID")
+	groupIDStr := md.GetURLParam(r, "groupID")
 	groupID, err := strconv.Atoi(groupIDStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
