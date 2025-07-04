@@ -429,6 +429,11 @@ export const users = {
       method: "DELETE",
     }),
 
+  acceptFollowRequest: (userID) =>
+    fetchAPI(`/api/users/${userID}/accept-follow`, {
+      method: "POST",
+    }),
+
   getSuggestedUsers: () => fetchAPI("/api/users/suggested"),
 
   getOnlineUsers: () => fetchAPI("/api/users/online"),
