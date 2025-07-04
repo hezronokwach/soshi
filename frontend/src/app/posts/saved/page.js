@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import PostCard from '@/components/posts/PostCard';
+import { useAuth } from '../../../hooks/useAuth';
+import PostCard from '../../../components/posts/PostCard';
 import { Loader2 } from 'lucide-react';
 
 export default function SavedPostsPage() {

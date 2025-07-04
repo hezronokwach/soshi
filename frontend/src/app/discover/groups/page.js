@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { groups } from '@/lib/api';
-import Navbar from '@/components/layout/Navbar';
-import LeftSidebar from '@/components/layout/LeftSidebar';
-import RightSidebar from '@/components/layout/RightSidebar';
+import { useAuth } from '../../../hooks/useAuth';
+import { groups } from '../../../lib/api';
+import Navbar from '../../../components/layout/Navbar';
+import LeftSidebar from '../../../components/layout/LeftSidebar';
+import RightSidebar from '../../../components/layout/RightSidebar';
 import { Search, Users, Hash, Globe, Lock } from 'lucide-react';
 import Link from 'next/link';
 

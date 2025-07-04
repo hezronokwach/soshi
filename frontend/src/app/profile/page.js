@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useProfile';
-import ProfileDisplay from '@/components/profile/ProfileDisplay';
-import ProfileEditForm from '@/components/profile/ProfileEditForm';
-import ActivityPage from '@/components/activity/ActivityPage';
-import ConnectionsPage from '@/components/connections/ConnectionsPage';
+import { useAuth } from '../../hooks/useAuth';
+import { useProfile } from '../../hooks/useProfile';
+import ProfileDisplay from '../../components/profile/ProfileDisplay';
+import ProfileEditForm from '../../components/profile/ProfileEditForm';
+import ActivityPage from '../../components/activity/ActivityPage';
+import ConnectionsPage from '../../components/connections/ConnectionsPage';
 import { User, Activity, Users } from 'lucide-react';
 
 export default function ProfilePage() {

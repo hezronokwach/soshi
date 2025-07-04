@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { notifications } from '@/lib/api';
-import Navbar from '@/components/layout/Navbar';
+import { notifications } from '../../lib/api';
+import Navbar from '../../components/layout/Navbar';
 import { Bell, User, Users, Heart, MessageSquare } from 'lucide-react';
 
 export default function NotificationsPage() {
@@ -52,7 +52,7 @@ export default function NotificationsPage() {
 
   const handleAcceptFollowRequest = async (userId, notificationId) => {
     try {
-      const { users } = await import('@/lib/api');
+      const { users } = await import('../../lib/api');
       await users.acceptFollowRequest(userId);
       await handleMarkAsRead(notificationId);
       fetchNotifications();
@@ -63,7 +63,7 @@ export default function NotificationsPage() {
 
   const handleDeclineFollowRequest = async (userId, notificationId) => {
     try {
-      const { users } = await import('@/lib/api');
+      const { users } = await import('../../lib/api');
       await users.cancelFollowRequest(userId);
       await handleMarkAsRead(notificationId);
       fetchNotifications();

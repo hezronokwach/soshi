@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import { users } from '@/lib/api';
-import Navbar from '@/components/layout/Navbar';
-import ProfileDisplay from '@/components/profile/ProfileDisplay';
-import ActivityPage from '@/components/activity/ActivityPage';
-import ConnectionsPage from '@/components/connections/ConnectionsPage';
+import { useAuth } from '../../../hooks/useAuth';
+import { users } from '../../../lib/api';
+import Navbar from '../../../components/layout/Navbar';
+import ProfileDisplay from '../../../components/profile/ProfileDisplay';
+import ActivityPage from '../../../components/activity/ActivityPage';
+import ConnectionsPage from '../../../components/connections/ConnectionsPage';
 import { User, Activity, Users } from 'lucide-react';
 
 export default function UserProfilePage() {

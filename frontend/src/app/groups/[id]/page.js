@@ -2,14 +2,14 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { groups } from '@/lib/api';
-import GroupPosts from '@/components/groups/GroupPosts';
-import GroupMembers from '@/components/groups/GroupMembers';
-import GroupEvents from '@/components/groups/GroupEvents';
-import GroupChatInterface from '@/components/chat/GroupChatInterface';
+import { Card } from '../../../components/ui/card';
+import { Button } from '../../../components/ui/button';
+import { useAuth } from '../../../hooks/useAuth';
+import { groups } from '../../../lib/api';
+import GroupPosts from '../../../components/groups/GroupPosts';
+import GroupMembers from '../../../components/groups/GroupMembers';
+import GroupEvents from '../../../components/groups/GroupEvents';
+import GroupChatInterface from '../../../components/chat/GroupChatInterface';
 
 export default function GroupDetailPage() {
   const params = useParams();

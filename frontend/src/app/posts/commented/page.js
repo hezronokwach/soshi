@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { posts as postsAPI } from "@/lib/api";
-import PostCard from "@/components/posts/PostCard";
+import { useAuth } from "../../../hooks/useAuth";
+import { posts as postsAPI } from "../../../lib/api";
+import PostCard from "../../../components/posts/PostCard";
 
 export default function CommentedPostsPage() {
   const [posts, setPosts] = useState([]);
