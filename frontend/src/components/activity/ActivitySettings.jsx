@@ -9,7 +9,7 @@ import {
   Save,
   AlertCircle
 } from 'lucide-react';
-import { activity as activityAPI } from '@/lib/api';
+import { activity as activityAPI } from '../../lib/api';
 
 export default function ActivitySettings() {
   const [settings, setSettings] = useState({
