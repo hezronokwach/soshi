@@ -9,6 +9,9 @@ import (
 	"github.com/hezronokwach/soshi/pkg/utils"
 )
 
+// Create a specific key for user context
+const userContextKey contextKey = "user"
+
 // Auth middleware to check if user is authenticated
 func Auth(db *sql.DB) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -31,6 +34,7 @@ func Auth(db *sql.DB) func(http.Handler) http.Handler {
 				utils.RespondWithError(w, http.StatusInternalServerError, "Internal server error")
 				return
 			}
+
 			if session == nil {
 				utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 				return
@@ -42,14 +46,21 @@ func Auth(db *sql.DB) func(http.Handler) http.Handler {
 				utils.RespondWithError(w, http.StatusInternalServerError, "Internal server error")
 				return
 			}
+
 			if user == nil {
 				utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 				return
 			}
 
-			// Add user to context
-			ctx := context.WithValue(r.Context(), "user", user)
+			// Add user to context using custom key type
+			ctx := context.WithValue(r.Context(), userContextKey, user)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+// Helper function to get user from context with type safety
+func GetUserFromContext(ctx context.Context) (*models.User, bool) {
+	user, ok := ctx.Value(userContextKey).(*models.User)
+	return user, ok
 }
