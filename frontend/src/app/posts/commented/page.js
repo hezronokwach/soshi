@@ -59,7 +59,7 @@ export default function CommentedPostsPage() {
           ))
         ) : (
           <div className="text-center py-8 text-text-secondary">
-            <p>You haven't commented on any posts yet.</p>
+            <p>{"You haven't commented on any posts yet."}</p>
           </div>
         )}
 
