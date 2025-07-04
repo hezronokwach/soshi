@@ -7,10 +7,9 @@ import (
 	"strconv"
 	"time"
 
+	md "github.com/hezronokwach/soshi/pkg/middleware"
 	"github.com/hezronokwach/soshi/pkg/models"
 	"github.com/hezronokwach/soshi/pkg/utils"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type GroupHandler struct {
@@ -100,7 +99,7 @@ func (h *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
 // GetGroup retrieves a group by ID
 func (h *GroupHandler) GetGroup(w http.ResponseWriter, r *http.Request) {
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -139,7 +138,7 @@ func (h *GroupHandler) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -229,7 +228,7 @@ func (h *GroupHandler) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -271,7 +270,7 @@ func (h *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -322,7 +321,7 @@ func (h *GroupHandler) LeaveGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -349,14 +348,14 @@ func (h *GroupHandler) UpdateMember(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get group ID and user ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
 		return
 	}
 
-	memberIdStr := chi.URLParam(r, "userID")
+	memberIdStr := md.GetURLParam(r, "userID")
 	memberId, err := strconv.Atoi(memberIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -451,14 +450,14 @@ func (h *GroupHandler) RemoveMember(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get group ID and user ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
 		return
 	}
 
-	memberIdStr := chi.URLParam(r, "userID")
+	memberIdStr := md.GetURLParam(r, "userID")
 	memberId, err := strconv.Atoi(memberIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -503,7 +502,7 @@ func (h *GroupHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -546,7 +545,7 @@ func (h *GroupHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -590,7 +589,7 @@ func (h *GroupHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -617,7 +616,7 @@ func (h *GroupHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -685,7 +684,7 @@ func (h *GroupHandler) RespondToEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get event ID from URL
-	eventIdStr := chi.URLParam(r, "eventID")
+	eventIdStr := md.GetURLParam(r, "eventID")
 	eventId, err := strconv.Atoi(eventIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid event ID")
@@ -728,7 +727,7 @@ func (h *GroupHandler) AddGroupPostReaction(w http.ResponseWriter, r *http.Reque
 	}
 
 	// Get post ID from URL
-	postIDStr := chi.URLParam(r, "postID")
+	postIDStr := md.GetURLParam(r, "postID")
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")
@@ -771,7 +770,7 @@ func (h *GroupHandler) GetGroupPostReactions(w http.ResponseWriter, r *http.Requ
 	}
 
 	// Get post ID from URL
-	postIDStr := chi.URLParam(r, "postID")
+	postIDStr := md.GetURLParam(r, "postID")
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")
