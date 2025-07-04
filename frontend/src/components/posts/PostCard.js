@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { upload } from "@/lib/api";
-import { getImageUrl } from "@/utils/image";
+import { useAuth } from "../../hooks/useAuth";
+import { upload } from "../../lib/api";
+import { getImageUrl } from "../../utils/image";
 import { Edit, Trash2, ThumbsUp, ThumbsDown, MessageSquare, Bookmark, BookmarkCheck, Loader2, ImagePlus, X } from "lucide-react";
-import CommentSection from "@/components/comments/CommentSection";
+import CommentSection from "../comments/CommentSection";
 import SelectFollowersModal from "./SelectFollowersModal";
 
 export default function PostCard({ post, onDelete, onUpdate }) {

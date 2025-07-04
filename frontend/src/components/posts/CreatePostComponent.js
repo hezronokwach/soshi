@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { upload } from "@/lib/api";
+import { useAuth } from "../../hooks/useAuth";
+import { upload } from "../../lib/api";
 import SelectFollowersModal from "./SelectFollowersModal";
 
 export default function CreatePostComponent({ onPostCreated }) {

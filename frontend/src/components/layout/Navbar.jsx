@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Menu, X, Bell, MessageSquare, User, LogOut } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { notifications, messages } from "@/lib/api";
+import { notifications, messages } from "../../lib/api";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

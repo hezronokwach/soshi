@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { User, Users, Plus } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { users, groups } from "@/lib/api";
-import FollowButton from "@/components/connections/FollowButton";
+import { useAuth } from "../../hooks/useAuth";
+import { users, groups } from "../../lib/api";
+import FollowButton from "../connections/FollowButton";
 
 export default function RightSidebar() {
   const { user } = useAuth();
