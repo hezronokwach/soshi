@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import ProfileDisplay from './ProfileDisplay';
 import ProfileEditForm from './ProfileEditForm';
-import { users } from '@/lib/api';
+import { users } from '../../lib/api';
 import { User, Settings, Shield } from 'lucide-react';
 
 export default function ProfileComponent({ userId = null, isOwnProfile = false }) {

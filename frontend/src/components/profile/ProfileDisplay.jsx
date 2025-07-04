@@ -11,9 +11,9 @@ import {
   UserCheck,
   Users
 } from 'lucide-react';
-import FollowButton from '@/components/connections/FollowButton';
-import { users } from '@/lib/api';
-import { getAvatarUrl, getInitials } from '@/utils/image';
+import FollowButton from '../connections/FollowButton';
+import { users } from '../../lib/api';
+import { getAvatarUrl, getInitials } from '../../utils/image';
 
 export default function ProfileDisplay({ 
   user, 

@@ -16,7 +16,7 @@ import {
   Globe,
   Lock
 } from 'lucide-react';
-import { getAvatarUrl, getInitials } from '@/utils/image';
+import { getAvatarUrl, getInitials } from '../../utils/image';
 
 // Validation schema
 const profileSchema = z.object({
@@ -78,7 +78,7 @@ export default function ProfileEditForm({
       // Handle avatar upload if a new file was selected
       if (avatarFile) {
         try {
-          const { upload } = await import('@/lib/api');
+          const { upload } = await import('../../lib/api');
           const uploadResponse = await upload.uploadFile(avatarFile);
           avatarUrl = uploadResponse.url;
         } catch (uploadError) {
