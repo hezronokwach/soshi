@@ -50,16 +50,39 @@ export default function NotificationsPage() {
     }
   };
 
+  const handleAcceptFollowRequest = async (userId, notificationId) => {
+    try {
+      const { users } = await import('@/lib/api');
+      await users.acceptFollowRequest(userId);
+      await handleMarkAsRead(notificationId);
+      fetchNotifications();
+    } catch (error) {
+      console.error('Failed to accept follow request:', error);
+    }
+  };
+
+  const handleDeclineFollowRequest = async (userId, notificationId) => {
+    try {
+      const { users } = await import('@/lib/api');
+      await users.cancelFollowRequest(userId);
+      await handleMarkAsRead(notificationId);
+      fetchNotifications();
+    } catch (error) {
+      console.error('Failed to decline follow request:', error);
+    }
+  };
+
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'follow':
-        return <Users size={20} className="text-primary" />;
+      case 'follow_request':
+        return <Users size={20} className="text-[#3A86FF]" />;
       case 'like':
-        return <Heart size={20} className="text-error" />;
+        return <Heart size={20} className="text-[#EF476F]" />;
       case 'comment':
-        return <MessageSquare size={20} className="text-secondary" />;
+        return <MessageSquare size={20} className="text-[#8338EC]" />;
       default:
-        return <Bell size={20} className="text-text-secondary" />;
+        return <Bell size={20} className="text-[#B8C1CF]" />;
     }
   };
 
@@ -156,9 +179,31 @@ export default function NotificationsPage() {
                       <p className="text-[#6C7A89] text-sm mt-1 font-inter">
                         {formatDate(notification.created_at)}
                       </p>
+                      {notification.type === 'follow_request' && !notification.is_read && (
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAcceptFollowRequest(notification.related_id, notification.id);
+                            }}
+                            className="bg-gradient-to-r from-[#06D6A0] to-[#3A86FF] hover:shadow-[0_0_15px_rgba(6,214,160,0.5)] text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-250 hover:scale-105"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeclineFollowRequest(notification.related_id, notification.id);
+                            }}
+                            className="bg-[#0F1624] hover:bg-[#2A3343] text-[#B8C1CF] hover:text-[#FFFFFF] px-4 py-2 rounded-lg text-sm font-medium border border-[#2A3343] hover:border-[#EF476F] transition-all duration-250 hover:scale-105"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      )}
                     </div>
                     {!notification.is_read && (
-                      <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>
+                      <div className="w-2 h-2 bg-[#3A86FF] rounded-full flex-shrink-0 mt-2"></div>
                     )}
                   </div>
                 </div>
