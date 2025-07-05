@@ -7,10 +7,9 @@ import (
 	"strconv"
 	"time"
 
+	md "github.com/hezronokwach/soshi/pkg/middleware"
 	"github.com/hezronokwach/soshi/pkg/models"
 	"github.com/hezronokwach/soshi/pkg/utils"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type GroupHandler struct {
@@ -36,7 +35,7 @@ func (h *GroupHandler) GetGroups(w http.ResponseWriter, r *http.Request) {
 // CreateGroup creates a new group
 func (h *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -100,7 +99,7 @@ func (h *GroupHandler) CreateGroup(w http.ResponseWriter, r *http.Request) {
 // GetGroup retrieves a group by ID
 func (h *GroupHandler) GetGroup(w http.ResponseWriter, r *http.Request) {
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -132,14 +131,14 @@ func (h *GroupHandler) GetGroup(w http.ResponseWriter, r *http.Request) {
 // UpdateGroup updates a group
 func (h *GroupHandler) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -222,14 +221,14 @@ func (h *GroupHandler) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 // DeleteGroup deletes a group
 func (h *GroupHandler) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -264,14 +263,14 @@ func (h *GroupHandler) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 // JoinGroup handles a user joining a group
 func (h *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -315,14 +314,14 @@ func (h *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 // LeaveGroup handles a user leaving a group
 func (h *GroupHandler) LeaveGroup(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -342,21 +341,21 @@ func (h *GroupHandler) LeaveGroup(w http.ResponseWriter, r *http.Request) {
 // UpdateMember updates a member's status in a group
 func (h *GroupHandler) UpdateMember(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get group ID and user ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
 		return
 	}
 
-	memberIdStr := chi.URLParam(r, "userID")
+	memberIdStr := md.GetURLParam(r, "userID")
 	memberId, err := strconv.Atoi(memberIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -444,21 +443,21 @@ func (h *GroupHandler) UpdateMember(w http.ResponseWriter, r *http.Request) {
 // RemoveMember removes a member from a group
 func (h *GroupHandler) RemoveMember(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get group ID and user ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
 		return
 	}
 
-	memberIdStr := chi.URLParam(r, "userID")
+	memberIdStr := md.GetURLParam(r, "userID")
 	memberId, err := strconv.Atoi(memberIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -496,14 +495,14 @@ func (h *GroupHandler) RemoveMember(w http.ResponseWriter, r *http.Request) {
 // GetPosts retrieves posts in a group
 func (h *GroupHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -539,14 +538,14 @@ func (h *GroupHandler) GetPosts(w http.ResponseWriter, r *http.Request) {
 // CreatePost creates a new post in a group
 func (h *GroupHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -583,14 +582,14 @@ func (h *GroupHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 // GetEvents retrieves events in a group
 func (h *GroupHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -610,14 +609,14 @@ func (h *GroupHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 // CreateEvent creates a new event in a group
 func (h *GroupHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get group ID from URL
-	groupIdStr := chi.URLParam(r, "groupID")
+	groupIdStr := md.GetURLParam(r, "groupID")
 	groupId, err := strconv.Atoi(groupIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
@@ -678,14 +677,14 @@ func (h *GroupHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 // RespondToEvent handles a user responding to an event
 func (h *GroupHandler) RespondToEvent(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get event ID from URL
-	eventIdStr := chi.URLParam(r, "eventID")
+	eventIdStr := md.GetURLParam(r, "eventID")
 	eventId, err := strconv.Atoi(eventIdStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid event ID")
@@ -721,14 +720,14 @@ func (h *GroupHandler) RespondToEvent(w http.ResponseWriter, r *http.Request) {
 // AddGroupPostReaction handles adding/updating reactions to group posts
 func (h *GroupHandler) AddGroupPostReaction(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "User not authenticated")
 		return
 	}
 
 	// Get post ID from URL
-	postIDStr := chi.URLParam(r, "postID")
+	postIDStr := md.GetURLParam(r, "postID")
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")
@@ -764,14 +763,14 @@ func (h *GroupHandler) AddGroupPostReaction(w http.ResponseWriter, r *http.Reque
 // GetGroupPostReactions handles getting reactions for a group post
 func (h *GroupHandler) GetGroupPostReactions(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "User not authenticated")
 		return
 	}
 
 	// Get post ID from URL
-	postIDStr := chi.URLParam(r, "postID")
+	postIDStr := md.GetURLParam(r, "postID")
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid post ID")

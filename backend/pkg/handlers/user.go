@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-chi/chi/v5"
+	md "github.com/hezronokwach/soshi/pkg/middleware"
 	"github.com/hezronokwach/soshi/pkg/models"
 	"github.com/hezronokwach/soshi/pkg/utils"
 	"github.com/hezronokwach/soshi/pkg/websocket"
@@ -24,7 +24,7 @@ func NewUserHandler(db *sql.DB, hub *websocket.Hub) *UserHandler {
 // GetFollowers retrieves users who are following the specified user
 func (h *UserHandler) GetFollowers(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -43,14 +43,14 @@ func (h *UserHandler) GetFollowers(w http.ResponseWriter, r *http.Request) {
 // GetProfile retrieves user profile information
 func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Check if requesting another user's profile
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	var targetUserID int
 	var err error
 
@@ -89,7 +89,7 @@ func (h *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 // UpdateProfile updates user profile information
 func (h *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -121,7 +121,7 @@ func (h *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 // UpdateProfilePrivacy updates user profile privacy setting
 func (h *UserHandler) UpdateProfilePrivacy(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -141,7 +141,6 @@ func (h *UserHandler) UpdateProfilePrivacy(w http.ResponseWriter, r *http.Reques
 		INSERT OR REPLACE INTO user_profiles (user_id, is_public, updated_at)
 		VALUES (?, ?, CURRENT_TIMESTAMP)
 	`, user.ID, privacyData.IsPublic)
-
 	if err != nil {
 		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to update privacy setting")
 		return
@@ -156,14 +155,14 @@ func (h *UserHandler) UpdateProfilePrivacy(w http.ResponseWriter, r *http.Reques
 // GetFollowing retrieves users that the current user is following
 func (h *UserHandler) GetFollowing(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Check if requesting another user's following list
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	var targetUserID int
 	var err error
 
@@ -190,7 +189,7 @@ func (h *UserHandler) GetFollowing(w http.ResponseWriter, r *http.Request) {
 // GetSuggestedUsers retrieves users that the current user might want to follow
 func (h *UserHandler) GetSuggestedUsers(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -220,7 +219,7 @@ func (h *UserHandler) GetSuggestedUsers(w http.ResponseWriter, r *http.Request) 
 // GetOnlineUsers retrieves users that are currently online (connected via WebSocket)
 func (h *UserHandler) GetOnlineUsers(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -283,14 +282,14 @@ func (h *UserHandler) GetOnlineUsers(w http.ResponseWriter, r *http.Request) {
 // GetFollowCounts retrieves follower and following counts for a user
 func (h *UserHandler) GetFollowCounts(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Check if requesting another user's counts
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	var targetUserID int
 	var err error
 
@@ -317,14 +316,14 @@ func (h *UserHandler) GetFollowCounts(w http.ResponseWriter, r *http.Request) {
 // FollowUser handles following a user
 func (h *UserHandler) FollowUser(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get user ID to follow from URL
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	targetUserID, err := strconv.Atoi(userIDParam)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -364,14 +363,14 @@ func (h *UserHandler) FollowUser(w http.ResponseWriter, r *http.Request) {
 // UnfollowUser handles unfollowing a user
 func (h *UserHandler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get user ID to unfollow from URL
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	targetUserID, err := strconv.Atoi(userIDParam)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -395,14 +394,14 @@ func (h *UserHandler) UnfollowUser(w http.ResponseWriter, r *http.Request) {
 // GetFollowStatus gets the follow status between current user and target user
 func (h *UserHandler) GetFollowStatus(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get target user ID from URL
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	targetUserID, err := strconv.Atoi(userIDParam)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -425,14 +424,14 @@ func (h *UserHandler) GetFollowStatus(w http.ResponseWriter, r *http.Request) {
 // CancelFollowRequest cancels a pending follow request
 func (h *UserHandler) CancelFollowRequest(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get target user ID from URL
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	targetUserID, err := strconv.Atoi(userIDParam)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -455,7 +454,7 @@ func (h *UserHandler) CancelFollowRequest(w http.ResponseWriter, r *http.Request
 
 // GetAllUsers returns all users (public and private) for the sidebar
 func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -472,14 +471,14 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 // AcceptFollowRequest accepts a follow request
 func (h *UserHandler) AcceptFollowRequest(w http.ResponseWriter, r *http.Request) {
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get follower ID from URL
-	followerIDParam := chi.URLParam(r, "userID")
+	followerIDParam := md.GetURLParam(r, "userID")
 	followerID, err := strconv.Atoi(followerIDParam)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid user ID")
@@ -501,7 +500,7 @@ func (h *UserHandler) AcceptFollowRequest(w http.ResponseWriter, r *http.Request
 
 // AcceptMessageRequestHandler allows a user to accept a message request
 func (h *UserHandler) AcceptMessageRequestHandler(w http.ResponseWriter, r *http.Request) {
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return

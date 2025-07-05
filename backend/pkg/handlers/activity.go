@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-chi/chi/v5"
+	md "github.com/hezronokwach/soshi/pkg/middleware"
 	"github.com/hezronokwach/soshi/pkg/models"
 	"github.com/hezronokwach/soshi/pkg/utils"
 )
@@ -23,14 +23,14 @@ func NewActivityHandler(db *sql.DB) *ActivityHandler {
 // GetUserActivities retrieves user's activity with filtering options
 func (h *ActivityHandler) GetUserActivities(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Check if requesting another user's activities
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	var targetUserID int
 	var err error
 
@@ -57,7 +57,7 @@ func (h *ActivityHandler) GetUserActivities(w http.ResponseWriter, r *http.Reque
 
 	// Parse filters
 	filters := make(map[string]interface{})
-	
+
 	// Activity types filter
 	if activityTypesParam := r.URL.Query().Get("types"); activityTypesParam != "" {
 		activityTypes := strings.Split(activityTypesParam, ",")
@@ -97,14 +97,14 @@ func (h *ActivityHandler) GetUserActivities(w http.ResponseWriter, r *http.Reque
 // GetUserPosts retrieves all posts by a user
 func (h *ActivityHandler) GetUserPosts(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Check if requesting another user's posts
-	userIDParam := chi.URLParam(r, "userID")
+	userIDParam := md.GetURLParam(r, "userID")
 	var targetUserID int
 	var err error
 
@@ -147,14 +147,14 @@ func (h *ActivityHandler) GetUserPosts(w http.ResponseWriter, r *http.Request) {
 // HideActivity hides an activity from user's activity feed
 func (h *ActivityHandler) HideActivity(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get activity ID from URL
-	activityIDParam := chi.URLParam(r, "activityID")
+	activityIDParam := md.GetURLParam(r, "activityID")
 	activityID, err := strconv.Atoi(activityIDParam)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid activity ID")
@@ -177,14 +177,14 @@ func (h *ActivityHandler) HideActivity(w http.ResponseWriter, r *http.Request) {
 // UnhideActivity unhides an activity in user's activity feed
 func (h *ActivityHandler) UnhideActivity(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	// Get activity ID from URL
-	activityIDParam := chi.URLParam(r, "activityID")
+	activityIDParam := md.GetURLParam(r, "activityID")
 	activityID, err := strconv.Atoi(activityIDParam)
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "Invalid activity ID")
@@ -207,7 +207,7 @@ func (h *ActivityHandler) UnhideActivity(w http.ResponseWriter, r *http.Request)
 // GetActivitySettings retrieves user's activity display settings
 func (h *ActivityHandler) GetActivitySettings(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -225,7 +225,7 @@ func (h *ActivityHandler) GetActivitySettings(w http.ResponseWriter, r *http.Req
 // UpdateActivitySettings updates user's activity display settings
 func (h *ActivityHandler) UpdateActivitySettings(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
-	user, ok := r.Context().Value("user").(*models.User)
+	user, ok := md.GetUserFromContext(r.Context())
 	if !ok {
 		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -274,7 +274,7 @@ func (h *ActivityHandler) filterActivitiesByPrivacy(activities []models.Activity
 				WHERE follower_id = ? AND following_id = ? AND status = 'accepted'
 			)
 		`, viewerUserID, targetUserID).Scan(&isFollower)
-		
+
 		if err != nil || !isFollower {
 			return []models.Activity{}, nil // Return empty if not a follower
 		}
@@ -318,27 +318,26 @@ func (h *ActivityHandler) canViewPost(postID int, viewerUserID int) (bool, error
 	var privacy string
 	var postOwnerID int
 	var selectedUsers string
-	
+
 	err := h.db.QueryRow(`
 		SELECT privacy, user_id, COALESCE(selected_users, '') 
 		FROM posts 
 		WHERE id = ?
 	`, postID).Scan(&privacy, &postOwnerID, &selectedUsers)
-	
 	if err != nil {
 		return false, err
 	}
-	
+
 	// Post owner can always see their own posts
 	if postOwnerID == viewerUserID {
 		return true, nil
 	}
-	
+
 	// Public posts are visible to everyone
 	if privacy == "public" {
 		return true, nil
 	}
-	
+
 	// Almost private posts are visible to followers
 	if privacy == "almost_private" {
 		var isFollowing bool
@@ -348,14 +347,13 @@ func (h *ActivityHandler) canViewPost(postID int, viewerUserID int) (bool, error
 				WHERE follower_id = ? AND following_id = ? AND status = 'accepted'
 			)
 		`, viewerUserID, postOwnerID).Scan(&isFollowing)
-		
 		if err != nil {
 			return false, err
 		}
-		
+
 		return isFollowing, nil
 	}
-	
+
 	// Private posts are only visible to selected users
 	if privacy == "private" {
 		// Check if viewer is in selected users list
@@ -367,6 +365,6 @@ func (h *ActivityHandler) canViewPost(postID int, viewerUserID int) (bool, error
 		}
 		return false, nil
 	}
-	
+
 	return false, nil
 }
