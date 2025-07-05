@@ -188,7 +188,7 @@ export default function CreatePostComponent({ onPostCreated }) {
               }}
             >
               <option value="public" style={{backgroundColor: '#1A2333', color: '#FFFFFF'}} onMouseEnter={(e) => e.target.style.backgroundColor = '#2A3343'} onMouseLeave={(e) => e.target.style.backgroundColor = '#1A2333'}>🌍 Public</option>
-              <option value="almost private" style={{backgroundColor: '#1A2333', color: '#FFFFFF'}} onMouseEnter={(e) => e.target.style.backgroundColor = '#2A3343'} onMouseLeave={(e) => e.target.style.backgroundColor = '#1A2333'}>👥 Almost Private</option>
+              <option value="almost_private" style={{backgroundColor: '#1A2333', color: '#FFFFFF'}} onMouseEnter={(e) => e.target.style.backgroundColor = '#2A3343'} onMouseLeave={(e) => e.target.style.backgroundColor = '#1A2333'}>👥 Almost Private</option>
               <option value="private" style={{backgroundColor: '#1A2333', color: '#FFFFFF'}} onMouseEnter={(e) => e.target.style.backgroundColor = '#2A3343'} onMouseLeave={(e) => e.target.style.backgroundColor = '#1A2333'}>🔒 Private</option>
             </select>
             {privacy === 'private' && selectedUsers.length > 0 && (

@@ -321,7 +321,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
             <span className="truncate">{new Date(post.created_at).toLocaleString()}</span>
             {post.privacy !== "public" && (
               <span className="ml-3 text-xs px-3 py-1 bg-surface/70 rounded-full border border-border/50 backdrop-blur-sm">
-                {post.privacy === "almost private" ? "👥 Almost Private" : "🔒 Private"}
+                {post.privacy === "almost_private" ? "👥 Almost Private" : "🔒 Private"}
               </span>
             )}
           </div>
@@ -423,7 +423,7 @@ export default function PostCard({ post, onDelete, onUpdate }) {
               }}
             >
               <option value="public" style={{backgroundColor: '#1A2333', color: '#FFFFFF'}} onMouseEnter={(e) => e.target.style.backgroundColor = '#2A3343'} onMouseLeave={(e) => e.target.style.backgroundColor = '#1A2333'}>🌍 Public</option>
-              <option value="almost private" style={{backgroundColor: '#1A2333', color: '#FFFFFF'}} onMouseEnter={(e) => e.target.style.backgroundColor = '#2A3343'} onMouseLeave={(e) => e.target.style.backgroundColor = '#1A2333'}>👥 Almost Private</option>
+              <option value="almost_private" style={{backgroundColor: '#1A2333', color: '#FFFFFF'}} onMouseEnter={(e) => e.target.style.backgroundColor = '#2A3343'} onMouseLeave={(e) => e.target.style.backgroundColor = '#1A2333'}>👥 Almost Private</option>
               <option value="private" style={{backgroundColor: '#1A2333', color: '#FFFFFF'}} onMouseEnter={(e) => e.target.style.backgroundColor = '#2A3343'} onMouseLeave={(e) => e.target.style.backgroundColor = '#1A2333'}>🔒 Private</option>
             </select>
             {editedPrivacy === 'private' && selectedUsers.length > 0 && (
