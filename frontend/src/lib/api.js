@@ -506,7 +506,7 @@ export const notifications = {
 // Activity API
 export const activity = {
   getUserActivities: (userID = null, params = {}) => {
-    const endpoint = userID ? `/api/activity/${userID}` : "/api/activity/"
+    const endpoint = userID ? `/api/activity/${userID}` : "/api/activity"
     const searchParams = new URLSearchParams()
     
     if (params.page) searchParams.append("page", params.page)
