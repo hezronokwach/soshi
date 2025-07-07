@@ -79,11 +79,11 @@ export default function LeftSidebar() {
           </Link>
 
           <Link
-            href="/profile/followers"
+            href="/profile?tab=connections"
             className="flex items-center gap-3 px-4 py-3 text-text-primary rounded-lg font-medium transition-all duration-normal hover:bg-surface/50 hover:scale-105"
           >
             <Users className="w-5 h-5" style={{color: '#06D6A0'}} />
-            <span>Followers</span>
+            <span>Connections</span>
           </Link>
 
           <hr className="my-6 border-border" />
