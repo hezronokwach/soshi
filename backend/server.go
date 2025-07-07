@@ -48,6 +48,12 @@ func main() {
 	router := r.NewRouter()
 	authMiddleware := middleware.Auth(db)
 
+	// Serve static files for uploads
+	fs := http.FileServer(http.Dir("./uploads"))
+	router.AddRoute("GET", "/uploads/{file:.*}", func(w http.ResponseWriter, r *http.Request) {
+		http.StripPrefix("/uploads/", fs).ServeHTTP(w, r)
+	})
+
 	// Setup all routes
 	r.SetupAuthRoutes(router, authHandler)
 	r.SetupPostRoutes(router, postHandler, commentHandler, authMiddleware)
@@ -58,9 +64,6 @@ func main() {
 	r.SetupMessageRoutes(router, messageHandler, authMiddleware)
 	r.SetupUploadRoutes(router, uploadHandler, authMiddleware)
 	r.SetupWebSocketRoutes(router, wsHandler)
-
-	// Serve static files for uploads
-	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
 
 	// Apply global middleware and use our router
 	var handler http.Handler = router
