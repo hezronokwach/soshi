@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { useProfile } from '../../hooks/useProfile';
 import ProfileDisplay from '../../components/profile/ProfileDisplay';
@@ -15,6 +16,23 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Initialize active tab from URL
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['profile', 'activity', 'connections'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', tab);
+    router.push(`/profile?${params.toString()}`);
+  };
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -83,7 +101,7 @@ export default function ProfilePage() {
       <div className="bg-[#1A2333] border border-[#2A3343] rounded-lg p-6 shadow-xl">
         <div className="flex gap-3 overflow-x-auto">
           <button
-            onClick={() => setActiveTab('profile')}
+            onClick={() => handleTabChange('profile')}
             className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-250 whitespace-nowrap ${
               activeTab === 'profile'
                 ? 'bg-gradient-to-r from-[#3A86FF] to-[#8338EC] text-white shadow-[0_0_15px_rgba(58,134,255,0.5)] hover:scale-105'
@@ -94,7 +112,7 @@ export default function ProfilePage() {
             Profile
           </button>
           <button
-            onClick={() => setActiveTab('activity')}
+            onClick={() => handleTabChange('activity')}
             className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-250 whitespace-nowrap ${
               activeTab === 'activity'
                 ? 'bg-gradient-to-r from-[#8338EC] to-[#FF006E] text-white shadow-[0_0_15px_rgba(131,56,236,0.5)] hover:scale-105'
@@ -105,7 +123,7 @@ export default function ProfilePage() {
             Activity
           </button>
           <button
-            onClick={() => setActiveTab('connections')}
+            onClick={() => handleTabChange('connections')}
             className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-250 whitespace-nowrap ${
               activeTab === 'connections'
                 ? 'bg-gradient-to-r from-[#FF006E] to-[#06D6A0] text-white shadow-[0_0_15px_rgba(255,0,110,0.5)] hover:scale-105'
