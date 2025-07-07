@@ -2,11 +2,14 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Copy package.json first
+COPY package.json ./
+
+# Copy package-lock.json if it exists, otherwise skip
+COPY package-lock.json* ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --prefer-offline --no-audit || npm install
 
 # Copy the source code
 COPY . .
