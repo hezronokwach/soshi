@@ -173,7 +173,7 @@ func RespondToFollowRequest(db *sql.DB, followerId int, followingId int, status 
 	return errors.New("invalid status")
 }
 
-// GetFollowCounts returns follower and following counts for a user
+// GetFollowCounts returns follower, following, and posts counts for a user
 func GetFollowCounts(db *sql.DB, userId int) (map[string]int, error) {
 	counts := make(map[string]int)
 
@@ -198,6 +198,17 @@ func GetFollowCounts(db *sql.DB, userId int) (map[string]int, error) {
 		return nil, err
 	}
 	counts["following"] = followingCount
+
+	// Get posts count
+	var postsCount int
+	err = db.QueryRow(
+		"SELECT COUNT(*) FROM posts WHERE user_id = ?",
+		userId,
+	).Scan(&postsCount)
+	if err != nil {
+		return nil, err
+	}
+	counts["posts"] = postsCount
 
 	return counts, nil
 }

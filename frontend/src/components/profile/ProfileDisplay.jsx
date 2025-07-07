@@ -23,7 +23,7 @@ export default function ProfileDisplay({
 }) {
   // Use profileData if available, otherwise fall back to user
   const profile = profileData || user;
-  const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 });
+  const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0, posts: 0 });
   const [countsLoading, setCountsLoading] = useState(true);
 
   useEffect(() => {
@@ -192,7 +192,9 @@ export default function ProfileDisplay({
           <div className="flex flex-wrap items-stretch justify-between gap-8">
             {/* Activity: Posts */}
             <div className="flex-1 min-w-[120px] text-center bg-[#0F1624] p-4 rounded-lg border border-[#2A3343] hover:border-[#FF006E] transition-all duration-250 hover:shadow-[0_0_15px_rgba(255,0,110,0.3)]">
-              <div className="text-2xl font-bold text-[#FFFFFF] font-outfit">0</div>
+              <div className="text-2xl font-bold text-[#FFFFFF] font-outfit">
+                {countsLoading ? '...' : followCounts.posts}
+              </div>
               <div className="text-[#B8C1CF] text-sm font-medium">Posts</div>
             </div>
             {/* Connections: Followers */}

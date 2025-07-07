@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { posts as postsAPI } from "../../lib/api";
+import { posts as postsAPI, users as usersAPI, activity as activityAPI } from "../../lib/api";
 import CreatePostComponent from "../../components/posts/CreatePostComponent";
 import PostCard from "../../components/posts/PostCard";
 import { Home, TrendingUp, Users, MessageCircle, Loader2 } from 'lucide-react';
@@ -11,6 +11,9 @@ export default function FeedPage() {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [networkCount, setNetworkCount] = useState(0);
+  const [engagementCount, setEngagementCount] = useState(0);
+  const [countsLoading, setCountsLoading] = useState(true);
   const { user } = useAuth();
 
   // Fetch posts
@@ -26,6 +29,39 @@ export default function FeedPage() {
     }
   };
 
+  // Fetch network and engagement counts
+  const fetchCounts = async () => {
+    try {
+      setCountsLoading(true);
+      
+      // Get network count (followers + following)
+      const counts = await usersAPI.getFollowCounts();
+      const totalConnections = counts.followers + counts.following;
+      setNetworkCount(totalConnections);
+      
+      // Get engagement count (recent activities in the last week)
+      const activities = await activityAPI.getUserActivities(null, {
+        page: 1,
+        limit: 100
+      });
+      
+      // Filter activities from the last week
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      
+      const weeklyEngagement = activities.activities?.filter(activity => {
+        const activityDate = new Date(activity.created_at);
+        return activityDate >= oneWeekAgo;
+      }).length || 0;
+      
+      setEngagementCount(weeklyEngagement);
+    } catch (error) {
+      console.error("Error fetching counts:", error);
+    } finally {
+      setCountsLoading(false);
+    }
+  };
+
   // Load initial posts
   useEffect(() => {
     if (user) {
@@ -33,10 +69,19 @@ export default function FeedPage() {
     }
   }, [user, page]);
 
+  // Load counts only once when user is available
+  useEffect(() => {
+    if (user) {
+      fetchCounts();
+    }
+  }, [user]);
+
   // Handle new post creation
   const handlePostCreated = (newPost) => {
     if (newPost) {
       setPosts(prev => [newPost, ...prev]);
+      // Refresh counts since there's a new post
+      fetchCounts();
     } else {
       setPage(1);
       fetchPosts();
@@ -77,7 +122,9 @@ export default function FeedPage() {
               <Users size={16} className="text-[#8338EC]" />
               <span className="text-sm font-medium text-[#B8C1CF] font-sans">Network</span>
             </div>
-            <p className="text-lg sm:text-xl font-bold text-[#FFFFFF] font-display">--</p>
+            <p className="text-lg sm:text-xl font-bold text-[#FFFFFF] font-display">
+              {countsLoading ? '...' : networkCount}
+            </p>
             <p className="text-xs text-[#6C7A89] font-sans">Connections</p>
           </div>
           
@@ -86,7 +133,9 @@ export default function FeedPage() {
               <MessageCircle size={16} className="text-[#FF006E]" />
               <span className="text-sm font-medium text-[#B8C1CF] font-sans">Engagement</span>
             </div>
-            <p className="text-lg sm:text-xl font-bold text-[#FFFFFF] font-display">--</p>
+            <p className="text-lg sm:text-xl font-bold text-[#FFFFFF] font-display">
+              {countsLoading ? '...' : engagementCount}
+            </p>
             <p className="text-xs text-[#6C7A89] font-sans">This week</p>
           </div>
         </div>

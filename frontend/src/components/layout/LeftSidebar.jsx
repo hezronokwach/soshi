@@ -71,7 +71,7 @@ export default function LeftSidebar() {
           <h3 className="text-sm font-display font-semibold text-text-secondary mb-3 px-4 uppercase tracking-wider">Profile</h3>
 
           <Link
-            href="/profile"
+            href="/profile?tab=profile"
             className="flex items-center gap-3 px-4 py-3 text-text-primary rounded-lg font-medium transition-all duration-normal hover:bg-surface/50 hover:scale-105"
           >
             <User className="w-5 h-5" style={{color: '#8338EC'}} />
@@ -79,11 +79,11 @@ export default function LeftSidebar() {
           </Link>
 
           <Link
-            href="/profile/followers"
+            href="/profile?tab=connections"
             className="flex items-center gap-3 px-4 py-3 text-text-primary rounded-lg font-medium transition-all duration-normal hover:bg-surface/50 hover:scale-105"
           >
             <Users className="w-5 h-5" style={{color: '#06D6A0'}} />
-            <span>Followers</span>
+            <span>Connections</span>
           </Link>
 
           <hr className="my-6 border-border" />
