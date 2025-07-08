@@ -4,6 +4,32 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 
+// Public upload function for registration (no auth required)
+const uploadFilePublic = async (file) => {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_URL}/api/upload/public`, {
+    method: "POST",
+    body: formData,
+    credentials: "include",
+    mode: "cors",
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Upload failed: ${errorText}`);
+  }
+
+  const result = await response.json();
+  if (!result || !result.url) {
+    throw new Error("Invalid response from server");
+  }
+
+  return result;
+};
+
 export default function RegisterForm() {
   const router = useRouter();
   const { register } = useAuth();
@@ -15,7 +41,6 @@ export default function RegisterForm() {
     first_name: '',
     last_name: '',
     date_of_birth: '',
-    avatar: '',
     nickname: '',
     about_me: ''
   });
@@ -23,6 +48,8 @@ export default function RegisterForm() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,6 +58,37 @@ export default function RegisterForm() {
     // Clear error when user types
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setErrors((prev) => ({ ...prev, avatar: 'Please select an image file' }));
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors((prev) => ({ ...prev, avatar: 'Image must be less than 5MB' }));
+        return;
+      }
+
+      setAvatarFile(file);
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setAvatarPreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+
+      // Clear any previous errors
+      if (errors.avatar) {
+        setErrors((prev) => ({ ...prev, avatar: '' }));
+      }
     }
   };
 
@@ -65,6 +123,21 @@ export default function RegisterForm() {
 
     if (!formData.date_of_birth) {
       newErrors.date_of_birth = 'Date of birth is required';
+    } else {
+      const birthDate = new Date(formData.date_of_birth);
+      const today = new Date();
+      const minAge = new Date();
+      minAge.setFullYear(today.getFullYear() - 13); // Minimum age 13
+      const maxAge = new Date();
+      maxAge.setFullYear(today.getFullYear() - 120); // Maximum age 120
+
+      if (birthDate > today) {
+        newErrors.date_of_birth = 'Date of birth cannot be in the future';
+      } else if (birthDate > minAge) {
+        newErrors.date_of_birth = 'You must be at least 13 years old';
+      } else if (birthDate < maxAge) {
+        newErrors.date_of_birth = 'Please enter a valid date of birth';
+      }
     }
 
     setErrors(newErrors);
@@ -82,8 +155,28 @@ export default function RegisterForm() {
     setSubmitError('');
 
     try {
+      let avatarUrl = '';
+
+      // Handle avatar upload if a file was selected
+      if (avatarFile) {
+        try {
+          // Use public upload endpoint for registration
+          const uploadResponse = await uploadFilePublic(avatarFile);
+          avatarUrl = uploadResponse.url;
+        } catch (uploadError) {
+          console.error('Avatar upload failed:', uploadError);
+          setSubmitError('Failed to upload avatar. Please try again.');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       // Remove confirmPassword before sending to API
       const { confirmPassword, ...registrationData } = formData;
+      if (avatarUrl) {
+        registrationData.avatar = avatarUrl;
+      }
+
       await register(registrationData);
       // Redirect is handled in the register function
     } catch (error) {
@@ -183,6 +276,8 @@ export default function RegisterForm() {
               name="date_of_birth"
               value={formData.date_of_birth}
               onChange={handleChange}
+              max={new Date().toISOString().split('T')[0]} // Prevent future dates
+              min={new Date(new Date().getFullYear() - 120, 0, 1).toISOString().split('T')[0]} // Reasonable minimum
               className="w-full bg-background-lighter border border-border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-primary"
             />
             {errors.date_of_birth && <p className="text-red-500 text-xs mt-1">{errors.date_of_birth}</p>}
@@ -195,15 +290,31 @@ export default function RegisterForm() {
               <div className="mt-4 space-y-4">
                 {/* Avatar */}
                 <div>
-                  <label className="block text-sm font-medium mb-1">Avatar URL</label>
+                  <label className="block text-sm font-medium mb-1">Avatar (Optional)</label>
+
+                  {/* Avatar Preview */}
+                  {avatarPreview && (
+                    <div className="mb-3 flex justify-center">
+                      <img
+                        src={avatarPreview}
+                        alt="Avatar preview"
+                        className="w-20 h-20 rounded-full object-cover border-2 border-border"
+                      />
+                    </div>
+                  )}
+
+                  {/* File Upload */}
                   <input
-                    type="text"
-                    name="avatar"
-                    value={formData.avatar}
-                    onChange={handleChange}
-                    className="w-full bg-background-lighter border border-border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="https://example.com/avatar.jpg"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="w-full bg-background-lighter border border-border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                   />
+                  <p className="text-xs text-text-secondary mt-1">
+                    Upload an image file (JPEG, PNG, GIF) - Max 5MB
+                  </p>
+
+                  {errors.avatar && <p className="text-red-500 text-xs mt-1">{errors.avatar}</p>}
                 </div>
 
                 {/* Nickname */}

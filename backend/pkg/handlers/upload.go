@@ -92,6 +92,61 @@ func isAllowedFileType(contentType string) bool {
 	return allowedTypes[contentType]
 }
 
+// UploadFilePublic handles file uploads without authentication (for registration)
+func (h *UploadHandler) UploadFilePublic(w http.ResponseWriter, r *http.Request) {
+	// Parse multipart form
+	err := r.ParseMultipartForm(10 << 20) // 10 MB max
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Failed to parse form")
+		return
+	}
+
+	// Get file from form
+	file, handler, err := r.FormFile("file")
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Failed to get file from form")
+		return
+	}
+	defer file.Close()
+
+	// Check file type
+	contentType := handler.Header.Get("Content-Type")
+	if !isAllowedFileType(contentType) {
+		utils.RespondWithError(w, http.StatusBadRequest, "File type not allowed")
+		return
+	}
+
+	// Create uploads directory if it doesn't exist
+	uploadsDir := "./uploads"
+	if err := os.MkdirAll(uploadsDir, 0o755); err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to create uploads directory")
+		return
+	}
+
+	// Generate unique filename (without user ID since not authenticated)
+	filename := fmt.Sprintf("temp_%s_%s", uuid.New().String(), handler.Filename)
+	filename = sanitizeFilename(filename)
+	filepath := filepath.Join(uploadsDir, filename)
+
+	// Create file
+	dst, err := os.Create(filepath)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to create file")
+		return
+	}
+	defer dst.Close()
+
+	// Copy file contents
+	if _, err = io.Copy(dst, file); err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to save file")
+		return
+	}
+
+	// Return the full URL path for the uploaded file
+	fileURL := fmt.Sprintf("/uploads/%s", filename)
+	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"url": fileURL})
+}
+
 // sanitizeFilename sanitizes a filename
 func sanitizeFilename(filename string) string {
 	// Replace spaces with underscores
