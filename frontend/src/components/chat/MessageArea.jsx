@@ -34,10 +34,19 @@ export default function MessageArea({ conversation, currentUser, onMessagesRead 
 
           if (data.type === 'private_message' && data.message) {
             const message = data.message;
+
             // Only add message if it's for this conversation
+            // Handle both receiver_id and recipient_id for compatibility
+            const receiverId = message.receiver_id || message.recipient_id;
+            // Convert to numbers for comparison to avoid type mismatches
+            const senderId = parseInt(message.sender_id);
+            const recipientId = parseInt(receiverId);
+            const conversationId = parseInt(conversation.id);
+            const userId = parseInt(currentUser.id);
+
             if (
-              (message.sender_id === conversation.id && message.recipient_id === currentUser.id) ||
-              (message.sender_id === currentUser.id && message.recipient_id === conversation.id)
+              (senderId === conversationId && recipientId === userId) ||
+              (senderId === userId && recipientId === conversationId)
             ) {
               // Handle message updates and avoid duplicates
               setMessageList(prev => {
@@ -45,7 +54,7 @@ export default function MessageArea({ conversation, currentUser, onMessagesRead 
                 const optimisticIndex = prev.findIndex(existingMsg =>
                   existingMsg.id.toString().startsWith('temp-') &&
                   existingMsg.content === message.content &&
-                  existingMsg.sender_id === message.sender_id
+                  parseInt(existingMsg.sender_id) === senderId
                 );
 
                 if (optimisticIndex !== -1) {
@@ -57,7 +66,7 @@ export default function MessageArea({ conversation, currentUser, onMessagesRead 
 
                 // Check if message already exists (by ID)
                 const messageExists = prev.some(existingMsg =>
-                  existingMsg.id === message.id
+                  parseInt(existingMsg.id) === parseInt(message.id)
                 );
 
                 if (messageExists) {
@@ -69,18 +78,18 @@ export default function MessageArea({ conversation, currentUser, onMessagesRead 
               scrollToBottom();
 
               // Mark as read if it's from the other user
-              if (message.sender_id === conversation.id) {
+              if (senderId === conversationId) {
                 markMessagesAsRead();
               }
             }
           } else if (data.type === 'user_online_status') {
             // Handle online status updates
-            if (data.user_id === conversation.id) {
+            if (parseInt(data.user_id) === parseInt(conversation.id)) {
               setIsOnline(data.is_online);
             }
           } else if (data.type === 'typing_indicator') {
             // Handle typing indicators
-            if (data.user_id === conversation.id && data.recipient_id === currentUser.id) {
+            if (parseInt(data.user_id) === parseInt(conversation.id) && parseInt(data.recipient_id) === parseInt(currentUser.id)) {
               setIsTyping(data.is_typing);
 
               // Clear typing indicator after 3 seconds

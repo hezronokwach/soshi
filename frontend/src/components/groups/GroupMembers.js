@@ -36,8 +36,8 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
         <div className="space-y-6">
             {/* Pending Requests (Only visible to group creator) */}
             {isCreator && pendingMembers.length > 0 && (
-                <Card className="p-4">
-                    <h3 className="font-semibold text-lg mb-4 text-orange-400">
+                <Card variant="glassmorphism" className="p-6">
+                    <h3 className="font-display font-semibold text-lg mb-4 text-orange-400">
                         Pending Join Requests ({pendingMembers.length})
                     </h3>
                     <div className="space-y-3">
@@ -47,7 +47,11 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
                                     {member.user?.avatar || member.avatar ? (
                                         <img src={member.user?.avatar || member.avatar} alt={member.user?.first_name} className="w-10 h-10 rounded-full" />
                                     ) : (
-                                        <div className="w-10 h-10 bg-gray-600 rounded-full"></div>
+                                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                            <span className="text-white text-sm font-medium">
+                                                {(member.user?.first_name || member.first_name)?.[0]}{(member.user?.last_name || member.last_name)?.[0]}
+                                            </span>
+                                        </div>
                                     )}
                                     <div>
                                         <Link
@@ -62,8 +66,9 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
                                 <div className="flex gap-2">
                                     <Button
                                         size="sm"
+                                        variant="primary"
                                         onClick={() => handleMemberRequest(member.user_id, 'accepted')}
-                                        className="bg-green-600 hover:bg-green-700"
+                                        className="bg-green-600 hover:bg-green-700 hover:scale-105 transition-all duration-normal"
                                     >
                                         Accept
                                     </Button>
@@ -71,7 +76,7 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
                                         size="sm"
                                         variant="outline"
                                         onClick={() => handleRemoveMember(member.user_id)} // Handle decline as member removal
-                                        className="text-red-400 border-red-400 hover:bg-red-900/20"
+                                        className="text-red-400 border-red-400 hover:bg-red-900/20 hover:scale-105 transition-all duration-normal"
                                     >
                                         Decline
                                     </Button>
@@ -83,8 +88,8 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
             )}
 
             {/* Accepted Members */}
-            <Card className="p-4">
-                <h3 className="font-semibold text-lg mb-4 text-white">
+            <Card variant="glassmorphism" className="p-6">
+                <h3 className="font-display font-semibold text-lg mb-4 text-text-primary">
                     Members ({acceptedMembers.length})
                 </h3>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -95,9 +100,11 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
                                     {member.user?.avatar || member.avatar ? (
                                         <img src={member.user?.avatar || member.avatar} alt={member.user?.first_name} className="w-10 h-10 rounded-full" />
                                     ) : (
-                                        <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-semibold">
-                                            {((member.user?.first_name || member.first_name || '').charAt(0) +
-                                              (member.user?.last_name || member.last_name || '').charAt(0)).toUpperCase()}
+                                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                            <span className="text-white text-sm font-medium">
+                                                {((member.user?.first_name || member.first_name || '').charAt(0) +
+                                                  (member.user?.last_name || member.last_name || '').charAt(0)).toUpperCase()}
+                                            </span>
                                         </div>
                                     )}
                                     {/* Online indicator - randomly show some as online for demo */}
