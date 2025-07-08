@@ -24,7 +24,21 @@ const profileSchema = z.object({
   last_name: z.string().min(1, 'Last name is required').max(50, 'Last name too long'),
   nickname: z.string().max(30, 'Nickname too long').optional().or(z.literal('')),
   about_me: z.string().max(500, 'About me section too long').optional().or(z.literal('')),
-  date_of_birth: z.string().min(1, 'Date of birth is required'),
+  date_of_birth: z.string().min(1, 'Date of birth is required').refine((date) => {
+    const birthDate = new Date(date);
+    const today = new Date();
+    const minAge = new Date();
+    minAge.setFullYear(today.getFullYear() - 13);
+    const maxAge = new Date();
+    maxAge.setFullYear(today.getFullYear() - 120);
+
+    if (birthDate > today) return false;
+    if (birthDate > minAge) return false;
+    if (birthDate < maxAge) return false;
+    return true;
+  }, {
+    message: 'Please enter a valid date of birth (must be at least 13 years old and not in the future)'
+  }),
   is_public: z.boolean()
 });
 
@@ -243,8 +257,10 @@ export default function ProfileEditForm({
           <input
             type="date"
             {...register('date_of_birth')}
-            className="w-full px-4 py-3 bg-[#0F1624] border border-[#2A3343] rounded-lg 
-                     text-[#FFFFFF] focus:border-[#FF006E] focus:outline-none 
+            max={new Date().toISOString().split('T')[0]} // Prevent future dates
+            min={new Date(new Date().getFullYear() - 120, 0, 1).toISOString().split('T')[0]} // Reasonable minimum
+            className="w-full px-4 py-3 bg-[#0F1624] border border-[#2A3343] rounded-lg
+                     text-[#FFFFFF] focus:border-[#FF006E] focus:outline-none
                      focus:shadow-[0_0_0_3px_rgba(255,0,110,0.25)] transition-all duration-250 font-inter"
           />
           {errors.date_of_birth && (

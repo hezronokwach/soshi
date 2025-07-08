@@ -67,7 +67,7 @@ export default function GroupEvents({ params, group, fetchGroup }) {
     <div className="space-y-6">
       {/* Create Event Toggle Button */}
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-white">Events</h2>
+        <h2 className="text-xl font-display font-semibold text-text-primary">Events</h2>
         <Button
           onClick={() => setShowCreateForm(!showCreateForm)}
           variant={showCreateForm ? "outline" : "default"}
@@ -78,8 +78,8 @@ export default function GroupEvents({ params, group, fetchGroup }) {
 
       {/* Create Event Form */}
       {showCreateForm && (
-        <Card className="p-4">
-          <h3 className="font-semibold mb-3 text-white">Create New Event</h3>
+        <Card variant="glassmorphism" className="p-6">
+          <h3 className="font-display font-semibold mb-4 text-text-primary">Create New Event</h3>
           <form onSubmit={handleCreateEvent} className="space-y-3">
             <Input
               value={newEvent.title}
@@ -129,17 +129,18 @@ export default function GroupEvents({ params, group, fetchGroup }) {
 
       {/* Events List */}
       {group.events?.map((event) => (
-        <Card key={event.id} className="p-4">
-          <h3 className="font-semibold text-lg mb-2 text-white">{event.title}</h3>
-          <p className="text-gray-400 mb-2">{event.description}</p>
-          <p className="text-sm text-gray-500 mb-3">
+        <Card key={event.id} variant="glassmorphism" hover className="p-6">
+          <h3 className="font-display font-semibold text-lg mb-2 text-text-primary">{event.title}</h3>
+          <p className="text-text-secondary mb-2">{event.description}</p>
+          <p className="text-sm text-text-secondary mb-4">
             {new Date(event.event_date).toLocaleString()}
           </p>
           <div className="flex items-center gap-4">
             <Button
               size="sm"
+              variant="primary"
               onClick={() => handleEventResponse(event.id, 'going')}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 hover:scale-105 transition-all duration-normal"
             >
               Going ({event.going_count || 0})
             </Button>
@@ -147,7 +148,7 @@ export default function GroupEvents({ params, group, fetchGroup }) {
               size="sm"
               variant="outline"
               onClick={() => handleEventResponse(event.id, 'not_going')}
-              className="text-red-400 border-red-400 hover:bg-red-900/20"
+              className="text-red-400 border-red-400 hover:bg-red-900/20 hover:scale-105 transition-all duration-normal"
             >
               Not Going ({event.not_going_count || 0})
             </Button>

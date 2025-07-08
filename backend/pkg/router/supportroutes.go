@@ -8,8 +8,10 @@ import (
 
 // SetupUploadRoutes configures upload-related routes
 func SetupUploadRoutes(router *Router, uploadHandler *handlers.UploadHandler, authMiddleware func(http.Handler) http.Handler) {
-	// Upload route
+	// Upload route (authenticated)
 	router.AddRoute("POST", "/api/upload", WithAuth(uploadHandler.UploadFile, authMiddleware))
+	// Public upload route (for registration)
+	router.AddRoute("POST", "/api/upload/public", uploadHandler.UploadFilePublic)
 }
 
 // SetupWebSocketRoutes configures WebSocket routes
