@@ -338,6 +338,15 @@ func AddGroupPostCommentReaction(db *sql.DB, commentId int, userId int, reaction
 			return nil, err
 		}
 
+		// Initialize like_count and dislike_count if they are NULL
+		_, err = tx.Exec(
+			"UPDATE group_post_comments SET like_count = COALESCE(like_count, 0), dislike_count = COALESCE(dislike_count, 0) WHERE id = ?",
+			commentId,
+		)
+		if err != nil {
+			return nil, err
+		}
+
 		// Update comment counts
 		if reactionType == "like" {
 			_, err = tx.Exec("UPDATE group_post_comments SET like_count = like_count + 1 WHERE id = ?", commentId)
@@ -362,12 +371,21 @@ func AddGroupPostCommentReaction(db *sql.DB, commentId int, userId int, reaction
 				return nil, err
 			}
 
+			// Initialize like_count and dislike_count if they are NULL
+			_, err = tx.Exec(
+				"UPDATE group_post_comments SET like_count = COALESCE(like_count, 0), dislike_count = COALESCE(dislike_count, 0) WHERE id = ?",
+				commentId,
+			)
+			if err != nil {
+				return nil, err
+			}
+
 			// Update comment counts
 			if reactionType == "like" {
-				_, err = tx.Exec("UPDATE group_post_comments SET like_count = like_count - 1 WHERE id = ?", commentId)
+				_, err = tx.Exec("UPDATE group_post_comments SET like_count = MAX(0, like_count - 1) WHERE id = ?", commentId)
 				changes["like_count"] = -1
 			} else if reactionType == "dislike" {
-				_, err = tx.Exec("UPDATE group_post_comments SET dislike_count = dislike_count - 1 WHERE id = ?", commentId)
+				_, err = tx.Exec("UPDATE group_post_comments SET dislike_count = MAX(0, dislike_count - 1) WHERE id = ?", commentId)
 				changes["dislike_count"] = -1
 			}
 			changes["action"] = "removed"
@@ -382,12 +400,21 @@ func AddGroupPostCommentReaction(db *sql.DB, commentId int, userId int, reaction
 				return nil, err
 			}
 
+			// Initialize like_count and dislike_count if they are NULL
+			_, err = tx.Exec(
+				"UPDATE group_post_comments SET like_count = COALESCE(like_count, 0), dislike_count = COALESCE(dislike_count, 0) WHERE id = ?",
+				commentId,
+			)
+			if err != nil {
+				return nil, err
+			}
+
 			// Update comment counts
 			if existingType == "like" {
-				_, err = tx.Exec("UPDATE group_post_comments SET like_count = like_count - 1 WHERE id = ?", commentId)
+				_, err = tx.Exec("UPDATE group_post_comments SET like_count = MAX(0, like_count - 1) WHERE id = ?", commentId)
 				changes["like_count"] = -1
 			} else if existingType == "dislike" {
-				_, err = tx.Exec("UPDATE group_post_comments SET dislike_count = dislike_count - 1 WHERE id = ?", commentId)
+				_, err = tx.Exec("UPDATE group_post_comments SET dislike_count = MAX(0, dislike_count - 1) WHERE id = ?", commentId)
 				changes["dislike_count"] = -1
 			}
 
