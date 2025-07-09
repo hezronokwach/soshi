@@ -8,6 +8,7 @@ import LeftSidebar from '../../../components/layout/LeftSidebar';
 import RightSidebar from '../../../components/layout/RightSidebar';
 import { Search, Users, Hash, Globe, Lock } from 'lucide-react';
 import Link from 'next/link';
+import { getImageUrl } from '../../../utils/image';
 
 export default function DiscoverGroupsPage() {
   const { user } = useAuth();
@@ -158,7 +159,7 @@ export default function DiscoverGroupsPage() {
                         <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center text-white font-semibold flex-shrink-0">
                           {group.avatar ? (
                             <img
-                              src={group.avatar}
+                              src={getImageUrl(group.avatar)}
                               alt={group.title}
                               className="w-full h-full object-cover rounded-lg"
                             />

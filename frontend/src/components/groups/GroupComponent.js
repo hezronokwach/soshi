@@ -6,6 +6,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { useAuth } from '../../hooks/useAuth';
 import { groups } from '../../lib/api';
+import { getImageUrl } from '../../utils/image';
 
 // Predefined categories (you can also make this dynamic)
 const GROUP_CATEGORIES = [
@@ -272,7 +273,7 @@ export default function GroupComponent() {
                       <div className="flex items-center gap-2">
                         {group.creator?.avatar || group.avatar ? (
                           <img
-                            src={group.creator?.avatar || group.avatar}
+                            src={getImageUrl(group.creator?.avatar || group.avatar)}
                             alt={`${group.creator?.first_name || group.first_name} ${group.creator?.last_name || group.last_name}`}
                             className="w-6 h-6 rounded-full border border-border"
                           />

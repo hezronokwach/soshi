@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { upload } from '../../lib/api';
 import { ImagePlus, X } from 'lucide-react';
+import { getImageUrl } from '../../utils/image';
 
 export default function GroupCommentForm({ onSubmit, parentId = null, onCancel, initialContent = '', groupId, groupPostId }) {
   const [content, setContent] = useState(initialContent);
@@ -92,8 +93,8 @@ export default function GroupCommentForm({ onSubmit, parentId = null, onCancel, 
         {/* User Avatar */}
         <div className="flex-shrink-0">
           {user.avatar ? (
-            <img 
-              src={user.avatar} 
+            <img
+              src={getImageUrl(user.avatar)}
               alt={user.first_name} 
               className="w-8 h-8 rounded-full object-cover border border-border"
             />

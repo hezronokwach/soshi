@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { groups } from '../../lib/api';
+import { getImageUrl } from '../../utils/image';
 
 export default function GroupMembers({ params, group, isCreator, pendingMembers, acceptedMembers, fetchGroup }) {
     // Handle member requests
@@ -45,7 +46,7 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
                             <div key={member.id} className="flex items-center justify-between p-3 bg-orange-900/20 rounded-lg border border-orange-400/30">
                                 <div className="flex items-center gap-3">
                                     {member.user?.avatar || member.avatar ? (
-                                        <img src={member.user?.avatar || member.avatar} alt={member.user?.first_name} className="w-10 h-10 rounded-full" />
+                                        <img src={getImageUrl(member.user?.avatar || member.avatar)} alt={member.user?.first_name} className="w-10 h-10 rounded-full" />
                                     ) : (
                                         <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                                             <span className="text-white text-sm font-medium">
@@ -98,7 +99,7 @@ export default function GroupMembers({ params, group, isCreator, pendingMembers,
                             <div className="flex items-center gap-3">
                                 <div className="relative">
                                     {member.user?.avatar || member.avatar ? (
-                                        <img src={member.user?.avatar || member.avatar} alt={member.user?.first_name} className="w-10 h-10 rounded-full" />
+                                        <img src={getImageUrl(member.user?.avatar || member.avatar)} alt={member.user?.first_name} className="w-10 h-10 rounded-full" />
                                     ) : (
                                         <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                                             <span className="text-white text-sm font-medium">

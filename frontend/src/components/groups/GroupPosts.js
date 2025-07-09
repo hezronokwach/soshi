@@ -203,7 +203,7 @@ export default function GroupPosts({ params, group, fetchGroup }) {
                     <div className="flex items-center gap-4 mb-4">
                         {(post.user?.avatar || post.avatar) ? (
                             <img
-                                src={post.user?.avatar || post.avatar}
+                                src={getImageUrl(post.user?.avatar || post.avatar)}
                                 alt={`${post.user?.first_name || post.first_name} ${post.user?.last_name || post.last_name}`}
                                 className="w-12 h-12 rounded-full object-cover border border-border"
                             />

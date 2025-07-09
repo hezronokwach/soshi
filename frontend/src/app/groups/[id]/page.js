@@ -6,6 +6,7 @@ import { Card } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { useAuth } from '../../../hooks/useAuth';
 import { groups } from '../../../lib/api';
+import { getImageUrl } from '../../../utils/image';
 import GroupPosts from '../../../components/groups/GroupPosts';
 import GroupMembers from '../../../components/groups/GroupMembers';
 import GroupEvents from '../../../components/groups/GroupEvents';
@@ -113,7 +114,7 @@ export default function GroupDetailPage() {
               <div className="flex items-center gap-2">
                 {group.creator?.avatar ? (
                   <img
-                    src={group.creator.avatar}
+                    src={getImageUrl(group.creator.avatar)}
                     alt={`${group.creator.first_name} ${group.creator.last_name}`}
                     className="w-6 h-6 rounded-full object-cover border border-border"
                   />
