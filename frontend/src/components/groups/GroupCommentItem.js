@@ -60,7 +60,7 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
     });
     
     try {
-      const res = await fetch(`http://localhost:8080/api/groups/comments/${comment.id}/reactions`, {
+      const res = await fetch(`/api/groups/comments/${comment.id}/reactions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -71,7 +71,12 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
 
       if (!res.ok) throw new Error('Failed to update reaction');
       const data = await res.json();
-      setReactions(data);
+      // Make sure we properly format the response data
+      setReactions({
+        likeCount: data.likeCount || 0,
+        dislikeCount: data.dislikeCount || 0,
+        userReaction: data.userReaction
+      });
     } catch (error) {
       console.error('Error updating group comment reaction:', error);
       // Rollback to previous reactions on error
@@ -81,7 +86,7 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
 
   const handleEdit = async (data) => {
     try {
-      const res = await fetch(`http://localhost:8080/api/groups/comments/${comment.id}`, {
+      const res = await fetch(`/api/groups/comments/${comment.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -106,7 +111,7 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
 
     try {
       setIsDeleting(true);
-      const res = await fetch(`http://localhost:8080/api/groups/comments/${comment.id}`, {
+      const res = await fetch(`/api/groups/comments/${comment.id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'
@@ -135,13 +140,15 @@ export default function GroupCommentItem({ comment, groupId, groupPostId, onUpda
   useEffect(() => {
     const loadReactions = async () => {
       try {
-        const res = await fetch(`/api/groups/comments/${comment.id}/reactions`);
+        const res = await fetch(`/api/groups/comments/${comment.id}/reactions`, {
+          credentials: 'include'
+        });
         if (res.ok) {
           const data = await res.json();
           setReactions({
-            likeCount: data.like_count || 0,
-            dislikeCount: data.dislike_count || 0,
-            userReaction: data.user_reaction || null
+            likeCount: data.likeCount || data.like_count || 0,
+            dislikeCount: data.dislikeCount || data.dislike_count || 0,
+            userReaction: data.userReaction || data.user_reaction || null
           });
         }
       } catch (error) {
