@@ -63,7 +63,7 @@ export default function Layout({ children }) {
         {/* Main Content */}
         <main className="flex-1 flex flex-col min-h-[calc(100vh-4rem)]">
           <div className="flex-1 lg:ml-sidebar xl:mr-20 flexjustify-center">
-            <div className="max-w-6xl w-full mx-auto px-3 sm:px-4 lg:px-6">
+            <div className="max-w-3xl w-full mx-auto px-3 sm:px-4 lg:px-6">
               {children}
             </div>
           </div>
