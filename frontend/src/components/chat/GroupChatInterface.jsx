@@ -6,6 +6,7 @@ import { messages, connectWebSocket } from '../../lib/api';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import { MessageSquare, Users } from 'lucide-react';
+import { getImageUrl } from '../../utils/image';
 
 const GroupChatInterface = ({ group }) => {
   const { user } = useAuth();
@@ -162,7 +163,7 @@ const GroupChatInterface = ({ group }) => {
         <div style={groupInfoStyles}>
           {group.avatar ? (
             <img 
-              src={group.avatar} 
+              src={getImageUrl(group.avatar)} 
               alt={group.title}
               style={avatarStyles}
             />

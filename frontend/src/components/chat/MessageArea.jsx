@@ -6,6 +6,7 @@ import { useAuth } from '../../hooks/useAuth';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import { User, MoreVertical } from 'lucide-react';
+import { getImageUrl } from '../../utils/image';
 
 export default function MessageArea({ conversation, currentUser, onMessagesRead }) {
   const [messageList, setMessageList] = useState([]);
@@ -347,8 +348,8 @@ export default function MessageArea({ conversation, currentUser, onMessagesRead 
       <div style={headerStyles}>
         <div style={{ position: 'relative' }}>
           {conversation.avatar ? (
-            <img
-              src={conversation.avatar}
+            <img 
+              src={getImageUrl(conversation.avatar)}
               alt={`${conversation.first_name} ${conversation.last_name}`}
               style={avatarImageStyles}
             />

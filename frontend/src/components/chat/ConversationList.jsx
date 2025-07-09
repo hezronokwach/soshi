@@ -1,6 +1,7 @@
 'use client';
 
 import { User } from 'lucide-react';
+import { getImageUrl } from '../../utils/image';
 
 export default function ConversationList({ 
   conversations, 
@@ -229,7 +230,7 @@ export default function ConversationList({
             <div style={{ position: 'relative' }}>
               {conversation.avatar ? (
                 <img
-                  src={conversation.avatar}
+                  src={getImageUrl(conversation.avatar)}
                   alt={`${conversation.first_name} ${conversation.last_name}`}
                   style={avatarImageStyles}
                 />

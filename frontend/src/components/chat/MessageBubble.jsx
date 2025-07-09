@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Check, CheckCheck } from 'lucide-react';
+import { getImageUrl } from '../../utils/image';
 
 export default function MessageBubble({ message, isOwn, showAvatar, showTimestamp, isGroupChat = false }) {
   const [showTime, setShowTime] = useState(false);
@@ -154,7 +155,7 @@ export default function MessageBubble({ message, isOwn, showAvatar, showTimestam
       <div style={avatarStyles}>
         {showAvatar && sender?.avatar ? (
           <img
-            src={sender.avatar}
+            src={getImageUrl(sender.avatar)}
             alt={senderName}
             style={avatarImageStyles}
           />

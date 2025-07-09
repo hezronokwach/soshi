@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { users } from '../../lib/api';
 import { X, Search, User } from 'lucide-react';
+import { getImageUrl } from '../../utils/image';
 
 export default function UserSelector({ onUserSelect, onClose }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -292,7 +293,7 @@ export default function UserSelector({ onUserSelect, onClose }) {
                       >
                         {user.avatar ? (
                           <img
-                            src={user.avatar}
+                            src={getImageUrl(user.avatar)}
                             alt={`${user.first_name} ${user.last_name}`}
                             style={avatarImageStyles}
                           />
@@ -339,7 +340,7 @@ export default function UserSelector({ onUserSelect, onClose }) {
                       >
                         {user.avatar ? (
                           <img
-                            src={user.avatar}
+                            src={getImageUrl(user.avatar)}
                             alt={`${user.first_name} ${user.last_name}`}
                             style={avatarImageStyles}
                           />
