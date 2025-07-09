@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { X, Search, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getImageUrl } from "../../utils/image";
 
 const backdropVariants = {
   hidden: { opacity: 0 },
@@ -163,8 +164,8 @@ export default function SelectFollowersModal({
                       >
                         <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 bg-background-darker flex-shrink-0">
                           {follower.avatar ? (
-                            <img 
-                              src={follower.avatar} 
+                            <img
+                              src={getImageUrl(follower.avatar)}
                               alt={`${follower.first_name} ${follower.last_name}`}
                               className="w-full h-full object-cover"
                             />

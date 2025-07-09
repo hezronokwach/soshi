@@ -9,6 +9,7 @@ import RightSidebar from '../../components/layout/RightSidebar';
 import { Users, Search, UserPlus, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { getImageUrl } from '../../utils/image';
 
 export default function FriendsPage() {
   const { user } = useAuth();
@@ -152,7 +153,7 @@ export default function FriendsPage() {
                         <div className="relative">
                           {userItem.avatar ? (
                             <img
-                              src={userItem.avatar}
+                              src={getImageUrl(userItem.avatar)}
                               alt={`${userItem.first_name} ${userItem.last_name}`}
                               className="w-12 h-12 rounded-full object-cover"
                             />

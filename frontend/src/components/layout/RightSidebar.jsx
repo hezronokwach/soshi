@@ -6,6 +6,7 @@ import { User, Users, Plus } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { users, groups } from "../../lib/api";
 import FollowButton from "../connections/FollowButton";
+import { getImageUrl } from "../../utils/image";
 
 export default function RightSidebar() {
   const { user } = useAuth();
@@ -318,7 +319,7 @@ export default function RightSidebar() {
                   <div style={userItemStyles}>
                     {onlineUser.avatar ? (
                       <img
-                        src={onlineUser.avatar}
+                        src={getImageUrl(onlineUser.avatar)}
                         alt={`${onlineUser.first_name} ${onlineUser.last_name}`}
                         style={{...userAvatarStyles, objectFit: 'cover'}}
                       />
@@ -410,8 +411,8 @@ export default function RightSidebar() {
                 <div key={user.id} style={{...userItemStyles, backgroundColor: '#0F1624', padding: '0.75rem'}}>
                   <Link href={`/profile/${user.id}`} style={{display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, textDecoration: 'none'}}>
                     {user.avatar ? (
-                      <img 
-                        src={user.avatar} 
+                      <img
+                        src={getImageUrl(user.avatar)}
                         alt={`${user.first_name} ${user.last_name}`}
                         style={{...userAvatarStyles, objectFit: 'cover'}}
                       />

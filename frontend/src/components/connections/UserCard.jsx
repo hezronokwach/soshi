@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import FollowButton from './FollowButton';
+import { getImageUrl } from '../../utils/image';
 import { 
   User as UserIcon,
   MapPin,
@@ -36,7 +37,7 @@ export default function UserCard({
         <div className="flex-shrink-0">
           {user.avatar ? (
             <img 
-              src={user.avatar} 
+              src={getImageUrl(user.avatar)}
               alt={`${user.first_name} ${user.last_name}`}
               className="w-12 h-12 rounded-full object-cover"
             />

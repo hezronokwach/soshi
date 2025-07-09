@@ -9,6 +9,7 @@ import RightSidebar from '../../../components/layout/RightSidebar';
 import FollowButton from '../../../components/connections/FollowButton';
 import { Search, Users, UserPlus } from 'lucide-react';
 import Link from 'next/link';
+import { getImageUrl } from '../../../utils/image';
 
 export default function DiscoverPeoplePage() {
   const { user } = useAuth();
@@ -137,7 +138,7 @@ export default function DiscoverPeoplePage() {
                           <div className="relative">
                             {userItem.avatar ? (
                               <img
-                                src={userItem.avatar}
+                                src={getImageUrl(userItem.avatar)}
                                 alt={`${userItem.first_name} ${userItem.last_name}`}
                                 className="w-16 h-16 rounded-full object-cover border border-border group-hover:border-primary transition-colors"
                               />

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getImageUrl } from '../../utils/image';
 import { 
   Heart, 
   ThumbsDown, 
@@ -178,8 +179,8 @@ export default function ActivityItem({
         {/* User Avatar */}
         <div className="flex-shrink-0">
           {activity.user?.avatar ? (
-            <img 
-              src={activity.user.avatar} 
+            <img
+              src={getImageUrl(activity.user.avatar)}
               alt={`${activity.user.first_name} ${activity.user.last_name}`}
               className="w-8 h-8 rounded-full object-cover"
             />
@@ -206,7 +207,7 @@ export default function ActivityItem({
                   </p>
                   {activity.post.image_url && (
                     <img 
-                      src={activity.post.image_url} 
+                      src={getImageUrl(activity.post.image_url)}
                       alt="Post content"
                       className="mt-2 w-full max-w-full h-20 object-cover rounded border border-[#2A3343]"
                     />
