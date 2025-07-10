@@ -361,6 +361,8 @@ func AcceptFollowRequest(db *sql.DB, followerId int, followingId int) error {
 	return RespondToFollowRequest(db, followerId, followingId, "accepted")
 }
 
+
+
 // AcceptMessageRequest sets the follow status to accepted (accepts a message request)
 func AcceptMessageRequest(db *sql.DB, userID, requesterID int) error {
 	// userID is the recipient, requesterID is the sender of the message request
