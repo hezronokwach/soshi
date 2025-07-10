@@ -18,6 +18,7 @@ func SetupGroupRoutes(router *Router, groupHandler *handlers.GroupHandler, group
 	// Group members
 	router.AddRoute("POST", "/api/groups/{groupID}/join", WithAuth(groupHandler.JoinGroup, authMiddleware))
 	router.AddRoute("DELETE", "/api/groups/{groupID}/join", WithAuth(groupHandler.LeaveGroup, authMiddleware))
+	router.AddRoute("POST", "/api/groups/{groupID}/invite", WithAuth(groupHandler.InviteToGroup, authMiddleware))
 	router.AddRoute("PUT", "/api/groups/{groupID}/members/{userID}", WithAuth(groupHandler.UpdateMember, authMiddleware))
 	router.AddRoute("DELETE", "/api/groups/{groupID}/members/{userID}", WithAuth(groupHandler.RemoveMember, authMiddleware))
 
