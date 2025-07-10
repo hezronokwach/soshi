@@ -310,6 +310,12 @@ export const groups = {
       method: "DELETE",
     }),
 
+  inviteToGroup: (groupId, userId) =>
+    fetchAPI(`/api/groups/${groupId}/invite`, {
+      method: "POST",
+      body: JSON.stringify({ user_id: userId }),
+    }),
+
   updateMember: (groupId, userId, status) =>
     fetchAPI(`/api/groups/${groupId}/members/${userId}`, {
       method: "PUT",
