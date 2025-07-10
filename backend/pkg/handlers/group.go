@@ -311,6 +311,62 @@ func (h *GroupHandler) JoinGroup(w http.ResponseWriter, r *http.Request) {
 	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Join request sent successfully"})
 }
 
+// InviteToGroup invites a user to join a group
+func (h *GroupHandler) InviteToGroup(w http.ResponseWriter, r *http.Request) {
+	// Get user from context
+	user, ok := md.GetUserFromContext(r.Context())
+	if !ok {
+		utils.RespondWithError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	// Get group ID from URL
+	groupIdStr := md.GetURLParam(r, "groupID")
+	groupId, err := strconv.Atoi(groupIdStr)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid group ID")
+		return
+	}
+
+	// Parse request body
+	var req struct {
+		UserID int `json:"user_id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	// Check if user is a member of the group
+	isMember, err := models.IsGroupMember(h.db, groupId, user.ID)
+	if err != nil || !isMember {
+		utils.RespondWithError(w, http.StatusForbidden, "Only group members can invite others")
+		return
+	}
+
+	// Invite user to group
+	err = models.InviteToGroup(h.db, groupId, req.UserID, user.ID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Create notification for invited user
+	group, err := models.GetGroupById(h.db, groupId)
+	if err == nil && group != nil {
+		_, _ = models.CreateNotification(
+			h.db,
+			req.UserID,
+			"group_invitation",
+			user.FirstName+" "+user.LastName+" has invited you to join "+group.Title,
+			groupId,
+		)
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Invitation sent successfully"})
+}
+
 // LeaveGroup handles a user leaving a group
 func (h *GroupHandler) LeaveGroup(w http.ResponseWriter, r *http.Request) {
 	// Get user from context
@@ -413,12 +469,13 @@ func (h *GroupHandler) UpdateMember(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		err = models.RespondToGroupRequest(h.db, groupId, memberId, req.Status, user.ID)
-	} else if *invitedBy != 0 && memberId == user.ID {
-		// It's an invitation response from the invited user
-		err = models.RespondToGroupInvitation(h.db, groupId, user.ID, req.Status)
 	} else {
-		utils.RespondWithError(w, http.StatusForbidden, "Unauthorized to update this member")
-		return
+		// It's an invitation response, only the invited user can respond
+		if memberId != user.ID {
+			utils.RespondWithError(w, http.StatusForbidden, "Only the invited user can respond to invitations")
+			return
+		}
+		err = models.RespondToGroupInvitation(h.db, groupId, user.ID, req.Status)
 	}
 
 	if err != nil {
@@ -426,18 +483,7 @@ func (h *GroupHandler) UpdateMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create notification for the member if request was accepted
-	if req.Status == "accepted" {
-		_, _ = models.CreateNotification(
-			h.db,
-			memberId,
-			"group_request_accepted",
-			"Your request to join the group has been accepted",
-			groupId,
-		)
-	}
-
-	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Member status updated successfully"})
+	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Response updated successfully"})
 }
 
 // RemoveMember removes a member from a group
