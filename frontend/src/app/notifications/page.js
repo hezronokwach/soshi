@@ -72,11 +72,37 @@ export default function NotificationsPage() {
     }
   };
 
+  const handleGroupInvitation = async (groupId, action, notificationId) => {
+    try {
+      const { groups, auth } = await import('../../lib/api');
+      const session = await auth.getSession();
+      await groups.updateMember(groupId, session.id, action === 'accept' ? 'accepted' : 'declined');
+      await handleMarkAsRead(notificationId);
+      fetchNotifications();
+    } catch (error) {
+      console.error('Failed to handle group invitation:', error);
+    }
+  };
+
+  const handleGroupJoinRequest = async (groupId, userId, action, notificationId) => {
+    try {
+      const { groups } = await import('../../lib/api');
+      await groups.updateMember(groupId, userId, action === 'accept' ? 'accepted' : 'declined');
+      await handleMarkAsRead(notificationId);
+      fetchNotifications();
+    } catch (error) {
+      console.error('Failed to handle group join request:', error);
+    }
+  };
+
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'follow':
       case 'follow_request':
         return <Users size={20} className="text-[#3A86FF]" />;
+      case 'group_invitation':
+      case 'group_join_request':
+        return <Users size={20} className="text-[#06D6A0]" />;
       case 'like':
         return <Heart size={20} className="text-[#EF476F]" />;
       case 'comment':
@@ -194,6 +220,50 @@ export default function NotificationsPage() {
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeclineFollowRequest(notification.related_id, notification.id);
+                            }}
+                            className="bg-[#0F1624] hover:bg-[#2A3343] text-[#B8C1CF] hover:text-[#FFFFFF] px-4 py-2 rounded-lg text-sm font-medium border border-[#2A3343] hover:border-[#EF476F] transition-all duration-250 hover:scale-105"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      )}
+                      {notification.type === 'group_invitation' && !notification.is_read && (
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleGroupInvitation(notification.related_id, 'accept', notification.id);
+                            }}
+                            className="bg-gradient-to-r from-[#06D6A0] to-[#3A86FF] hover:shadow-[0_0_15px_rgba(6,214,160,0.5)] text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-250 hover:scale-105"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleGroupInvitation(notification.related_id, 'decline', notification.id);
+                            }}
+                            className="bg-[#0F1624] hover:bg-[#2A3343] text-[#B8C1CF] hover:text-[#FFFFFF] px-4 py-2 rounded-lg text-sm font-medium border border-[#2A3343] hover:border-[#EF476F] transition-all duration-250 hover:scale-105"
+                          >
+                            Decline
+                          </button>
+                        </div>
+                      )}
+                      {notification.type === 'group_join_request' && !notification.is_read && (
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleGroupJoinRequest(notification.related_id, notification.user_id, 'accept', notification.id);
+                            }}
+                            className="bg-gradient-to-r from-[#06D6A0] to-[#3A86FF] hover:shadow-[0_0_15px_rgba(6,214,160,0.5)] text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-250 hover:scale-105"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleGroupJoinRequest(notification.related_id, notification.user_id, 'decline', notification.id);
                             }}
                             className="bg-[#0F1624] hover:bg-[#2A3343] text-[#B8C1CF] hover:text-[#FFFFFF] px-4 py-2 rounded-lg text-sm font-medium border border-[#2A3343] hover:border-[#EF476F] transition-all duration-250 hover:scale-105"
                           >
