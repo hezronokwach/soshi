@@ -220,7 +220,7 @@ func JoinGroup(db *sql.DB, groupId int, userId int, invitedBy *int) error {
 		return err
 	}
 	if exists {
-		return nil
+		return errors.New("user is already a member or has a pending request")
 	}
 
 	// Determine status based on whether it's an invitation or request
@@ -251,6 +251,61 @@ func JoinGroup(db *sql.DB, groupId int, userId int, invitedBy *int) error {
 	return err
 }
 
+// InviteToGroup invites a user to join a group
+func InviteToGroup(db *sql.DB, groupId int, userId int, inviterId int) error {
+	// Check if user is already a member or has pending request/invitation
+	var exists bool
+	err := db.QueryRow(
+		"SELECT EXISTS(SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?)",
+		groupId, userId,
+	).Scan(&exists)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return errors.New("user already has a pending request or is a member")
+	}
+
+	// Check if inviter is a member
+	var inviterStatus string
+	err = db.QueryRow(
+		"SELECT status FROM group_members WHERE group_id = ? AND user_id = ?",
+		groupId, inviterId,
+	).Scan(&inviterStatus)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.New("inviter is not a member of the group")
+		}
+		return err
+	}
+	if inviterStatus != "accepted" {
+		return errors.New("inviter is not an accepted member of the group")
+	}
+
+	// Add invitation
+	_, err = db.Exec(
+		`INSERT INTO group_members (group_id, user_id, status, invited_by) VALUES (?, ?, 'pending', ?)`,
+		groupId, userId, inviterId,
+	)
+	return err
+}
+
+// IsGroupMember checks if a user is an accepted member of a group
+func IsGroupMember(db *sql.DB, groupId int, userId int) (bool, error) {
+	var status string
+	err := db.QueryRow(
+		"SELECT status FROM group_members WHERE group_id = ? AND user_id = ?",
+		groupId, userId,
+	).Scan(&status)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, err
+	}
+	return status == "accepted", nil
+}
+
 // RespondToGroupRequest handles accepting or declining a group join request
 func RespondToGroupRequest(db *sql.DB, groupId int, userId int, status string, responderId int) error {
 	// Check if responder is the group creator
@@ -279,15 +334,21 @@ func RespondToGroupRequest(db *sql.DB, groupId int, userId int, status string, r
 		return errors.New("no pending join request found")
 	}
 
-	// Update status
-	if status == "accepted" || status == "declined" {
+	// Update or delete based on status
+	if status == "accepted" {
 		_, err = db.Exec(
-			"UPDATE group_members SET status = ? WHERE group_id = ? AND user_id = ?",
-			status, groupId, userId,
+			"UPDATE group_members SET status = 'accepted' WHERE group_id = ? AND user_id = ?",
+			groupId, userId,
 		)
-		return err
+	} else if status == "declined" {
+		_, err = db.Exec(
+			"DELETE FROM group_members WHERE group_id = ? AND user_id = ?",
+			groupId, userId,
+		)
+	} else {
+		return errors.New("invalid status")
 	}
-	return errors.New("invalid status")
+	return err
 }
 
 // RespondToGroupInvitation handles accepting or declining a group invitation
@@ -305,15 +366,21 @@ func RespondToGroupInvitation(db *sql.DB, groupId int, userId int, status string
 		return errors.New("no pending invitation found")
 	}
 
-	// Update status
-	if status == "accepted" || status == "declined" {
+	// Update or delete based on status
+	if status == "accepted" {
 		_, err = db.Exec(
-			"UPDATE group_members SET status = ? WHERE group_id = ? AND user_id = ?",
-			status, groupId, userId,
+			"UPDATE group_members SET status = 'accepted' WHERE group_id = ? AND user_id = ?",
+			groupId, userId,
 		)
-		return err
+	} else if status == "declined" {
+		_, err = db.Exec(
+			"DELETE FROM group_members WHERE group_id = ? AND user_id = ?",
+			groupId, userId,
+		)
+	} else {
+		return errors.New("invalid status")
 	}
-	return errors.New("invalid status")
+	return err
 }
 
 // LeaveGroup handles a user leaving a group
@@ -334,20 +401,20 @@ func LeaveGroup(db *sql.DB, groupId int, userId int) error {
 	// Check if user is a member
 	var exists bool
 	err = db.QueryRow(
-		"SELECT EXISTS(SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ? AND status = 'accepted')",
+		"SELECT EXISTS(SELECT 1 FROM group_members WHERE group_id = ? AND user_id = ?)",
 		groupId, userId,
 	).Scan(&exists)
 	if err != nil {
 		return err
 	}
 	if !exists {
-		return errors.New("user is not a member of the group")
+		return errors.New("user is not associated with the group")
 	}
 
 	// Remove member
 	_, err = db.Exec(
 		"DELETE FROM group_members WHERE group_id = ? AND user_id = ?",
-		groupId, userId,
+			groupId, userId,
 	)
 	return err
 }
